@@ -1,35 +1,52 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { createTheme, Paper, Stack, ThemeProvider } from '@mui/material'
+import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
+import ChatDisplaySection from './components/ChatDisplaySection'
+import ChatInputBar from './components/ChatInputBar'
+
+export interface Message {
+    uuid: string
+    sender: string
+    time: Date
+    text: string
+}
+
+export type MessageList = Message[]
+
+const generateDummyMessage = (): Message => ({
+    uuid: crypto.randomUUID(),
+    sender: 'anon',
+    time: new Date(),
+    text: 'sample',
+})
+
+const sampleMessage = [generateDummyMessage(), generateDummyMessage(), generateDummyMessage()]
 
 function App() {
-  const [count, setCount] = useState(0)
+    const [isLoading, setIsLoading] = useState(true)
+    const userId = useRef('')
+    const [chatMessageList, setChatMessageList] = useState<MessageList>(sampleMessage)
 
-  return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </div>
-  )
+    useEffect(() => {
+        if (userId.current.length <= 0) {
+            userId.current = crypto.randomUUID()
+        }
+
+        setIsLoading(false)
+    }, [])
+
+    return (
+        <>
+            {isLoading ? (
+                'loading'
+            ) : (
+                <>
+                    <ChatDisplaySection chatMessageList={chatMessageList} />
+                    <ChatInputBar setChatMessageList={setChatMessageList} />
+                </>
+            )}
+        </>
+    )
 }
 
 export default App
