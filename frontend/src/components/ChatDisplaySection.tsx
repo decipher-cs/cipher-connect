@@ -1,12 +1,13 @@
 import { Paper, Typography } from '@mui/material'
 import { Container } from '@mui/system'
+import { memo } from 'react'
 import { MessageList } from '../App'
 
 export interface ChatDisplaySectionProps {
     chatMessageList: MessageList
 }
 
-const SingleTextMessage = (props: { message: MessageList[number] }) => {
+const SingleTextMessage = memo((props: { message: MessageList[number] }) => {
     return (
         <>
             <Paper sx={{ width: 'fit-content', p: 1.5, placeSelf: 'flex-end' }}>
@@ -14,7 +15,7 @@ const SingleTextMessage = (props: { message: MessageList[number] }) => {
             </Paper>
         </>
     )
-}
+})
 
 const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     return (
