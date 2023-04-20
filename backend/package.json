@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "testing auth0",
   "main": "./dist/server.js",
-  "license": "MIT",
+  "license": "GNU GENERAL PUBLIC LICENSE",
   "type": "module",
   "scripts": {
     "dev": "NODE_OPTIONS='--no-warnings --loader ts-node/esm' nodemon --watch 'src/**/*' -e ts,tsx --exec ts-node ./src/**",
