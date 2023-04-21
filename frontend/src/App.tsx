@@ -1,9 +1,9 @@
-import { Button, createTheme, Paper, Stack, ThemeProvider } from '@mui/material'
-import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { Socket, io } from 'socket.io-client'
+import { Button } from '@mui/material'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import ChatDisplaySection from './components/ChatDisplaySection'
 import ChatInputBar from './components/ChatInputBar'
+import { socket } from './socket'
 
 export interface Message {
     uuid: string
@@ -21,8 +21,6 @@ const generateDummyMessage = (): Message => ({
     text: 'sample',
 })
 
-const socket = io('http://localhost:3000')
-
 const sampleMessage = [generateDummyMessage(), generateDummyMessage(), generateDummyMessage()]
 
 function App() {
@@ -31,10 +29,14 @@ function App() {
     const [chatMessageList, setChatMessageList] = useState<MessageList>(sampleMessage)
 
     useEffect(() => {
-        // socket.on('some-event', ()=>{console.log('event happened... i think.')})
+        socket.connect() // TODO this should be removed in prod. In prod this should run after varifying credentials.
+
         socket.on('connect', () => {
             console.log('connection established to', socket.id)
-            socket.emit('msg', 'this is a sample message')
+            socket.on('message', text => {
+                console.log('here is the msg:', text)
+                setChatMessageList(prev => prev.concat(text))
+            })
         })
 
         if (userId.current.length <= 0) {
@@ -42,7 +44,16 @@ function App() {
         }
 
         setIsLoading(false)
+        return () => {
+            socket.off('connect')
+            socket.off('disconnect')
+            socket.disconnect()
+        }
     }, [])
+
+    useEffect(() => {}, [chatMessageList])
+
+    const fakeScrollDiv = useRef<HTMLDivElement | null>(null)
 
     return (
         <>
@@ -52,13 +63,13 @@ function App() {
                 <>
                     <Button
                         onClick={() => {
-                            socket.emit('chat message', 'this is a sample message')
+                            socket.emit('message', 'this is a sample message')
                         }}
                     >
                         emit
                     </Button>
-                    <ChatDisplaySection chatMessageList={chatMessageList} />
-                    <ChatInputBar setChatMessageList={setChatMessageList} />
+                    <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
+                    <ChatInputBar setChatMessageList={setChatMessageList} fakeScrollDiv={fakeScrollDiv} />
                 </>
             )}
         </>

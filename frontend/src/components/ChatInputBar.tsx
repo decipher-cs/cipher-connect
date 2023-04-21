@@ -1,14 +1,25 @@
 import { AccountCircle, ArrowRight, Circle, CircleSharp } from '@mui/icons-material'
 import { IconButton, InputAdornment, TextField } from '@mui/material'
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Message, MessageList } from '../App'
+import { socket } from '../socket'
 
 interface ChatInputBarProps {
     setChatMessageList: React.Dispatch<React.SetStateAction<MessageList>>
+    fakeScrollDiv: React.MutableRefObject<HTMLDivElement | null>
 }
 
 export const ChatInputBar = (props: ChatInputBarProps) => {
     const [currInputText, setCurrInputText] = useState('test value')
+
+    // scrolles the latest message into view
+    const scrollfakeScrollDivToTop = () => {
+        setTimeout(()=>{
+
+        // props.fakeScrollDiv.current?.scrollIntoView()
+        },2000)
+        props.fakeScrollDiv.current?.scroll(9000, 9000)
+    }
 
     const addMessgeToMessageList = () => {
         const trimmedText = currInputText.slice().trim()
@@ -20,14 +31,14 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
             text: trimmedText,
         }
         props.setChatMessageList(prev => prev.concat(newObj))
-        // setCurrInputText('') //uncomment after testing. TODO
+
+        scrollfakeScrollDivToTop()
+
+        socket.emit('message', newObj)
+
+        if (import.meta.env.PROD) setCurrInputText('') // Only clear the input onSubmit when running in productio. In development, keep the input.
     }
 
-    const handleEnterKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-        if (e.key === 'Enter') {
-            addMessgeToMessageList()
-        }
-    }
     return (
         <div>
             <TextField
@@ -45,7 +56,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
                 fullWidth
                 placeholder='Enter text'
                 onChange={e => setCurrInputText(e.target.value)}
-                onKeyDown={handleEnterKeyDown}
+                onKeyDown={e => (e.key === 'Enter' ? addMessgeToMessageList() : null)}
             />
         </div>
     )
