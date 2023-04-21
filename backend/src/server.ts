@@ -40,13 +40,16 @@ const PORT = process.env.PORT || 3000
 //     res.send(JSON.stringify(req.oidc.user))
 // })
 
-app.get('/', (req, res) => res.json({ msg: 'hello world' }))
+app.get('/', (_, res) => res.json({ msg: 'hello world' }))
 
 io.on('connection', socket => {
-    console.log('found user with id', socket.id)
+  socket.on('connection', ()=>{
+      console.log('found user with id', socket.id)
+  })
 
-    socket.on('chat message', msg => {
+    socket.on('message', msg => {
         console.log(msg, '<----')
+        socket.broadcast.emit('message', msg)
     })
 
     socket.on('disconnect', () => {
