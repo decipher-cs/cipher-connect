@@ -3,6 +3,8 @@ dotenv.config()
 
 import express from 'express'
 const app = express()
+app.use(express.json()) // for parsing application/json
+app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 
 // import pkg from 'express-openid-connect'
 // const { auth, requiresAuth } = pkg
@@ -11,36 +13,27 @@ import cors from 'cors'
 app.use(cors())
 
 import http from 'http'
-const server = http.createServer()
+const server = http.createServer(app)
 
 import { Server } from 'socket.io'
 const io = new Server(server, { cors: { origin: 'http://localhost:5173' } })
 // const io = new Server(server, { cors: { origin: '*' } })
 
+import jwt from 'jsonwebtoken'
+
 const PORT = process.env.PORT || 3000
 
-// const config = {
-//     authRequired: false,
-//     auth0Logout: true,
-//     secret: 'a long, randomly-generated string stored in env',
-//     baseURL: 'http://localhost:3000',
-//     clientID: 'zCdZzfJFtKJ1dgM4DfUcJ51OcjlxqgTk',
-//     issuerBaseURL: 'https://dev-uronr1qqy3iuo8ek.us.auth0.com',
-// }
+app.get('/', (_, res) => {
+    res.send('we are done here!')
+})
 
-// auth router attaches /login, /logout, and /callback routes to the baseURL
-// app.use(auth(config))
-
-// req.isAuthenticated is provided from the auth router
-// app.get('/', (req, res) => {
-//     res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out')
-// })
-
-// app.get('/profile', requiresAuth(), (req, res) => {
-//     res.send(JSON.stringify(req.oidc.user))
-// })
-
-app.get('/', (_, res) => res.json({ msg: 'hello world' }))
+app.post('/login', (req, res, next) => {
+    const user = { name: 'holler'}
+    // res.json({ requestBody: req.body})
+    console.log('req body',req.body)
+    // jwt.sign(user, process.env.SECRET)
+    res.send('we are done here!')
+})
 
 io.on('connection', socket => {
   socket.on('connection', ()=>{
@@ -58,4 +51,4 @@ io.on('connection', socket => {
 })
 
 server.listen(PORT, () => console.log(`http://localhost:${PORT}`))
-app.listen(8080, () => console.log(`http://localhost:${8080}`))
+// app.listen(8080, () => console.log(`http://localhost:${8080}`))
