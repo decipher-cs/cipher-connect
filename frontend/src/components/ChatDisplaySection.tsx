@@ -1,7 +1,7 @@
 import { Button, Paper, Typography } from '@mui/material'
 import { Container } from '@mui/system'
 import { memo, useEffect, useRef } from 'react'
-import { MessageList } from '../App'
+import { MessageList } from '../pages/Chat'
 
 export interface ChatDisplaySectionProps {
     chatMessageList: MessageList

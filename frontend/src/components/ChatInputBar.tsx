@@ -1,7 +1,7 @@
 import { AccountCircle, ArrowRight, Circle, CircleSharp } from '@mui/icons-material'
 import { IconButton, InputAdornment, TextField } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
-import { Message, MessageList } from '../App'
+import { Message, MessageList } from '../pages/Chat'
 import { socket } from '../socket'
 
 interface ChatInputBarProps {
