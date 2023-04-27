@@ -1,4 +1,4 @@
-![WIP](./assets/wip_logo.svg)
+![WIP](./assets/wip_app_logo.png)
 # Project Title
 
 A fullstack messaging app built with sockets. WIP
