@@ -1,7 +1,7 @@
-
+![WIP](./assets/wip_logo.svg)
 # Project Title
 
-A brief description of what this project does and who it's for
+A fullstack messaging app built with sockets. WIP
 
 
 ## Demo
@@ -12,18 +12,6 @@ Insert gif or link to demo
 ## Features
 
 - Light/dark mode toggle
-- Live previews
-- Fullscreen mode
-- Cross platform
-
-
-## Deployment
-
-To deploy this project run
-
-```bash
-  npm run deploy
-```
 
 
 ## 🚀 About Me
@@ -32,16 +20,20 @@ I'm a full stack developer...
 
 ## Installation
 
-Install my-project with npm
+Install my-project with yarn
 
 ```bash
-  npm install my-project
-  cd my-project
+  yarn # Install dependencies
+  yarn build # Run build script (optional)
+
+  # One of the following commands
+  yarn preview # For production preview
+  yarn dev # For development preview
 ```
     
 ## Screenshots
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![App Screenshot](./frontend/public/)
 
 
 ## Acknowledgements
@@ -53,5 +45,5 @@ Install my-project with npm
 
 ## License
 
-[MIT](https://choosealicense.com/licenses/mit/)
+[GPL 3](./LICENSE)
 
