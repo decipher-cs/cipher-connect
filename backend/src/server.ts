@@ -1,17 +1,21 @@
-import * as dotenv from 'dotenv'
-import express from 'express'
 import cors from 'cors'
 import http from 'http'
+import express from 'express'
+import * as dotenv from 'dotenv'
 import { Server } from 'socket.io'
 import { initSocketIO } from './socket.js'
 import { initRoutes } from './routes.js'
+import { reqLogger } from './middleware/logs.js'
+
+dotenv.config()
 
 const app = express()
 const server = http.createServer(app)
 const PORT = process.env.PORT || process.env.DEV_PORT
 const io = new Server(server, { cors: { origin: process.env.ORIGIN_DEV_URL } })
 
-dotenv.config()
+// middleware //
+if (app.settings.env === 'production') app.use(reqLogger) // only run this code if app is running in production.
 app.use(cors())
 app.use(express.json()) // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
