@@ -3,7 +3,7 @@
     "version": "0.0.0",
     "description": "testing auth0",
     "main": "./dist/server.js",
-    "license": "GNU GENERAL PUBLIC LICENSE",
+    "license": "GNU General Public License v3.0",
     "type": "module",
     "scripts": {
         "build": "tsc",
@@ -27,10 +27,5 @@
         "express-openid-connect": "^2.14.0",
         "prisma": "^4.13.0",
         "ts-node": "^10.9.1"
-    },
-    "nodemonConfig": {
-        "events": {
-            "start": "clear && echo '--------------------------'"
-        }
     }
 }
