@@ -1,18 +1,29 @@
 ![WIP](./assets/wip_app_logo.png)
-# Project Title
+# Cipher-Connect
 
 A fullstack messaging app built with sockets. WIP
 
 
 ## Demo
 
-Insert gif or link to demo
+![Insert gif or link to demo]()
 
 
 ## Features
 
 - Light/dark mode toggle
 
+## Built With
+
+- [tsc-watch](https://www.npmjs.com/package/tsc-watch)
+- Typescript-React for the frontend
+- Nodejs for backend
+- Socket.io for fullduplix communication
+- Material ui for design
+- Express for handling routes
+- mySQL for database
+- Prisma as an ORM
+- Vite for managing development and production ecosystem
 
 ## 🚀 About Me
 I'm a full stack developer...
