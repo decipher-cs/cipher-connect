@@ -11,7 +11,6 @@ function App() {
                 <Route path='/home' element={<Home />} />
                 <Route path='/chat' element={<Chat />} />
                 <Route path='/login' element={<Login />} />
-                {/* <Route path='/login' element={<Temp />} /> */}
             </Routes>
         </BrowserRouter>
     )

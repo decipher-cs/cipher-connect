@@ -16,7 +16,7 @@ function TabPanel(props: TabPanelProps) {
         <>
             {value === index && (
                 <Container
-                    component='div'
+                    component='form'
                     role='tabpanel'
                     hidden={value !== index}
                     sx={{ display: 'flex', flexDirection: 'column', placeItems: 'center', gap: 2 }}
@@ -36,9 +36,9 @@ export const Login = () => {
 
     const handleTabChange = (_: React.SyntheticEvent, newTabValue: 0 | 1) => setCurrTab(newTabValue)
 
-    const [fieldValue, setFieldValue] = useState('')
+    const [fieldValue, setFieldValue] = useState('sample@sample.com')
 
-    const [password, setPassword] = useState('')
+    const [password, setPassword] = useState('123')
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFieldValue(e.target.value)
@@ -50,9 +50,22 @@ export const Login = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        // if text is valid, then submit
+
+        const URL = import.meta.env.PROD ? import.meta.env.VITE_SERVER_PROD_URL : import.meta.env.VITE_SERVER_DEV_URL
+        console.log('submited')
         const userDetails = { name: fieldValue, password }
-        // await reqStatus = fetch('')
+        setInterval(async () => {
+            let response = await fetch(`${URL}/login`, {
+                body: JSON.stringify({ username: userDetails.name, password }),
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+            })
+            let data = await response.text()
+            console.log(data)
+        }, 1000 * 10)
     }
 
     return (
