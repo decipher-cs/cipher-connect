@@ -1,13 +1,10 @@
+// Model interactes with the database (mySQL) //
+
 import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
-export const createNewUser = async (username: string, salt: string) => {
-    const returnedData = await prisma.users.create({
-        data: {
-            username,
-            password_hash: crypto.randomUUID().toString().slice(10),
-        },
-    })
+export const createNewUser = async (username: string, password_hash: string) => {
+    const returnedData = await prisma.users.create({ data: { username, password_hash } })
     return returnedData
 }
 

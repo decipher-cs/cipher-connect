@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import bcrypt from 'bcrypt'
-import { getUserHash } from '../model.js'
+import { createNewUser, getUserHash } from '../model.js'
 
 interface LoginCredentials {
     username: string
@@ -25,4 +25,18 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 
     res.status(200).end(isPasswordCorrect)
+    return
+}
+
+export const createUser = async (req: Request, res: Response) => {
+    const { username, password }: LoginCredentials = req.body
+
+    const passwordHash = await bcrypt.hash(password, 10)
+
+    const newUser = await createNewUser(username, passwordHash)
+
+    console.log('new user is:', newUser)
+
+    res.status(200).end()
+    return
 }
