@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient, users } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 export const createNewUser = async (username: string, salt: string) => {
@@ -6,7 +6,6 @@ export const createNewUser = async (username: string, salt: string) => {
         data: {
             username,
             password_hash: crypto.randomUUID().toString().slice(10),
-            salt,
         },
     })
     return returnedData
@@ -20,4 +19,18 @@ export const getAllUsers = async () => {
 export const deleteAllUsers = async () => {
     const deletedUsers = await prisma.users.deleteMany()
     return deletedUsers
+}
+
+export const getUser = async (username: string) => {
+    prisma.users.findUnique({
+        where: { username },
+    })
+}
+
+export const getUserHash = async (username: string) => {
+    const hash = await prisma.users.findUnique({
+        where: { username },
+        select: { password_hash: true },
+    })
+    return hash
 }
