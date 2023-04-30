@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import bcrypt from 'bcrypt'
-import { createNewUser, getUserHash } from '../model.js'
+import { createNewUser, getUserHash } from './model.js'
+import { Jwt } from 'jsonwebtoken'
 
 interface LoginCredentials {
     username: string
@@ -24,19 +25,28 @@ export const loginUser = async (req: Request, res: Response) => {
         return
     }
 
-    res.status(200).end(isPasswordCorrect)
+    res.status(200).end(String(isPasswordCorrect))
     return
 }
 
 export const createUser = async (req: Request, res: Response) => {
-    const { username, password }: LoginCredentials = req.body
+    let { username, password }: LoginCredentials = req.body
 
     const passwordHash = await bcrypt.hash(password, 10)
 
     const newUser = await createNewUser(username, passwordHash)
 
+    if (newUser === null) {
+        res.status(409).end('username taken')
+        return
+    }
+
     console.log('new user is:', newUser)
 
     res.status(200).end()
     return
+}
+
+export const authUser = async () => {
+    const accessToekn = jwt
 }

@@ -9,6 +9,6 @@ datasource db {
 
 model users {
   username      String   @id @db.VarChar(16)
-  password_hash String   @db.VarChar(32)
+  password_hash String   @db.VarChar(60)
   create_time   DateTime @default(now()) @db.Timestamp(0)
 }

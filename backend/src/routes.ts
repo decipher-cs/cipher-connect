@@ -1,5 +1,5 @@
-import express, { Express } from 'express'
-import { createUser, loginUser } from './controllers/index.js'
+import { Express } from 'express'
+import { createUser, loginUser } from './controllers.js'
 
 export const initRoutes = (app: Express) => {
     app.all('/login', loginUser)

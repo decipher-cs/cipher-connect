@@ -6,6 +6,7 @@ import { initRoutes } from './routes.js'
 import { initSocketIO } from './socket.js'
 import { reqLogger } from './middleware/logs.js'
 import { corsWithOptions } from './config/corsOptions.js'
+import cookieParser from 'cookie-parser'
 
 dotenv.config()
 
@@ -17,6 +18,7 @@ const io = new Server(server, { cors: { origin: process.env.ORIGIN_DEV_URL } })
 // middleware //
 if (app.settings.env === 'production') app.use(reqLogger) // only run this code if app is running in production.
 app.use(corsWithOptions())
+app.use(cookieParser())
 app.use(express.json()) // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 
