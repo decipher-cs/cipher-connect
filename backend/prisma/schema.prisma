@@ -8,7 +8,13 @@ datasource db {
 }
 
 model users {
-  username      String   @id @db.VarChar(16)
-  password_hash String   @db.VarChar(60)
-  create_time   DateTime @default(now()) @db.Timestamp(0)
+  username     String        @id @db.VarChar(16)
+  passwordHash String        @map("password_hash") @db.VarChar(60)
+  createTime   DateTime      @default(now()) @map("create_time") @db.Timestamp(0)
+  accessTokens accessToken[]
+}
+
+model accessToken {
+  owner      users  @relation(fields: [tokenOwner], references: [username], onDelete: Cascade)
+  tokenOwner String @id @map("token_owner")
 }
