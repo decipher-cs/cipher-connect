@@ -16,5 +16,5 @@ model users {
 
 model accessToken {
   owner      users  @relation(fields: [tokenOwner], references: [username], onDelete: Cascade)
-  tokenOwner String @id @map("token_owner")
+  tokenOwner String @id @map("token_owner") @db.VarChar(60)
 }
