@@ -44,6 +44,11 @@ export const addRefreshToken = async (username: string, token: string) => {
     return refreshToken
 }
 
+export const deleteRefreshToken = async (username: string) => {
+    const removedCount = await prisma.refreshToken.deleteMany({ where: { userUsername: username } })
+    return removedCount
+}
+
 export const retrieveRefreshToken = async (username: string) => {
     const refreshToken = await prisma.refreshToken.findMany({
         where: { userUsername: username },

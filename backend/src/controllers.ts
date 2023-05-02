@@ -1,13 +1,13 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import { retrieveRefreshToken } from './model.js'
+import { deleteRefreshToken, retrieveRefreshToken } from './model.js'
 import { NextFunction, Request, Response } from 'express'
 import { addRefreshToken, createNewUser, getUserHash } from './model.js'
 import { createAccessToken, createRefreshToken } from './middleware/jwtFunctions.js'
 
 interface LoginCredentials {
     username: string
-    password: string
+    password?: string
 }
 
 export const loginUser = async (req: Request, res: Response, next: NextFunction) => {
@@ -16,7 +16,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
     console.log(username, password)
     const hash = await getUserHash(username)
 
-    if (hash === null) {
+    if (hash === null || password === undefined) {
         res.status(401).end('Invalid username or password')
         return
     }
@@ -43,6 +43,11 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
 
 export const createUser = async (req: Request, res: Response) => {
     let { username, password }: LoginCredentials = req.body
+
+    if (password === undefined) {
+        res.status(401).end('Invalid username or password')
+        return
+    }
 
     const passwordHash = await bcrypt.hash(password, 10)
 
@@ -88,4 +93,10 @@ export const renewAccessToken = async (req: Request, res: Response) => {
         res.sendStatus(403)
         return
     })
+}
+
+export const logoutUser = async (req: Request, res: Response) => {
+    const { username }: LoginCredentials = req.body
+    await deleteRefreshToken(username)
+    res.sendStatus(200)
 }

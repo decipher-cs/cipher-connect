@@ -1,9 +1,9 @@
 import { Express } from 'express'
-import { createUser, loginUser, renewAccessToken } from './controllers.js'
-import jwt, { JsonWebTokenError, Jwt } from 'jsonwebtoken'
+import { createUser, loginUser, logoutUser, renewAccessToken } from './controllers.js'
 
 export const initRoutes = (app: Express) => {
     app.all('/login', loginUser)
     app.all('/signup', createUser)
     app.all('/renewtoken', renewAccessToken)
+    app.all('/logout', logoutUser)
 }
