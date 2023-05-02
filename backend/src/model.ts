@@ -3,9 +3,9 @@
 import { PrismaClient, Prisma } from '@prisma/client'
 const prisma = new PrismaClient()
 
-export const createNewUser = async (username: string, password_hash: string) => {
+export const createNewUser = async (username: string, passwordHash: string) => {
     try {
-        const returnedData = await prisma.users.create({ data: { username, password_hash } })
+        const returnedData = await prisma.user.create({ data: { username, passwordHash } })
         return returnedData
     } catch (err) {
         if (err instanceof Prisma.PrismaClientKnownRequestError) {
@@ -16,25 +16,38 @@ export const createNewUser = async (username: string, password_hash: string) => 
 }
 
 export const getAllUsers = async () => {
-    const allUsers = await prisma.users.findMany()
+    const allUsers = await prisma.user.findMany()
     return allUsers
 }
 
 export const deleteAllUsers = async () => {
-    const deletedUsers = await prisma.users.deleteMany()
+    const deletedUsers = await prisma.user.deleteMany()
     return deletedUsers
 }
 
 export const getUser = async (username: string) => {
-    prisma.users.findUnique({
+    prisma.user.findUnique({
         where: { username },
     })
 }
 
 export const getUserHash = async (username: string) => {
-    const hash = await prisma.users.findUnique({
+    const hash = await prisma.user.findUnique({
         where: { username },
-        select: { password_hash: true },
+        select: { passwordHash: true },
     })
     return hash
+}
+
+export const addRefreshToken = async (username: string, token: string) => {
+    const refreshToken = await prisma.refreshToken.create({ data: { userUsername: username, tokenValue: token } })
+    return refreshToken
+}
+
+export const retrieveRefreshToken = async (username: string) => {
+    const refreshToken = await prisma.refreshToken.findMany({
+        where: { userUsername: username },
+        select: { tokenValue: true },
+    })
+    return refreshToken
 }

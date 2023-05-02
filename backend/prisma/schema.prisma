@@ -7,17 +7,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model users {
-  username     String         @id @db.VarChar(16)
-  passwordHash String         @map("password_hash") @db.VarChar(60)
-  createTime   DateTime       @default(now()) @map("create_time") @db.Timestamp(0)
-  refreshTokens refreshTokens[]
+model user {
+  username      String         @id @db.VarChar(16)
+  passwordHash  String         @map("password_hash") @db.VarChar(60)
+  createTime    DateTime       @default(now()) @map("create_time") @db.Timestamp(0)
+  refreshTokens refreshToken[]
+
+  @@map("users")
 }
 
-model refreshTokens {
-  owner      users  @relation(fields: [tokenOwner], references: [username], onDelete: Cascade)
-  tokenOwner String @id @map("token_owner") @db.VarChar(60)
-  tokenValue String @map("token_value")
+model refreshToken {
+  tokenOwner   user   @relation(fields: [userUsername], references: [username])
+  tokenValue   String @id @map("token_value")
+  userUsername String @db.VarChar(16) @map("user_username")
 
   @@map("refresh_tokens")
 }

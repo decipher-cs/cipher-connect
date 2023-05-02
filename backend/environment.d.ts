@@ -10,9 +10,9 @@ declare global {
             REFRESH_TOKEN_SECRET: string
         }
     }
-    namespace Express {
-        interface Request {
-            cookies: { token: string }
+    namespace cookieParser {
+        interface CookieParseOptions {
+            token: string
         }
     }
 }
