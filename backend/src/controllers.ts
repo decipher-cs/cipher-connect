@@ -1,9 +1,9 @@
-import { NextFunction, Request, Response } from 'express'
 import bcrypt from 'bcrypt'
-import { addRefreshToken, createNewUser, getUserHash } from './model.js'
 import jwt from 'jsonwebtoken'
-import cookieParser, { CookieParseOptions } from 'cookie-parser'
 import { retrieveRefreshToken } from './model.js'
+import { NextFunction, Request, Response } from 'express'
+import { addRefreshToken, createNewUser, getUserHash } from './model.js'
+import { createAccessToken, createRefreshToken } from './middleware/jwtFunctions.js'
 
 interface LoginCredentials {
     username: string
@@ -28,19 +28,15 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
         return
     }
 
-    const accessToken = jwt.sign({ username }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '20m' })
+    const accessToken = createAccessToken({ username })
 
-    const refreshToken = jwt.sign({ username }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '30m' })
+    const refreshToken = createRefreshToken({ username })
 
     addRefreshToken(username, refreshToken)
 
-    res.cookie('token', refreshToken, { httpOnly: true, maxAge: 1000 * 60 * 30 })
-
-    console.log(refreshToken)
+    res.cookie('refresh_token', refreshToken, { httpOnly: true, maxAge: 1000 * 60 * 30 })
 
     res.json(accessToken)
-
-    // res.status(200).end('Login successful')
 
     return
 }
@@ -50,16 +46,14 @@ export const createUser = async (req: Request, res: Response) => {
 
     const passwordHash = await bcrypt.hash(password, 10)
 
-    const newUser = await createNewUser(username, passwordHash)
+    const newUserDetails = await createNewUser(username, passwordHash)
 
-    if (newUser === null) {
+    if (newUserDetails === null) {
         res.status(409).end('username taken')
         return
     }
 
-    console.log('new user is:', newUser)
-
-    res.status(200).end()
+    res.sendStatus(200)
     return
 }
 
@@ -86,11 +80,11 @@ export const renewAccessToken = async (req: Request, res: Response) => {
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decode) => {
         if (err === null) {
             console.log('decoded str is:', decode)
-            const newAccessToken = jwt.sign({ username }, process.env.ACCESS_TOKEN_SECRET)
+            const newAccessToken = createAccessToken({ username })
             res.json(newAccessToken)
             return
         }
-        console.log('ERRIS ->>', err)
+        // console.log('ERRIS ->>', err)
         res.sendStatus(403)
         return
     })

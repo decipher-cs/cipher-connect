@@ -2,11 +2,11 @@ import http from 'http'
 import express from 'express'
 import * as dotenv from 'dotenv'
 import { Server } from 'socket.io'
+import cookieParser from 'cookie-parser'
 import { initRoutes } from './routes.js'
 import { initSocketIO } from './socket.js'
 import { reqLogger } from './middleware/logs.js'
 import { corsWithOptions } from './config/corsOptions.js'
-import cookieParser from 'cookie-parser'
 
 dotenv.config()
 
