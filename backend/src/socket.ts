@@ -2,8 +2,12 @@ import { Server } from 'socket.io'
 
 export const initSocketIO = (io: Server) => {
     io.on('connection', socket => {
-        socket.on('connection', () => {
-            console.log('found user with id', socket.id)
+        socket.on('connect', () => {
+            console.log('client connected', socket.id)
+        })
+
+        socket.onAny((event, ...args) => {
+            console.log('--->IO<---\n', event, args)
         })
 
         socket.on('message', msg => {
