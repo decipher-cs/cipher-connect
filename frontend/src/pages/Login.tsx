@@ -114,11 +114,16 @@ export const Login = () => {
                 'Content-Type': 'application/json',
             },
         })
-        if (response.status === 409) {
-            setUsernameError(true)
-            setUsernameHelperText('Username taken')
-        } else if (response.status === 200) {
-            handleCredentialChange(username)
+        switch (response.status) {
+            case 409:
+                setUsernameError(true)
+                setUsernameHelperText('Username taken')
+                break
+            case 200:
+                handleCredentialChange(username)
+
+            default:
+                break
         }
 
         console.log(await response.text())
