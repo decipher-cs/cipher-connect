@@ -28,8 +28,8 @@ export const Chat = () => {
     const [chatMessageList, setChatMessageList] = useState<MessageList>(sampleMessage)
 
     useEffect(() => {
-        socket.connect() // TODO this should be removed in prod. In prod this should run after varifying credentials.
-
+        // socket.connect() // TODO this should be removed in prod. In prod this should run after varifying credentials.
+        //
         socket.on('connect', () => {
             console.log('connection established to', socket.id)
             socket.on('message', text => {
@@ -44,9 +44,9 @@ export const Chat = () => {
 
         setIsLoading(false)
         return () => {
-            socket.off('connect')
-            socket.off('disconnect')
-            socket.disconnect()
+            // socket.off('connect')
+            // socket.off('disconnect')
+            // socket.disconnect()
         }
     }, [])
 

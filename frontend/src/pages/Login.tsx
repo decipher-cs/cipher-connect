@@ -1,37 +1,28 @@
-import { Fingerprint } from '@mui/icons-material'
-import { Container, IconButton, Tab, Tabs, TextField } from '@mui/material'
-import { useEffect, useRef, useState } from 'react'
+import { ArrowForward, Fingerprint } from '@mui/icons-material'
+import { Button, Container, IconButton, Tab, Tabs, TextField } from '@mui/material'
+import { useContext, useEffect, useRef, useState } from 'react'
+import { TabPanel } from '../components/TabPanel'
+import { CredentialContext } from '../contexts/Credentials'
 
-interface TabPanelProps {
-    children?: React.ReactNode
-    index: number
-    value: number
-    handleSubmit: (e: React.FormEvent) => void
-}
-
-function TabPanel(props: TabPanelProps) {
-    const { children, value, index, handleSubmit, ...other } = props
-
-    return (
-        <>
-            {value === index && (
-                <Container
-                    component='form'
-                    role='tabpanel'
-                    hidden={value !== index}
-                    sx={{ display: 'flex', flexDirection: 'column', placeItems: 'center', gap: 2, marginTop: 4 }}
-                    maxWidth='sm'
-                    onSubmit={handleSubmit}
-                    {...other}
-                >
-                    {children}
-                </Container>
-            )}
-        </>
-    )
-}
+// const CustomTextField = (props: { value: string; handleChange; helperText }) => {
+//     return (
+//         <TextField
+//             label='name/ email'
+//             value={username}
+//             onChange={handleChange}
+//             error={usernameError}
+//             helperText={usernameHelperText}
+//             onBlur={() => setUsername(prev => prev.trim())}
+//             required
+//             onSubmit={e => e.preventDefault()}
+//             size='small'
+//         />
+//     )
+// }
 
 export const Login = () => {
+    const { isLoggedIn, username: currUsername, handleCredentialChange } = useContext(CredentialContext)
+
     const [currTab, setCurrTab] = useState<0 | 1>(0) // 0 is login and 1 is signup
 
     const authMode = useRef<'login' | 'signup'>('login')
@@ -44,12 +35,14 @@ export const Login = () => {
 
     const [passwordError, setPasswordError] = useState(false)
 
-    const [username, setUsername] = useState('a')
+    const [username, setUsername] = useState('password')
 
-    const [password, setPassword] = useState('123')
+    const [password, setPassword] = useState('password')
 
     const handleTabChange = (_: React.SyntheticEvent, newTabValue: 0 | 1) => {
         setCurrTab(newTabValue)
+        setUsernameError(false)
+        setPasswordError(false)
         authMode.current = newTabValue === 0 ? 'login' : 'signup'
     }
 
@@ -71,7 +64,7 @@ export const Login = () => {
             setUsernameError(true)
             setUsernameHelperText('username can only contain alphanumeric and !@#$%^&*')
             return false
-        } else if (username.length > 16 || password.length < 3) {
+        } else if (username.length > 16 || username.length < 3) {
             setUsernameError(true)
             setUsernameHelperText('Username length must be between 3 and 16 characters')
             return false
@@ -87,7 +80,7 @@ export const Login = () => {
             setPasswordError(true)
             setPasswordHelperText('Password can only contain alphanumeric and !@#$%^&*')
             return false
-        } else if (password.length > 50 || password.length < 10) {
+        } else if (password.length > 50 || password.length < 8) {
             setPasswordError(true)
             setPasswordHelperText('Password length must be between 10 and 50 characters')
             return false
@@ -95,6 +88,16 @@ export const Login = () => {
         return true
     }
 
+    const handleFetchResponse = (statusCode: number) => {
+        switch (statusCode) {
+            case 200:
+                //
+                break
+
+            default:
+                break
+        }
+    }
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
@@ -105,13 +108,20 @@ export const Login = () => {
         const response = await fetch(`${URL}/${authMode.current}`, {
             body: JSON.stringify({ username, password }),
             method: 'POST',
+            // credentials: 'include',
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
             },
         })
-        let data = await response.text()
-        console.log(data)
+        if (response.status === 409) {
+            setUsernameError(true)
+            setUsernameHelperText('Username taken')
+        } else if (response.status === 200) {
+            handleCredentialChange(username)
+        }
+
+        console.log(await response.text())
     }
 
     return (
@@ -126,27 +136,27 @@ export const Login = () => {
                     label='name/ email'
                     value={username}
                     onChange={handleChange}
-                    onSubmit={e => e.preventDefault()}
                     error={usernameError}
                     helperText={usernameHelperText}
                     onBlur={() => setUsername(prev => prev.trim())}
                     required
+                    onSubmit={e => e.preventDefault()}
                     size='small'
                 />
                 <TextField
                     label='password'
                     value={password}
                     onChange={handleChangeOnPassword}
-                    onSubmit={e => e.preventDefault()}
                     helperText={passwordHelperText}
-                    required
-                    size='small'
                     error={passwordError}
                     type={'password'}
+                    required
+                    onSubmit={e => e.preventDefault()}
+                    size='small'
                 />
-                <IconButton type='submit'>
-                    <Fingerprint />
-                </IconButton>
+                <Button type='submit' endIcon={<ArrowForward />}>
+                    login
+                </Button>
             </TabPanel>
 
             <TabPanel value={currTab} index={1} handleSubmit={handleSubmit}>
@@ -172,9 +182,9 @@ export const Login = () => {
                     size='small'
                     type={'password'}
                 />
-                <IconButton type='submit'>
-                    <Fingerprint />
-                </IconButton>
+                <Button type='submit' endIcon={<ArrowForward />}>
+                    signup
+                </Button>
             </TabPanel>
         </>
     )
