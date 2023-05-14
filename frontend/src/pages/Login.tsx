@@ -1,4 +1,4 @@
-import { Tab, Tabs, TextField } from '@mui/material'
+import { Button, Tab, Tabs, TextField } from '@mui/material'
 import { useState } from 'react'
 import { TabPanel } from '../components/TabPanel'
 import { useFormik } from 'formik'
@@ -81,26 +81,26 @@ export const Login = () => {
                 .fill('')
                 .map((_, i) => {
                     return (
-                        <TabPanel key={i} value={selectedTab} index={i} handleSubmit={formik.handleSubmit}>
+                        <TabPanel
+                            key={i}
+                            value={selectedTab}
+                            index={i}
+                            handleSubmit={formik.handleSubmit}
+                            handleFormReset={formik.handleReset}
+                        >
                             <TextField
                                 label='username'
-                                name='username'
                                 fullWidth
                                 error={!formik.isValid && formik.touched.username}
-                                value={formik.values.username}
-                                onChange={formik.handleChange}
                                 helperText={formik.touched.username && formik.errors.username}
-                                onBlur={formik.handleBlur}
+                                {...formik.getFieldProps('username')}
                             />
                             <TextField
                                 label='password'
-                                name='password'
                                 fullWidth
-                                error={!formik.isValid && formik.touched.password}
-                                value={formik.values.password}
-                                onChange={formik.handleChange}
                                 helperText={formik.touched.password && formik.errors.password}
-                                onBlur={formik.handleBlur}
+                                error={!formik.isValid && formik.touched.password}
+                                {...formik.getFieldProps('password')}
                             />
                         </TabPanel>
                     )
