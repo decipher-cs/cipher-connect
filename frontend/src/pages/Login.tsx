@@ -1,25 +1,7 @@
-import { ArrowForward, Fingerprint } from '@mui/icons-material'
-import { Button, Container, FormControl, IconButton, Tab, Tabs, TextField } from '@mui/material'
-import { useContext, useEffect, useRef, useState } from 'react'
+import { Tab, Tabs, TextField } from '@mui/material'
+import { useState } from 'react'
 import { TabPanel } from '../components/TabPanel'
-import { CredentialContext } from '../contexts/Credentials'
-import { Formik, FormikConfig, useFormik } from 'formik'
-
-// const CustomTextField = (props: { value: string; handleChange; helperText }) => {
-//     return (
-//         <TextField
-//             label='name/ email'
-//             value={username}
-//             onChange={handleChange}
-//             error={usernameError}
-//             helperText={usernameHelperText}
-//             onBlur={() => setUsername(prev => prev.trim())}
-//             required
-//             onSubmit={e => e.preventDefault()}
-//             size='small'
-//         />
-//     )
-// }
+import { useFormik } from 'formik'
 
 const validate = (values: { username: string; password: string }) => {
     const errors: any = {}
@@ -27,15 +9,15 @@ const validate = (values: { username: string; password: string }) => {
     const onlyAlphanumericAndSpecialRegex = /[^\w!@#$%^&*]/
 
     if (RegExp(onlyAlphanumericAndSpecialRegex).test(values.username) === true) {
-        errors.username('username can only contain alphanumeric and !@#$%^&*')
+        errors.username = 'username can only contain alphanumeric and !@#$%^&*'
     } else if (values.username.length > 16 || values.username.length < 3) {
-        errors.username('Username length must be between 3 and 16 characters')
+        errors.username = 'Username length must be between 3 and 16 characters'
     }
 
     if (RegExp(onlyAlphanumericAndSpecialRegex).test(values.password) === true) {
-        errors.password('Password can only contain alphanumeric and !@#$%^&*')
+        errors.password = 'Password can only contain alphanumeric and !@#$%^&*'
     } else if (values.password.length > 50 || values.password.length < 8) {
-        errors.password('Password length must be between 10 and 50 characters')
+        errors.password = 'Password length must be between 10 and 50 characters'
     }
 
     return errors
@@ -54,8 +36,38 @@ export const Login = () => {
             password: 'password',
         },
         validate,
-        onSubmit: values => {
+        onSubmit: async values => {
             console.log('form submitted with details:', values)
+
+            const username = values.username
+            const password = values.password
+
+            const URL = import.meta.env.PROD
+                ? import.meta.env.VITE_SERVER_PROD_URL
+                : import.meta.env.VITE_SERVER_DEV_URL
+
+            const response = await fetch(`${URL}/${formType}`, {
+                body: JSON.stringify({ username, password }),
+                method: 'POST',
+                // credentials: 'include',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+            })
+            console.log(response)
+            // switch (response.status) {
+            //     case 409:
+            //         setUsernameError(true)
+            //         setUsernameHelperText('Username taken')
+            //         break
+            //     case 200:
+            //         handleCredentialChange(username)
+            //
+            //     default:
+            //         break
+            // }
+            //
         },
     })
 
@@ -73,14 +85,18 @@ export const Login = () => {
                             <TextField
                                 label='username'
                                 name='username'
+                                error={formik.isValid !== true}
                                 value={formik.values.username}
                                 onChange={formik.handleChange}
+                                helperText={formik.errors.username}
                             />
                             <TextField
                                 label='password'
                                 name='password'
+                                error={formik.isValid !== true}
                                 value={formik.values.password}
                                 onChange={formik.handleChange}
+                                helperText={formik.errors.password}
                             />
                             <>{formik.errors.username}</>
                         </TabPanel>

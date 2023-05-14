@@ -1,13 +1,13 @@
-import { Container } from '@mui/material'
+import { Button, Container } from '@mui/material'
 
 interface TabPanelProps {
     children?: React.ReactNode
     index: number
     value: number
-    handleSubmit: (e: React.FormEvent) => void
+    handleSubmit: (e?: React.FormEvent<HTMLFormElement> | undefined) => void
 }
 
-export const TabPanel = (props: TabPanelProps) =>{
+export const TabPanel = (props: TabPanelProps) => {
     const { children, value, index, handleSubmit, ...other } = props
 
     return (
@@ -23,9 +23,12 @@ export const TabPanel = (props: TabPanelProps) =>{
                     {...other}
                 >
                     {children}
+
+                <Button type='submit' variant='contained'>
+                    submit
+                </Button>
                 </Container>
             )}
         </>
     )
 }
-
