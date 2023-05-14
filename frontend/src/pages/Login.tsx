@@ -1,7 +1,9 @@
-import { Button, Tab, Tabs, TextField } from '@mui/material'
-import { useState } from 'react'
+import { Tab, Tabs, TextField } from '@mui/material'
+import { useContext, useState } from 'react'
 import { TabPanel } from '../components/TabPanel'
 import { useFormik } from 'formik'
+import { CredentialContext } from '../contexts/Credentials'
+import { Navigate, useNavigate } from 'react-router-dom'
 
 const validate = (values: { username: string; password: string }) => {
     const errors: any = {}
@@ -24,6 +26,10 @@ const validate = (values: { username: string; password: string }) => {
 }
 
 export const Login = () => {
+    const {isLoggedIn, setUserCredentials, username} = useContext(CredentialContext)
+
+const navigate =    useNavigate()
+
     const [isLogin, setIsLogin] = useState(true)
 
     const formType = isLogin ? 'login' : 'signup'
@@ -32,13 +38,11 @@ export const Login = () => {
 
     const formik = useFormik({
         initialValues: {
-            username: '',
-            password: '',
+            username: import.meta.env.DEV === true ? 'password' : '',
+            password: import.meta.env.DEV === true ? 'password' : '',
         },
         validate,
         onSubmit: async values => {
-            console.log('form submitted with details:', values)
-
             const username = values.username
             const password = values.password
 
@@ -55,19 +59,18 @@ export const Login = () => {
                     'Content-Type': 'application/json',
                 },
             })
-            console.log(response)
-            // switch (response.status) {
-            //     case 409:
-            //         setUsernameError(true)
-            //         setUsernameHelperText('Username taken')
-            //         break
-            //     case 200:
-            //         handleCredentialChange(username)
-            //
-            //     default:
-            //         break
-            // }
-            //
+            const responseType = response.statusText
+            switch (responseType) {
+                case 'OK':
+                    const accessToken = await response.text()
+                    setUserCredentials(username, accessToken)
+                    navigate('/chat')
+                    
+                    break;
+
+                default:
+                    break;
+            }
         },
     })
 
@@ -91,7 +94,7 @@ export const Login = () => {
                             <TextField
                                 label='username'
                                 fullWidth
-                                error={!formik.isValid && formik.touched.username}
+                                error={formik.errors.username !== undefined && formik.touched.username}
                                 helperText={formik.touched.username && formik.errors.username}
                                 {...formik.getFieldProps('username')}
                             />
@@ -99,7 +102,7 @@ export const Login = () => {
                                 label='password'
                                 fullWidth
                                 helperText={formik.touched.password && formik.errors.password}
-                                error={!formik.isValid && formik.touched.password}
+                                error={formik.errors.password !== undefined && formik.touched.password}
                                 {...formik.getFieldProps('password')}
                             />
                         </TabPanel>
