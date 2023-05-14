@@ -11,7 +11,10 @@ A fullstack messaging app built with sockets. WIP
 
 ## Features
 
+- User managment
+- User authentication
 - Light/dark mode toggle
+- Thorough form validation
 
 ## Built With
 
@@ -23,10 +26,16 @@ A fullstack messaging app built with sockets. WIP
 - Express for handling routes
 - mySQL for database
 - Prisma as an ORM
+- [Formik](https://formik.org/) for handling forms
 - Vite for managing development and production ecosystem
 
-## 🚀 About Me
-I'm a full stack developer...
+## 🚀 What I learned
+
+- Error handling
+- Routing
+- User authentication
+- Building forms with Formik
+- Error boundries
 
 
 ## Installation
