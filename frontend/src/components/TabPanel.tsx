@@ -25,7 +25,7 @@ export const TabPanel = (props: TabPanelProps) => {
                 >
                     {children}
 
-                    <Box gap={3}>
+                    <Box display='inline-flex' gap={3}>
                         <Button type='reset' variant='contained' onClick={handleFormReset}>
                             reset
                         </Button>
