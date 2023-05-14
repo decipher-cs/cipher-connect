@@ -32,8 +32,8 @@ export const Login = () => {
 
     const formik = useFormik({
         initialValues: {
-            username: 'password',
-            password: 'password',
+            username: '',
+            password: '',
         },
         validate,
         onSubmit: async values => {
@@ -85,20 +85,23 @@ export const Login = () => {
                             <TextField
                                 label='username'
                                 name='username'
-                                error={formik.isValid !== true}
+                                fullWidth
+                                error={!formik.isValid && formik.touched.username}
                                 value={formik.values.username}
                                 onChange={formik.handleChange}
-                                helperText={formik.errors.username}
+                                helperText={formik.touched.username && formik.errors.username}
+                                onBlur={formik.handleBlur}
                             />
                             <TextField
                                 label='password'
                                 name='password'
-                                error={formik.isValid !== true}
+                                fullWidth
+                                error={!formik.isValid && formik.touched.password}
                                 value={formik.values.password}
                                 onChange={formik.handleChange}
-                                helperText={formik.errors.password}
+                                helperText={formik.touched.password && formik.errors.password}
+                                onBlur={formik.handleBlur}
                             />
-                            <>{formik.errors.username}</>
                         </TabPanel>
                     )
                 })}
