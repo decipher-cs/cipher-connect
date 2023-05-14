@@ -10,7 +10,6 @@ import { Login } from './pages/Login'
 
 const TempUsernameDisplay = () => {
     const { username, isLoggedIn } = useContext(CredentialContext)
-    console.log('sdfawe', username, isLoggedIn)
     return (
         <Typography>
             {isLoggedIn === true ? <>you are logged in as: {username}</> : <>Not logged in</>}
