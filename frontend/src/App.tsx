@@ -1,6 +1,6 @@
 import { Typography } from '@mui/material'
-import { useContext } from 'react'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { useContext, useEffect } from 'react'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import './App.css'
 import { RequireAuth } from './components/RequireAuth'
 import { CredentialContext, CredentialContextProvider } from './contexts/Credentials'
@@ -10,14 +10,20 @@ import { Login } from './pages/Login'
 
 const TempUsernameDisplay = () => {
     const { username, isLoggedIn } = useContext(CredentialContext)
-    return (
-        <Typography>
-            {isLoggedIn === true ? <>you are logged in as: {username}</> : <>Not logged in</>}
-        </Typography>
-    )
+    return <Typography>{isLoggedIn === true ? <>you are logged in as: {username}</> : <>Not logged in</>}</Typography>
 }
 
 function App() {
+    const { isLoggedIn, setUserAccessToken, accessToken } = useContext(CredentialContext)
+
+    useEffect(() => {
+        // const accessToken = window.localStorage.getItem('accessTokenValue')
+
+        // if (accessToken === null) return
+
+        // setUserAccessToken(accessToken)
+        console.log(isLoggedIn, accessToken)
+    }, [])
     return (
         <CredentialContextProvider>
             <TempUsernameDisplay />
@@ -33,6 +39,7 @@ function App() {
                         }
                     />
                     <Route path='/login' element={<Login />} />
+                    <Route path='/*' element={<Navigate to='/' />} />
                 </Routes>
             </BrowserRouter>
         </CredentialContextProvider>
