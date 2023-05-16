@@ -1,7 +1,8 @@
 import { Typography } from '@mui/material'
 import { useContext, useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import './App.css'
+// import './App.css'
+import { Navbar } from './components/Navbar'
 import { RequireAuth } from './components/RequireAuth'
 import { CredentialContext, CredentialContextProvider } from './contexts/Credentials'
 import { Chat } from './pages/Chat'
@@ -26,10 +27,12 @@ function App() {
     }, [])
     return (
         <CredentialContextProvider>
-            <TempUsernameDisplay />
             <BrowserRouter>
+                <Navbar />
+                <TempUsernameDisplay />
                 <Routes>
                     <Route path='/' element={<Home />} />
+                    <Route path='/home' element={<Home />} />
                     <Route
                         path='/chat'
                         element={
@@ -39,7 +42,7 @@ function App() {
                         }
                     />
                     <Route path='/login' element={<Login />} />
-                    <Route path='/*' element={<Navigate to='/' />} />
+                    <Route path='*' element={<Navigate to='/' replace />} />
                 </Routes>
             </BrowserRouter>
         </CredentialContextProvider>

@@ -16,36 +16,27 @@ export interface Credentials {
 }
 
 export const CredentialContextProvider = (props: React.PropsWithChildren) => {
-    const storedCredentials = window.localStorage.getItem('credentials')
-    console.log('valueare:',storedCredentials)
-
-    let restoredCredentials = {
+    const [credential, setCredentials] = useState<Credentials>({
         username: '',
         isLoggedIn: false,
         accessToken: '',
-    }
-
-    if (typeof storedCredentials === 'string') restoredCredentials = JSON.parse(storedCredentials)
-
-    const [credential, setCredentials] = useState<Credentials>(restoredCredentials)
+    })
 
     const setUserCredentials = (username: string, accessToken: string) => {
         setCredentials({ username, accessToken, isLoggedIn: true })
-        updateLocalStorage()
+        updateLocalStorageWithAccessToken(accessToken)
     }
     const setUserUsername = (username: string) => {
         setCredentials(prev => ({ ...prev, username, isLoggedIn: true }))
-        updateLocalStorage()
     }
 
     const setUserAccessToken = (accessToken: string) => {
         setCredentials(prev => ({ ...prev, accessToken, isLoggedIn: true }))
-        updateLocalStorage()
+        updateLocalStorageWithAccessToken(accessToken)
     }
 
-    const updateLocalStorage = () => {
-        window.localStorage.setItem('credentials', JSON.stringify(credential))
-        console.log('setting items as', credential)
+    const updateLocalStorageWithAccessToken = (accessTokenValue: string) => {
+        window.localStorage.setItem('accessTokenValue', JSON.stringify(accessTokenValue))
     }
 
     return (
