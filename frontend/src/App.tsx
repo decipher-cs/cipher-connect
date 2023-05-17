@@ -20,6 +20,21 @@ function App() {
     useEffect(() => {
         // const accessToken = window.localStorage.getItem('accessTokenValue')
 
+        ;(async () => {
+            const URL = import.meta.env.PROD
+                ? import.meta.env.VITE_SERVER_PROD_URL
+                : import.meta.env.VITE_SERVER_DEV_URL
+
+            const response = await fetch(`${URL}/varifytoken`, {
+                body: JSON.stringify({ username: 'password', password: 'password' }),
+                method: 'POST',
+                // credentials: 'include',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+            })
+        })()
         // if (accessToken === null) return
 
         // setUserAccessToken(accessToken)
@@ -30,6 +45,7 @@ function App() {
             <BrowserRouter>
                 <Navbar redirectionPaths={['home', 'login', 'chat']} />
                 <TempUsernameDisplay />
+
                 <Routes>
                     <Route path='/home' element={<Home />} />
                     <Route
