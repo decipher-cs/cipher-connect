@@ -22,8 +22,7 @@ export const Navbar = (props: { redirectionPaths: string[] }) => {
                                     navigate('/' + pathName)
                                 }}
                             >
-                                {' '}
-                                {pathName}{' '}
+                                {pathName}
                             </Button>
                         )
                     })}
