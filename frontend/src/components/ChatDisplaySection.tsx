@@ -32,7 +32,7 @@ const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                 ref={props.fakeScrollDiv}
                 sx={{
                     maxWidth: '90vw',
-                    maxHeight: '40vh',
+                    height: '50vh',
                     overflow: 'scroll',
                     p: 2,
                     backgroundColor: 'grey',
@@ -44,7 +44,7 @@ const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                 {props.chatMessageList.map(message => (
                     <SingleTextMessage key={message.uuid} message={message} />
                 ))}
-                <span ref={scrollToBottomRef}></span>
+                <span ref={scrollToBottomRef} style={{display: 'none'}}></span>
             </Container>
         </>
     )
