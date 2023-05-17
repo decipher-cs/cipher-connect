@@ -55,13 +55,6 @@ export const Chat = () => {
     const fakeScrollDiv = useRef<HTMLDivElement | null>(null)
     return (
         <>
-            <Button
-                onClick={() => {
-                    socket.emit('message', 'this is a sample message')
-                }}
-            >
-                emit
-            </Button>
             <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
             <ChatInputBar setChatMessageList={setChatMessageList} fakeScrollDiv={fakeScrollDiv} />
         </>

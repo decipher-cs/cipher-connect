@@ -19,14 +19,15 @@ const SingleTextMessage = memo((props: { message: MessageList[number] }) => {
 })
 
 const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
-    const subaru = useRef<HTMLDivElement>(null)
+    const scrollToBottomRef = useRef<HTMLSpanElement>(null)
+
+    useEffect(() => {
+        if (scrollToBottomRef.current === null) return
+        scrollToBottomRef.current.scrollIntoView(true)
+    }, [props.chatMessageList])
 
     return (
         <>
-            <Button onClick={()=>{
-                subaru.current?.scroll(99990, 9990)
-            }}>scroll up</Button>
-            <Button>scroll down</Button>
             <Container
                 ref={props.fakeScrollDiv}
                 sx={{
@@ -43,7 +44,7 @@ const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                 {props.chatMessageList.map(message => (
                     <SingleTextMessage key={message.uuid} message={message} />
                 ))}
-                <span ref={props.fakeScrollDiv}>hello</span>
+                <span ref={scrollToBottomRef}></span>
             </Container>
         </>
     )
