@@ -8,22 +8,29 @@ export interface ChatDisplaySectionProps {
     fakeScrollDiv: React.MutableRefObject<HTMLDivElement | null>
 }
 
-const SingleTextMessage = memo((props: { message: MessageList[number] }) => {
+const SingleTextMessage = memo((props: { message: MessageList[number]; endRef?: React.RefObject<HTMLDivElement> }) => {
     return (
         <>
             <Paper sx={{ width: 'fit-content', p: 1.5, placeSelf: 'flex-end' }}>
-                <Typography key={props.message.uuid}>{props.message.text}</Typography>
+                {props.endRef === undefined ? (
+                    <Typography key={props.message.uuid}>{props.message.text}</Typography>
+                ) : (
+                    <div ref={props.endRef}>
+                        <Typography key={props.message.uuid}>{props.message.text}</Typography>
+                    </div>
+                )}
             </Paper>
         </>
     )
 })
 
 const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
-    const scrollToBottomRef = useRef<HTMLSpanElement>(null)
+    const scrollToBottomRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         if (scrollToBottomRef.current === null) return
         scrollToBottomRef.current.scrollIntoView(true)
+        console.log(props.chatMessageList.at(-1))
     }, [props.chatMessageList])
 
     return (
@@ -41,10 +48,12 @@ const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                     flexDirection: 'column',
                 }}
             >
-                {props.chatMessageList.map(message => (
-                    <SingleTextMessage key={message.uuid} message={message} />
-                ))}
-                <span ref={scrollToBottomRef} style={{display: 'none'}}></span>
+                {props.chatMessageList.map((message, i) => {
+                    if (i === props.chatMessageList.length - 1)
+                        return <SingleTextMessage key={message.uuid} message={message} endRef={scrollToBottomRef} />
+                    return <SingleTextMessage key={message.uuid} message={message} />
+                })}
+                <div ref={scrollToBottomRef} style={{ display: 'none' }}></div>
             </Container>
         </>
     )
