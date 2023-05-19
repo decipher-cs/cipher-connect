@@ -5,14 +5,15 @@ export const corsWithOptions = () => {
     const whitelist =
         process.env.NODE_ENV === 'production'
             ? [process.env.ORIGIN_PROD_URL]
-            : ['http://localhost:5173/', 'http://192.168.1.3:5173/']
-
+            : ['http://localhost:5173', 'http://192.168.1.3:5173/']
+    console.log('allowed origins are:', whitelist)
     const corsOption: CorsOptions = {
+        credentials: true,
         origin(requestOrigin, callback) {
             if (requestOrigin === undefined || whitelist.includes(requestOrigin) === false) {
-                callback(null, true)
+                callback(new Error(requestOrigin + ' not allowed by CORS'))
             } else {
-                callback(new Error('Not allowed by CORS'))
+                callback(null, true)
             }
         },
         optionsSuccessStatus: 200,
