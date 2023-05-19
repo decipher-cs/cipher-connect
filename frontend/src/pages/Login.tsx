@@ -53,7 +53,7 @@ export const Login = () => {
             const response = await fetch(`${URL}/${formType}`, {
                 body: JSON.stringify({ username, password }),
                 method: 'POST',
-                // credentials: 'include',
+                credentials: 'include',
                 headers: {
                     Accept: 'application/json',
                     'Content-Type': 'application/json',
