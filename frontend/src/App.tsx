@@ -1,7 +1,6 @@
-import { Typography } from '@mui/material'
+import { Button, Typography } from '@mui/material'
 import { useContext, useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-// import './App.css'
 import { Navbar } from './components/Navbar'
 import { RequireAuth } from './components/RequireAuth'
 import { CredentialContext, CredentialContextProvider } from './contexts/Credentials'
@@ -10,12 +9,7 @@ import { Home } from './pages/Home'
 import { Login } from './pages/Login'
 
 const TempUsernameDisplay = () => {
-    const { username, isLoggedIn } = useContext(CredentialContext)
-    return <Typography>{isLoggedIn === true ? <>you are logged in as: {username}</> : <>Not logged in</>}</Typography>
-}
-
-function App() {
-    const { setUserUsername } = useContext(CredentialContext)
+    const { username, setUserUsername, isLoggedIn } = useContext(CredentialContext)
 
     useEffect(() => {
         const username = window.localStorage.getItem('username')
@@ -36,13 +30,21 @@ function App() {
                     'Content-Type': 'application/json',
                 },
             })
-            if (response.statusText === 'OK') setUserUsername(username)
+            if (response.statusText === 'OK') {
+                const verifiedUsername: { username: string } = await response.json()
+                setUserUsername(verifiedUsername.username)
+            }
         }
 
         varifyUser()
 
         return () => {}
     }, [])
+
+    return <Typography>{isLoggedIn === true ? <>you are logged in as: {username}</> : <>Not logged in</>}</Typography>
+}
+
+function App() {
     return (
         <CredentialContextProvider>
             <BrowserRouter>
