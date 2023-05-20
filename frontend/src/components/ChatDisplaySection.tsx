@@ -8,21 +8,17 @@ export interface ChatDisplaySectionProps {
     fakeScrollDiv: React.MutableRefObject<HTMLDivElement | null>
 }
 
-const SingleTextMessage = memo((props: { message: MessageList[number]; endRef?: React.RefObject<HTMLDivElement> }) => {
-    return (
-        <>
-            <Paper sx={{ width: 'fit-content', p: 1.5, placeSelf: 'flex-end' }}>
-                {props.endRef === undefined ? (
+const SingleTextMessage = memo(
+    (props: { message: MessageList[number]; endRef: React.RefObject<HTMLDivElement> | null }) => {
+        return (
+            <>
+                <Paper sx={{ width: 'fit-content', p: 1.5, placeSelf: 'flex-end' }} ref={props.endRef}>
                     <Typography key={props.message.uuid}>{props.message.text}</Typography>
-                ) : (
-                    <div ref={props.endRef}>
-                        <Typography key={props.message.uuid}>{props.message.text}</Typography>
-                    </div>
-                )}
-            </Paper>
-        </>
-    )
-})
+                </Paper>
+            </>
+        )
+    }
+)
 
 const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     const scrollToBottomRef = useRef<HTMLDivElement>(null)
@@ -30,7 +26,6 @@ const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     useEffect(() => {
         if (scrollToBottomRef.current === null) return
         scrollToBottomRef.current.scrollIntoView(true)
-        console.log(props.chatMessageList.at(-1))
     }, [props.chatMessageList])
 
     return (
@@ -49,9 +44,14 @@ const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                 }}
             >
                 {props.chatMessageList.map((message, i) => {
-                    if (i === props.chatMessageList.length - 1)
-                        return <SingleTextMessage key={message.uuid} message={message} endRef={scrollToBottomRef} />
-                    return <SingleTextMessage key={message.uuid} message={message} />
+                    return (
+                        <SingleTextMessage
+                            key={message.uuid}
+                            message={message}
+                            // If newest message in the list, put ref on it
+                            endRef={i === props.chatMessageList.length - 1 ? scrollToBottomRef : null}
+                        />
+                    )
                 })}
                 <div ref={scrollToBottomRef} style={{ display: 'none' }}></div>
             </Container>

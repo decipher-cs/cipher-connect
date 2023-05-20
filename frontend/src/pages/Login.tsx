@@ -26,7 +26,7 @@ const validate = (values: { username: string; password: string }) => {
 }
 
 export const Login = () => {
-    const { isLoggedIn, setUserCredentials, username } = useContext(CredentialContext)
+    const { isLoggedIn, username, setUserUsername } = useContext(CredentialContext)
 
     const navigate = useNavigate()
 
@@ -62,8 +62,7 @@ export const Login = () => {
             const responseType = response.statusText
             switch (responseType) {
                 case 'OK':
-                    const accessToken = await response.text()
-                    setUserCredentials(username, accessToken)
+                    setUserUsername(username)
                     navigate('/chat')
                     break
 

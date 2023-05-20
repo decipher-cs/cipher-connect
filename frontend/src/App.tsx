@@ -15,30 +15,33 @@ const TempUsernameDisplay = () => {
 }
 
 function App() {
-    const { isLoggedIn, setUserAccessToken, accessToken } = useContext(CredentialContext)
+    const { setUserUsername } = useContext(CredentialContext)
 
     useEffect(() => {
-        // const accessToken = window.localStorage.getItem('accessTokenValue')
+        const username = window.localStorage.getItem('username')
 
-        ;(async () => {
+        if (username === null) return
+
+        const varifyUser = async () => {
             const URL = import.meta.env.PROD
                 ? import.meta.env.VITE_SERVER_PROD_URL
                 : import.meta.env.VITE_SERVER_DEV_URL
 
-            const response = await fetch(`${URL}/varifytoken`, {
-                body: JSON.stringify({ username: 'password', password: 'password' }),
+            const response = await fetch(`${URL}/varifyRefreshToken`, {
+                body: JSON.stringify({ username }),
                 method: 'POST',
-                // credentials: 'include',
+                credentials: 'include',
                 headers: {
                     Accept: 'application/json',
                     'Content-Type': 'application/json',
                 },
             })
-        })()
-        // if (accessToken === null) return
+            if (response.statusText === 'OK') setUserUsername(username)
+        }
 
-        // setUserAccessToken(accessToken)
-        console.log(isLoggedIn, accessToken)
+        varifyUser()
+
+        return () => {}
     }, [])
     return (
         <CredentialContextProvider>

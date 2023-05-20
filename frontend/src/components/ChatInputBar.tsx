@@ -6,20 +6,10 @@ import { socket } from '../socket'
 
 interface ChatInputBarProps {
     setChatMessageList: React.Dispatch<React.SetStateAction<MessageList>>
-    fakeScrollDiv: React.MutableRefObject<HTMLDivElement | null>
 }
 
 export const ChatInputBar = (props: ChatInputBarProps) => {
     const [currInputText, setCurrInputText] = useState('test value')
-
-    // scrolles the latest message into view
-    const scrollfakeScrollDivToTop = () => {
-        setTimeout(()=>{
-
-        // props.fakeScrollDiv.current?.scrollIntoView()
-        },2000)
-        props.fakeScrollDiv.current?.scroll(9000, 9000)
-    }
 
     const addMessgeToMessageList = () => {
         const trimmedText = currInputText.slice().trim()
@@ -32,7 +22,6 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
         }
         props.setChatMessageList(prev => prev.concat(newObj))
 
-        scrollfakeScrollDivToTop()
 
         socket.emit('message', newObj)
 
