@@ -6,7 +6,9 @@ A fullstack messaging app built with sockets. WIP
 
 ## Demo
 
-![Insert gif or link to demo]()
+Deplyed on netlify: [--not yet deplyed--]()
+
+<!-- ![]() -->
 
 
 ## Features
@@ -15,6 +17,7 @@ A fullstack messaging app built with sockets. WIP
 - User authentication
 - Light/dark mode toggle
 - Thorough form validation
+
 
 ## Built With
 
@@ -28,6 +31,7 @@ A fullstack messaging app built with sockets. WIP
 - Prisma as an ORM
 - [Formik](https://formik.org/) for handling forms
 - Vite for managing development and production ecosystem
+
 
 ## 🚀 What I learned
 
