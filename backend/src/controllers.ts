@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import { deleteRefreshToken, retrieveRefreshToken } from './model.js'
 import { NextFunction, Request, Response } from 'express'
+import { deleteRefreshToken, getRefreshToken } from './model.js'
 import { addRefreshToken, createNewUser, getUserHash } from './model.js'
 import { createAccessToken, createRefreshToken } from './middleware/jwtFunctions.js'
 
@@ -10,11 +10,10 @@ interface LoginCredentials {
     password?: string
 }
 
-export const loginUser = async (req: Request, res: Response, next: NextFunction) => {
+export const loginUser = async (req: Request, res: Response) => {
     const { username, password }: LoginCredentials = req.body
 
-    console.log(username, password)
-    const hash = await getUserHash(username)
+    const hash = await getUserHash(username) // get password hash from DB
 
     if (hash === null || password === undefined) {
         res.status(401).end('Invalid username or password')
@@ -23,24 +22,28 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
 
     const isPasswordCorrect = await bcrypt.compare(password, hash.passwordHash)
 
-    if (isPasswordCorrect === false) {
+    if (isPasswordCorrect !== true) {
         res.status(401).end('Invalid username or password')
         return
     }
 
-    const accessToken = createAccessToken({ username })
+    const accessToken = createAccessToken({ username }) // call JWT to create token
 
-    const refreshToken = createRefreshToken({ username })
+    const refreshToken = createRefreshToken({ username }) // call JWT to create another token
 
-    addRefreshToken(username, refreshToken)
+    addRefreshToken(username, refreshToken) // Add refresh token to database
 
-    res.cookie('refresh_token', refreshToken, { httpOnly: true, maxAge: 1000 * 60 * 30 })
+    res.cookie('refreshToken', refreshToken, {
+        httpOnly: false,
+        maxAge: 1000 * 60 * 60 * 24,
+    })
 
     res.json(accessToken)
 
     return
 }
 
+// User sign-up
 export const createUser = async (req: Request, res: Response) => {
     let { username, password }: LoginCredentials = req.body
 
@@ -49,21 +52,53 @@ export const createUser = async (req: Request, res: Response) => {
         return
     }
 
-    const passwordHash = await bcrypt.hash(password, 10)
+    const passwordHash = await bcrypt.hash(password, 10) // hash password
 
-    const newUserDetails = await createNewUser(username, passwordHash)
+    const newUserDetails = await createNewUser(username, passwordHash) // put hash and username in DB
 
     if (newUserDetails === null) {
+        // check for username collision
         res.status(409).end('username taken')
         return
     }
 
     res.sendStatus(200)
+
     return
 }
 
+export const varifyRefreshToken = async (req: Request, res: Response) => {
+    const refreshToken: string | undefined = req.cookies?.refreshToken
+
+    const { username }: LoginCredentials = req.body
+
+    if (refreshToken === undefined) {
+        res.sendStatus(401)
+        return
+    }
+    const tokenFromDB = await getRefreshToken(username)
+
+    if (tokenFromDB.includes(refreshToken) === false) {
+        res.sendStatus(401)
+        return
+    }
+
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decode) => {
+        if (err !== null) {
+            console.log(err)
+            res.sendStatus(403)
+            return
+        } else if (err === null) {
+            res.json({ username }).end()
+            return
+        }
+        res.sendStatus(500)
+        return
+    })
+}
+
 export const renewAccessToken = async (req: Request, res: Response) => {
-    const refreshToken: string = req.cookies?.token
+    const refreshToken: string | undefined = req.cookies?.refreshToken
 
     //set password to be optional in ts
     let { username, password }: LoginCredentials = req.body
@@ -73,9 +108,7 @@ export const renewAccessToken = async (req: Request, res: Response) => {
         return
     }
 
-    const refrestTokensFromDB = await retrieveRefreshToken(username).then(data =>
-        data.map(({ tokenValue }) => tokenValue)
-    )
+    const refrestTokensFromDB = await getRefreshToken(username)
 
     if (refrestTokensFromDB.includes(refreshToken) === false) {
         res.send(401).end('not in db')
@@ -97,6 +130,8 @@ export const renewAccessToken = async (req: Request, res: Response) => {
 
 export const logoutUser = async (req: Request, res: Response) => {
     const { username }: LoginCredentials = req.body
+
     await deleteRefreshToken(username)
+
     res.sendStatus(200)
 }
