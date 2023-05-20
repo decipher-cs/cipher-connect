@@ -54,7 +54,10 @@ export const getRefreshToken = async (username: string) => {
         where: { userUsername: username },
         select: { tokenValue: true },
     })
-    return refreshToken
+
+    const tokenArr = refreshToken.map(({ tokenValue }) => tokenValue)
+
+    return tokenArr
 }
 
 export const getUsernameFromRefreshToken = async (token: string) => {
