@@ -1,6 +1,6 @@
-import { AccountCircle, ArrowRight, Circle, CircleSharp } from '@mui/icons-material'
+import { ArrowRight } from '@mui/icons-material'
 import { IconButton, InputAdornment, TextField } from '@mui/material'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 import { Message, MessageList } from '../pages/Chat'
 import { socket } from '../socket'
 
@@ -22,10 +22,9 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
         }
         props.setChatMessageList(prev => prev.concat(newObj))
 
-
         socket.emit('message', newObj)
 
-        if (import.meta.env.PROD) setCurrInputText('') // Only clear the input onSubmit when running in productio. In development, keep the input.
+        if (import.meta.env.PROD) setCurrInputText('') // Only clear the input onSubmit when running in production. In development, keep the input.
     }
 
     return (

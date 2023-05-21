@@ -1,7 +1,8 @@
-import { Button } from '@mui/material'
+import { Button, Drawer, Paper } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import ChatDisplaySection from '../components/ChatDisplaySection'
 import ChatInputBar from '../components/ChatInputBar'
+import TemporaryDrawer from '../components/TemporaryDrawer'
 import { socket } from '../socket'
 
 export interface Message {
@@ -20,22 +21,23 @@ const generateDummyMessage = (): Message => ({
     text: 'sample',
 })
 
-const sampleMessage = [generateDummyMessage(), generateDummyMessage(), generateDummyMessage()]
+const sampleMsg = [generateDummyMessage()]
 
 export const Chat = () => {
     const [isLoading, setIsLoading] = useState(true)
     const userId = useRef('')
-    const [chatMessageList, setChatMessageList] = useState<MessageList>(sampleMessage)
+    const [sidebarIsOpen, setSidebarIsOpen] = useState(false)
+    const [chatMessageList, setChatMessageList] = useState<MessageList>(sampleMsg)
 
     useEffect(() => {
         // socket.connect() // TODO this should be removed in prod. In prod this should run after varifying credentials.
-        //
+
         socket.on('connect', () => {
             console.log('connection established to', socket.id)
-            socket.on('message', text => {
-                console.log('here is the msg:', text)
-                setChatMessageList(prev => prev.concat(text))
-            })
+        })
+
+        socket.on('message', text => {
+            setChatMessageList(prev => prev.concat(text))
         })
 
         if (userId.current.length <= 0) {
@@ -55,8 +57,9 @@ export const Chat = () => {
     const fakeScrollDiv = useRef<HTMLDivElement | null>(null)
     return (
         <>
+            <TemporaryDrawer />
             <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
-            <ChatInputBar setChatMessageList={setChatMessageList} fakeScrollDiv={fakeScrollDiv} />
+            <ChatInputBar setChatMessageList={setChatMessageList} />
         </>
     )
 }
