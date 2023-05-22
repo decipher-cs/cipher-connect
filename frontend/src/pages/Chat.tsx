@@ -57,7 +57,7 @@ export const Chat = () => {
     const fakeScrollDiv = useRef<HTMLDivElement | null>(null)
     return (
         <>
-            <TemporaryDrawer />
+            <TemporaryDrawer availableRooms={['room101']} handleRoomOnClick={room => console.log(room)} />
             <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
             <ChatInputBar setChatMessageList={setChatMessageList} />
         </>
