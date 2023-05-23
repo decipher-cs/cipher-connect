@@ -1,22 +1,33 @@
-import { Server } from 'socket.io'
+import { Server, Socket } from 'socket.io'
+import { getUsernameFromRefreshToken } from './model.js'
+import cookieParser from 'cookie-parser'
+import { NextFunction } from 'express'
 
 export const initSocketIO = (io: Server) => {
-    io.on('connection', socket => {
-        socket.on('connect', () => {
-            console.log('client connected', socket.id)
-        })
+    // Check auth status
+    io.use((socket, next) => {
+        next()
+    })
 
-        socket.onAny((event, ...args) => {
-            console.log('--->IO<---\n', event, args)
-        })
+    const users: string[] = []
+
+    io.on('connection', socket => {
+        console.log('client', socket.id, 'connected')
+        users.push(socket.id)
 
         socket.on('message', msg => {
             console.log(msg, '<----')
             socket.broadcast.emit('message', msg)
         })
 
+        socket.on('users list', () => {
+            socket.emit('users', users)
+        })
+
         socket.on('disconnect', () => {
-            console.log('client disconnected')
+            console.log('client', socket.id, 'disconnected')
+            const index = users.indexOf(socket.id)
+            if (index !== -1) users.splice(index)
         })
     })
 }

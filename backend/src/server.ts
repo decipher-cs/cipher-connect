@@ -17,6 +17,7 @@ const io = new Server(server, { cors: { origin: process.env.ORIGIN_DEV_URL } })
 
 // middleware //
 if (app.settings.env === 'production') app.use(reqLogger) // only run this code if app is running in production.
+
 app.use(corsWithOptions())
 app.use(cookieParser())
 app.use(express.json()) // for parsing application/json
