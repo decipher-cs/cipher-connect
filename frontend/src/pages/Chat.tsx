@@ -1,4 +1,4 @@
-import { Button, Drawer, Paper } from '@mui/material'
+import { Button, Drawer, Paper, TextField, Typography } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import ChatDisplaySection from '../components/ChatDisplaySection'
 import ChatInputBar from '../components/ChatInputBar'
@@ -25,30 +25,30 @@ const sampleMsg = [generateDummyMessage()]
 
 export const Chat = () => {
     const [isLoading, setIsLoading] = useState(true)
-    const userId = useRef('')
-    const [sidebarIsOpen, setSidebarIsOpen] = useState(false)
+    const [userId, setUserId] = useState('')
+    const destinationRoomID = useRef('')
     const [chatMessageList, setChatMessageList] = useState<MessageList>(sampleMsg)
 
     useEffect(() => {
-        // socket.connect() // TODO this should be removed in prod. In prod this should run after varifying credentials.
+        socket.connect() // TODO this should be removed in prod. In prod this should run after varifying credentials.
 
         socket.on('connect', () => {
             console.log('connection established to', socket.id)
+            setUserId(socket.id)
         })
 
         socket.on('message', text => {
             setChatMessageList(prev => prev.concat(text))
         })
 
-        if (userId.current.length <= 0) {
-            userId.current = crypto.randomUUID()
-        }
+        socket.on('users', (users: string[]) => {
+            if (users !== undefined) console.log(users)
+        })
 
         setIsLoading(false)
         return () => {
-            // socket.off('connect')
-            // socket.off('disconnect')
-            // socket.disconnect()
+            socket.removeAllListeners()
+            socket.disconnect()
         }
     }, [])
 
@@ -57,7 +57,19 @@ export const Chat = () => {
     const fakeScrollDiv = useRef<HTMLDivElement | null>(null)
     return (
         <>
-            <TemporaryDrawer availableRooms={['room101']} handleRoomOnClick={room => console.log(room)} />
+            <Typography variant='subtitle1'>userid is: {userId} </Typography>
+            <Button
+                onClick={() => {
+                    socket.emit('users list')
+                }}
+            >
+                show users
+            </Button>
+            <TextField
+                placeholder='enter recipient room id'
+                onChange={e => (destinationRoomID.current = e.target.value)}
+            />
+            <TemporaryDrawer availableRooms={['room101', 'room202']} handleRoomOnClick={room => console.log(room)} />
             <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
             <ChatInputBar setChatMessageList={setChatMessageList} />
         </>
