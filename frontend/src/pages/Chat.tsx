@@ -26,8 +26,9 @@ const sampleMsg = [generateDummyMessage()]
 export const Chat = () => {
     const [isLoading, setIsLoading] = useState(true)
     const [userId, setUserId] = useState('')
-    const destinationRoomID = useRef('')
     const [chatMessageList, setChatMessageList] = useState<MessageList>(sampleMsg)
+    const [onlineUsers, setOnlineUsers] = useState<string[]>([])
+    const destinationRoomID = useRef('')
 
     useEffect(() => {
         socket.connect() // TODO this should be removed in prod. In prod this should run after varifying credentials.
@@ -42,7 +43,7 @@ export const Chat = () => {
         })
 
         socket.on('users', (users: string[]) => {
-            if (users !== undefined) console.log(users)
+            if (users !== undefined) setOnlineUsers(users)
         })
 
         setIsLoading(false)
@@ -69,7 +70,10 @@ export const Chat = () => {
                 placeholder='enter recipient room id'
                 onChange={e => (destinationRoomID.current = e.target.value)}
             />
-            <TemporaryDrawer availableRooms={['room101', 'room202']} handleRoomOnClick={room => console.log(room)} />
+            <TemporaryDrawer
+                availableRooms={onlineUsers}
+                handleRoomOnClick={room => (destinationRoomID.current = room)}
+            />
             <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
             <ChatInputBar setChatMessageList={setChatMessageList} />
         </>
