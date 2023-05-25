@@ -17,8 +17,9 @@ export const initSocketIO = (io: Server) => {
         io.emit('users', users)
 
         socket.on('message', (target: string, msg: string) => {
-            console.log(msg, '<----')
-            socket.to(target).emit('message', target, msg)
+            if (target !== socket.id) {
+                socket.to(target).emit('message', target, msg)
+            } else throw new Error('Message cannot be sent to self')
         })
 
         socket.on('users list', () => {
