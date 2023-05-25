@@ -44,7 +44,10 @@ export const Chat = () => {
         })
 
         socket.on('users', (users: string[]) => {
-            if (users !== undefined) setOnlineUsers(users)
+            if (users !== undefined) {
+                const userListWithoutSelf = users.filter(user => user !== socket.id)
+                setOnlineUsers(userListWithoutSelf)
+            }
         })
 
         setIsLoading(false)
