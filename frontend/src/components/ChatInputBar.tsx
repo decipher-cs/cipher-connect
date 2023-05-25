@@ -6,6 +6,7 @@ import { socket } from '../socket'
 
 interface ChatInputBarProps {
     setChatMessageList: React.Dispatch<React.SetStateAction<MessageList>>
+    recipient?: string
 }
 
 export const ChatInputBar = (props: ChatInputBarProps) => {
@@ -22,7 +23,9 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
         }
         props.setChatMessageList(prev => prev.concat(newObj))
 
-        socket.emit('message', newObj)
+        if (props.recipient !== undefined) {
+            socket.emit('message', props.recipient, newObj)
+        } else if (props.recipient === undefined) console.log('destination not defined')
 
         if (import.meta.env.PROD) setCurrInputText('') // Only clear the input onSubmit when running in production. In development, keep the input.
     }

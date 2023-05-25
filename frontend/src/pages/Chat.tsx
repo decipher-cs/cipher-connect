@@ -28,7 +28,7 @@ export const Chat = () => {
     const [userId, setUserId] = useState('')
     const [chatMessageList, setChatMessageList] = useState<MessageList>(sampleMsg)
     const [onlineUsers, setOnlineUsers] = useState<string[]>([])
-    const destinationRoomID = useRef('')
+    const [recipient, setRecipient] = useState<string>()
 
     useEffect(() => {
         socket.connect() // TODO this should be removed in prod. In prod this should run after varifying credentials.
@@ -38,7 +38,8 @@ export const Chat = () => {
             setUserId(socket.id)
         })
 
-        socket.on('message', text => {
+        socket.on('message', (from, text) => {
+            console.log(from, 'said', text)
             setChatMessageList(prev => prev.concat(text))
         })
 
@@ -58,24 +59,11 @@ export const Chat = () => {
     const fakeScrollDiv = useRef<HTMLDivElement | null>(null)
     return (
         <>
-            <Typography variant='subtitle1'>userid is: {userId} </Typography>
-            <Button
-                onClick={() => {
-                    socket.emit('users list')
-                }}
-            >
-                show users
-            </Button>
-            <TextField
-                placeholder='enter recipient room id'
-                onChange={e => (destinationRoomID.current = e.target.value)}
-            />
-            <TemporaryDrawer
-                availableRooms={onlineUsers}
-                handleRoomOnClick={room => (destinationRoomID.current = room)}
-            />
+            <Typography variant='subtitle1'>Userid is: {userId} </Typography>
+            <Typography variant='subtitle1'>Recipient: {recipient === undefined ? 'none' : recipient} </Typography>
+            <TemporaryDrawer availableRooms={onlineUsers} handleRoomOnClick={room => setRecipient(room)} />
             <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
-            <ChatInputBar setChatMessageList={setChatMessageList} />
+            <ChatInputBar setChatMessageList={setChatMessageList} recipient={recipient} />
         </>
     )
 }
