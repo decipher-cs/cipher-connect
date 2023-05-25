@@ -14,10 +14,11 @@ export const initSocketIO = (io: Server) => {
     io.on('connection', socket => {
         console.log('client', socket.id, 'connected')
         users.push(socket.id)
+        io.emit('users', users)
 
-        socket.on('message', msg => {
+        socket.on('message', (target: string, msg: string) => {
             console.log(msg, '<----')
-            socket.broadcast.emit('message', msg)
+            socket.to(target).emit('message', target, msg)
         })
 
         socket.on('users list', () => {
@@ -28,6 +29,7 @@ export const initSocketIO = (io: Server) => {
             console.log('client', socket.id, 'disconnected')
             const index = users.indexOf(socket.id)
             if (index !== -1) users.splice(index)
+            io.emit('users', users)
         })
     })
 }
