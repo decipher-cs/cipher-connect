@@ -76,6 +76,7 @@ export const varifyRefreshToken = async (req: Request, res: Response) => {
         res.sendStatus(401)
         return
     }
+
     const tokenFromDB = await getRefreshToken(username)
 
     if (tokenFromDB.includes(refreshToken) === false) {

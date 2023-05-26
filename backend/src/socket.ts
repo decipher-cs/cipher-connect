@@ -3,10 +3,33 @@ import { getUsernameFromRefreshToken } from './model.js'
 import cookieParser from 'cookie-parser'
 import { NextFunction } from 'express'
 
-export const initSocketIO = (io: Server) => {
+interface ServerToClientEvents {
+    noArg: () => void
+    basicEmit: (a: number, b: string, c: Buffer) => void
+    withAck: (d: string, callback: (e: number) => void) => void
+    users: (a: number, b: string, c: Buffer) => void
+    message: (a: number, b: string, c: Buffer) => void
+    'user list': (a: number, b: string, c: Buffer) => void
+}
+
+interface ClientToServerEvents {}
+
+interface SocketData {
+    username: string
+}
+
+interface InterServerEvents {
+    users: (a: number, b: string, c: Buffer) => void
+}
+
+export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>) => {
     // Check auth status
     io.use((socket, next) => {
-        next()
+        const username: string | undefined = socket.handshake.auth.username
+        if (username === undefined) return next(new Error('Username not valid'))
+        socket.data.username = username
+
+        return next()
     })
 
     const users: string[] = []
