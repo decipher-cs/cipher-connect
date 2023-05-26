@@ -26,7 +26,7 @@ const validate = (values: { username: string; password: string }) => {
 }
 
 export const Login = () => {
-    const { isLoggedIn, username, setUserUsername } = useContext(CredentialContext)
+    const { isLoggedIn, handleCredentialChange } = useContext(CredentialContext)
 
     const navigate = useNavigate()
 
@@ -60,9 +60,10 @@ export const Login = () => {
                 },
             })
             const responseType = response.statusText
+            console.log(responseType)
             switch (responseType) {
                 case 'OK':
-                    setUserUsername(username)
+                    handleCredentialChange({ username, isLoggedIn: true })
                     navigate('/chat')
                     break
 

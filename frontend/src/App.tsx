@@ -9,7 +9,7 @@ import { Home } from './pages/Home'
 import { Login } from './pages/Login'
 
 const TempUsernameDisplay = () => {
-    const { username, setUserUsername, isLoggedIn } = useContext(CredentialContext)
+    const { username, handleCredentialChange, isLoggedIn } = useContext(CredentialContext)
 
     useEffect(() => {
         const username = window.localStorage.getItem('username')
@@ -32,7 +32,7 @@ const TempUsernameDisplay = () => {
             })
             if (response.statusText === 'OK') {
                 const verifiedUsername: { username: string } = await response.json()
-                setUserUsername(verifiedUsername.username)
+                handleCredentialChange({ username: verifiedUsername.username })
             }
         }
 
