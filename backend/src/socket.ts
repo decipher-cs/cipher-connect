@@ -7,19 +7,21 @@ interface ServerToClientEvents {
     noArg: () => void
     basicEmit: (a: number, b: string, c: Buffer) => void
     withAck: (d: string, callback: (e: number) => void) => void
-    users: (a: number, b: string, c: Buffer) => void
-    message: (a: number, b: string, c: Buffer) => void
-    'user list': (a: number, b: string, c: Buffer) => void
+    updateUserList: (users: string[]) => void
+    privateMessage: (target: string, msg: string) => void
 }
 
-interface ClientToServerEvents {}
+// for io.on()
+interface InterServerEvents {}
+
+// for socket.on()
+interface ClientToServerEvents {
+    privateMessage: (target: string, msg: string) => void
+    updateUserList: (users: string[]) => void
+}
 
 interface SocketData {
     username: string
-}
-
-interface InterServerEvents {
-    users: (a: number, b: string, c: Buffer) => void
 }
 
 export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>) => {
@@ -37,23 +39,23 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
     io.on('connection', socket => {
         console.log('client', socket.id, 'connected')
         users.push(socket.id)
-        io.emit('users', users)
+        io.emit('updateUserList', users)
 
-        socket.on('message', (target: string, msg: string) => {
+        socket.on('privateMessage', (target: string, msg: string) => {
             if (target !== socket.id) {
-                socket.to(target).emit('message', target, msg)
+                socket.to(target).emit('privateMessage', target, msg)
             } else throw new Error('Message cannot be sent to self')
         })
 
-        socket.on('users list', () => {
-            socket.emit('users', users)
+        socket.on('updateUserList', () => {
+            socket.emit('updateUserList', users)
         })
 
         socket.on('disconnect', () => {
             console.log('client', socket.id, 'disconnected')
             const index = users.indexOf(socket.id)
             if (index !== -1) users.splice(index)
-            io.emit('users', users)
+            io.emit('updateUserList', users)
         })
     })
 }
