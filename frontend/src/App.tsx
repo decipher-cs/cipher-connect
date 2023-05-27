@@ -32,7 +32,7 @@ const TempUsernameDisplay = () => {
             })
             if (response.statusText === 'OK') {
                 const verifiedUsername: { username: string } = await response.json()
-                handleCredentialChange({ username: verifiedUsername.username })
+                handleCredentialChange({ username: verifiedUsername.username, isLoggedIn: true })
             }
         }
 
