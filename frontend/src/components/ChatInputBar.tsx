@@ -24,7 +24,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
         props.setChatMessageList(prev => prev.concat(newObj))
 
         if (props.recipient !== undefined) {
-            socket.emit('message', props.recipient, newObj)
+            socket.emit('privateMessage', props.recipient, newObj)
         } else if (props.recipient === undefined) console.log('destination not defined')
 
         if (import.meta.env.PROD) setCurrInputText('') // Only clear the input onSubmit when running in production. In development, keep the input.
