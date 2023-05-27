@@ -25,7 +25,9 @@ interface SocketData {
 }
 
 export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>) => {
-    // Check auth status
+    const users: string[] = []
+
+    // Set socket.data.username on socket
     io.use((socket, next) => {
         const username: string | undefined = socket.handshake.auth.username
         if (username === undefined) return next(new Error('Username not valid'))
@@ -34,11 +36,15 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         return next()
     })
 
-    const users: string[] = []
-
     io.on('connection', socket => {
-        console.log('client', socket.id, 'connected')
-        users.push(socket.id)
+        if (socket.data.username === undefined) throw new Error('Socket.data.username is undefined')
+
+        const username = socket.data.username
+
+        socket.join(username)
+
+        users.push(username)
+
         io.emit('updateUserList', users)
 
         socket.on('privateMessage', (target: string, msg: string) => {
@@ -53,7 +59,7 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
 
         socket.on('disconnect', () => {
             console.log('client', socket.id, 'disconnected')
-            const index = users.indexOf(socket.id)
+            const index = users.indexOf(username)
             if (index !== -1) users.splice(index)
             io.emit('updateUserList', users)
         })
