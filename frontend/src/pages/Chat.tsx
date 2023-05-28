@@ -40,6 +40,7 @@ export const Chat = () => {
 
     const { value, ControlledTextField: FiendListTextField } = useControlledTextField(() => {
         console.log('submit')
+        socket.emit('addUserToNetwork', value)
     })
 
     useEffect(() => {
