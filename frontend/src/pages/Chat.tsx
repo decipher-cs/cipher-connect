@@ -1,9 +1,10 @@
-import { Button, Typography } from '@mui/material'
+import { Button, TextField, textFieldClasses, Typography } from '@mui/material'
 import { useContext, useEffect, useRef, useState } from 'react'
 import ChatDisplaySection from '../components/ChatDisplaySection'
 import ChatInputBar from '../components/ChatInputBar'
 import TemporaryDrawer from '../components/TemporaryDrawer'
 import { CredentialContext } from '../contexts/Credentials'
+import { useControlledTextField } from '../hooks/useTextField'
 import { socket } from '../socket'
 
 export interface Message {
@@ -26,14 +27,23 @@ const sampleMsg = [generateDummyMessage()]
 
 export const Chat = () => {
     const [isLoading, setIsLoading] = useState(true)
+
     const [userId, setUserId] = useState('')
+
     const [chatMessageList, setChatMessageList] = useState<MessageList>(sampleMsg)
-    const [onlineUsers, setOnlineUsers] = useState<string[]>([])
+
+    const [network, setNetwork] = useState<string[]>([])
+
     const [recipient, setRecipient] = useState<string>()
-    const { username } = useContext(CredentialContext)
+
+    const { username, isLoggedIn } = useContext(CredentialContext)
+
+    const { value, ControlledTextField: FiendListTextField } = useControlledTextField(() => {
+        console.log('submit')
+    })
 
     useEffect(() => {
-        if (socket.connected === false) {
+        if (socket.connected === false && isLoggedIn === true) {
             socket.auth = { username }
             socket.connect() // TODO this should be removed in prod. In prod this should run after varifying credentials.
         }
@@ -52,10 +62,10 @@ export const Chat = () => {
             setChatMessageList(prev => prev.concat(msg))
         })
 
-        socket.on('updateUserList', (users: string[]) => {
+        socket.on('updateNetworkList', (users: string[]) => {
             if (users !== undefined) {
-                const userListWithoutSelf = users.filter(user => user !== socket.id)
-                setOnlineUsers(userListWithoutSelf)
+                // const userListWithoutSelf = users.filter(user => user !== username) // Actually the user should be able to msg self
+                setNetwork(users)
             }
         })
 
@@ -78,7 +88,9 @@ export const Chat = () => {
 
             <Typography variant='subtitle1'>Recipient: {recipient === undefined ? 'none' : recipient} </Typography>
 
-            <TemporaryDrawer availableRooms={onlineUsers} handleRoomOnClick={room => setRecipient(room)} />
+            <TemporaryDrawer network={network} handleRoomOnClick={room => setRecipient(room)}>
+                {FiendListTextField({ placeholder: "Enter Friend's username" })}
+            </TemporaryDrawer>
 
             <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
 
