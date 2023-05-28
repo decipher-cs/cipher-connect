@@ -67,3 +67,11 @@ export const getUsernameFromRefreshToken = async (token: string) => {
     })
     return username
 }
+
+export const getUserNetworkList = async (username: string) => {
+    const network = await prisma.userNetwork.findMany({ where: { username }, select: { connectionUsername: true } })
+
+    const networkArr = network.map(({ connectionUsername }) => connectionUsername)
+
+    return networkArr
+}
