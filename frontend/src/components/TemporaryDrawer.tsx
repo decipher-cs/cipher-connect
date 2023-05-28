@@ -12,7 +12,7 @@ import React, { useState } from 'react'
 import { IconButton, Tooltip } from '@mui/material'
 
 export default function TemporaryDrawer(
-    props: React.PropsWithoutRef<{ availableRooms: string[]; handleRoomOnClick: (key: string) => void }>
+    props: React.PropsWithChildren<{ network: string[]; handleRoomOnClick: (key: string) => void }>
 ) {
     const [drawerIsOpen, setDrawerIsOpen] = useState(false)
 
@@ -30,7 +30,7 @@ export default function TemporaryDrawer(
     const list = () => (
         <Box sx={{ width: 'auto' }} role='presentation' onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
             <List>
-                {props.availableRooms.map((text, index) => (
+                {props.network.map((text, index) => (
                     <ListItem key={text} disablePadding onClick={() => props.handleRoomOnClick(text)}>
                         <ListItemButton>
                             <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
@@ -50,6 +50,7 @@ export default function TemporaryDrawer(
                 </IconButton>
             </Tooltip>
             <Drawer anchor='bottom' open={drawerIsOpen} onClose={toggleDrawer(false)}>
+                {props.children}
                 {list()}
             </Drawer>
         </>
