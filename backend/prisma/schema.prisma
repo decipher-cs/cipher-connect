@@ -13,6 +13,7 @@ model user {
   passwordHash  String         @map("password_hash") @db.VarChar(60)
   createTime    DateTime       @default(now()) @map("create_time") @db.Timestamp(0)
   refreshTokens refreshToken[]
+  userNetwork   userNetwork[]
 
   @@map("users")
 }
@@ -23,4 +24,13 @@ model refreshToken {
   username             String @map("username") @db.VarChar(16)
 
   @@map("refresh_tokens")
+}
+
+model userNetwork {
+  key                Int    @id @default(autoincrement())
+  user               user   @relation(fields: [username], references: [username])
+  username           String
+  connectionUsername String @map("connection_username") @db.VarChar(16)
+
+  @@map("user_network")
 }
