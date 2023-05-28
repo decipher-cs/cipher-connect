@@ -1,5 +1,5 @@
 import { Server, Socket } from 'socket.io'
-import { getUserNetworkList, getUsernameFromRefreshToken } from './model.js'
+import { addNewNetworkNameToNetworks, getUserNetworkList, getUsernameFromRefreshToken } from './model.js'
 import cookieParser from 'cookie-parser'
 import { NextFunction } from 'express'
 
@@ -18,6 +18,7 @@ interface InterServerEvents {}
 interface ClientToServerEvents {
     privateMessage: (target: string, msg: string) => void
     updateNetworkList: (users: string[]) => void
+    addUserToNetwork: (newConnectionName: string) => void // might wanna use acknowledgment here
 }
 
 interface SocketData {
@@ -44,8 +45,8 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         const userNetworkList: string[] = []
 
         // Get list of network from the DB
-        getUserNetworkList(username).then(data => {
-            userNetworkList.concat(data)
+        getUserNetworkList(username).then(networkList => {
+            userNetworkList.push(...networkList)
             socket.emit('updateNetworkList', userNetworkList)
         })
 
@@ -59,6 +60,13 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
 
         socket.on('updateNetworkList', () => {
             socket.emit('updateNetworkList', userNetworkList)
+        })
+
+        socket.on('addUserToNetwork', (newConnectionName: string) => {
+            if (userNetworkList.includes(newConnectionName) === false)
+                addNewNetworkNameToNetworks(username, [newConnectionName]).then(_ => {
+                    userNetworkList.push(newConnectionName)
+                })
         })
 
         socket.on('disconnect', () => {
