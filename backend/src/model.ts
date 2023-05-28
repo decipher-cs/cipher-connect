@@ -68,6 +68,14 @@ export const getUsernameFromRefreshToken = async (token: string) => {
     return username
 }
 
+export const addNewNetworkNameToNetwords = async (username: string, connectionNames: string[]) => {
+    const data = connectionNames.map(connectionUsername => ({ username, connectionUsername }))
+
+    const updatedUsernames = await prisma.userNetwork.createMany({ data: data })
+
+    return updatedUsernames
+}
+
 export const getUserNetworkList = async (username: string) => {
     const network = await prisma.userNetwork.findMany({ where: { username }, select: { connectionUsername: true } })
 
