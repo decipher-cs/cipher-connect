@@ -1,7 +1,7 @@
 import { TextField, TextFieldProps } from '@mui/material'
 import React, { useState } from 'react'
 
-export const useControlledTextField = (onSubmitHandler: ()=>void) => {
+export const useControlledTextField = (onSubmitHandler: (value: string)=>void) => {
     const [value, setValue] = useState('')
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
@@ -9,7 +9,7 @@ export const useControlledTextField = (onSubmitHandler: ()=>void) => {
     }
 
     const handleSubmit = (e: React.KeyboardEvent<HTMLDivElement>) => {
-        if (e.key.toLowerCase() === 'enter') onSubmitHandler()
+        if (e.key.toLowerCase() === 'enter') onSubmitHandler(value)
     }
 
     const ControlledTextField = (textFieldProps?: TextFieldProps): JSX.Element => {
