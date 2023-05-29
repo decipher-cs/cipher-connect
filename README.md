@@ -68,8 +68,9 @@ Install my-project with yarn
 
 ## ToDo
 
-- [ ] Show ghost text when user types (not good performance but would look really good)
-- [ ] Send a private message to yourself
+- [ ] Show ghost text when user types (not good performance but would look really good).
+- [ ] Send a private message to yourself.
+- [ ] Extract list function from TemproratyDrawer into a separate component.
 
 ## License
 
