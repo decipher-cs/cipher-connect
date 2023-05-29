@@ -13,6 +13,7 @@ interface ClientToServerEvents {
     privateMessage: (target: string, msg: Message) => void
     updateNetworkList: (users: string[]) => void
     addUserToNetwork: (newConnectionName: string) => void // might wanna use acknowledgment here
+    removeUserFromNetwork: (newConnectionName: string) => void // might wanna use acknowledgment here
 }
 
 const URL = import.meta.env.PROD ? window.location.origin : import.meta.env.VITE_SERVER_DEV_URL
