@@ -83,3 +83,13 @@ export const getUserNetworkList = async (username: string) => {
 
     return networkArr
 }
+
+export const removeConnectionFromNetword = async (username: string, connectionNames: string[]) => {
+    const data = connectionNames.map(connectionUsername => ({ username, connectionUsername }))
+
+    const removedCount = await prisma.userNetwork.deleteMany({
+        where: { OR: data },
+    })
+
+    return removedCount
+}
