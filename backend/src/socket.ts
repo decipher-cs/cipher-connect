@@ -3,7 +3,7 @@ import {
     addNewNetworkNameToNetworks,
     getUserNetworkList,
     getUsernameFromRefreshToken,
-    removeConnectionFromNetword,
+    removeConnectionFromNetwork,
 } from './model.js'
 import cookieParser from 'cookie-parser'
 import { NextFunction } from 'express'
@@ -76,14 +76,15 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         })
         socket.on('removeUserFromNetwork', (connectionName: string) => {
             if (userNetworkList.includes(connectionName) === true)
-                removeConnectionFromNetword(username, [connectionName]).then(_ => {
-                    const index = userNetworkList.indexOf(connectionName)
-                    if (index !== -1) userNetworkList.splice(index)
-                })
+                removeConnectionFromNetwork(username, [connectionName])
+                    .then(_ => {
+                        const index = userNetworkList.indexOf(connectionName)
+                        if (index !== -1) userNetworkList.splice(index)
+                    })
+                    .catch(err => console.log('while deleting a user from the network list:', err))
         })
 
         socket.on('disconnect', () => {
-            console.log('client', socket.id, 'disconnected')
             // const index = users.indexOf(username)
             // if (index !== -1) users.splice(index)
             // io.emit('updateNetworkList', users)

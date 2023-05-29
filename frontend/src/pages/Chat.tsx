@@ -38,9 +38,9 @@ export const Chat = () => {
 
     const { username, isLoggedIn } = useContext(CredentialContext)
 
-    const { value, ControlledTextField: FiendListTextField } = useControlledTextField(() => {
-        console.log('submit')
-        socket.emit('addUserToNetwork', value)
+    const { ControlledTextField: FiendListTextField } = useControlledTextField(TextFieldValue => {
+        socket.emit('addUserToNetwork', TextFieldValue)
+        setNetwork(prev => prev.concat(TextFieldValue))
     })
 
     useEffect(() => {
@@ -91,9 +91,10 @@ export const Chat = () => {
 
             <TemporaryDrawer
                 network={network}
-                handleRoomOnClick={room => setRecipient(room)}
-                listClickAction={clickedUsername => {
+                handleClickOnList={room => setRecipient(room)}
+                handleClickOnListIcon={clickedUsername => {
                     socket.emit('removeUserFromNetwork', clickedUsername)
+                    setNetwork(prev => prev.filter(username => (username !== clickedUsername ? true : false)))
                 }}
             >
                 {FiendListTextField({ placeholder: "Enter Friend's username" })}

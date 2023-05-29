@@ -6,8 +6,6 @@ import ListItem from '@mui/material/ListItem'
 import ListItemButton from '@mui/material/ListItemButton'
 import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
-import InboxIcon from '@mui/icons-material/MoveToInbox'
-import MailIcon from '@mui/icons-material/Mail'
 import React, { useState } from 'react'
 import { IconButton, Tooltip } from '@mui/material'
 import { AccountCircleSharp, DeleteSharp } from '@mui/icons-material'
@@ -15,8 +13,8 @@ import { AccountCircleSharp, DeleteSharp } from '@mui/icons-material'
 export default function TemporaryDrawer(
     props: React.PropsWithChildren<{
         network: string[]
-        handleRoomOnClick: (key: string) => void
-        listClickAction: (clickedUsername: string) => void
+        handleClickOnList: (key: string) => void
+        handleClickOnListIcon: (clickedUsername: string) => void
     }>
 ) {
     const [drawerIsOpen, setDrawerIsOpen] = useState(false)
@@ -36,7 +34,7 @@ export default function TemporaryDrawer(
         <Box sx={{ width: 'auto' }} role='presentation'>
             <List>
                 {props.network.map(text => (
-                    <ListItem key={text} disablePadding onClick={() => props.handleRoomOnClick(text)}>
+                    <ListItem key={text} disablePadding onClick={() => props.handleClickOnList(text)}>
                         <ListItemButton>
                             <ListItemIcon onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
                                 <AccountCircleSharp />
@@ -46,7 +44,7 @@ export default function TemporaryDrawer(
                                 onClick={toggleDrawer(false)}
                                 onKeyDown={toggleDrawer(false)}
                             />
-                            <IconButton onClick={() => props.listClickAction(text)}>
+                            <IconButton onClick={() => props.handleClickOnListIcon(text)}>
                                 <DeleteSharp />
                             </IconButton>
                         </ListItemButton>
