@@ -10,9 +10,14 @@ import InboxIcon from '@mui/icons-material/MoveToInbox'
 import MailIcon from '@mui/icons-material/Mail'
 import React, { useState } from 'react'
 import { IconButton, Tooltip } from '@mui/material'
+import { AccountCircleSharp, DeleteSharp } from '@mui/icons-material'
 
 export default function TemporaryDrawer(
-    props: React.PropsWithChildren<{ network: string[]; handleRoomOnClick: (key: string) => void }>
+    props: React.PropsWithChildren<{
+        network: string[]
+        handleRoomOnClick: (key: string) => void
+        listClickAction: (clickedUsername: string) => void
+    }>
 ) {
     const [drawerIsOpen, setDrawerIsOpen] = useState(false)
 
@@ -28,13 +33,22 @@ export default function TemporaryDrawer(
     }
 
     const list = () => (
-        <Box sx={{ width: 'auto' }} role='presentation' onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
+        <Box sx={{ width: 'auto' }} role='presentation'>
             <List>
-                {props.network.map((text, index) => (
+                {props.network.map(text => (
                     <ListItem key={text} disablePadding onClick={() => props.handleRoomOnClick(text)}>
                         <ListItemButton>
-                            <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-                            <ListItemText primary={text} />
+                            <ListItemIcon onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
+                                <AccountCircleSharp />
+                            </ListItemIcon>
+                            <ListItemText
+                                primary={text}
+                                onClick={toggleDrawer(false)}
+                                onKeyDown={toggleDrawer(false)}
+                            />
+                            <IconButton onClick={() => props.listClickAction(text)}>
+                                <DeleteSharp />
+                            </IconButton>
                         </ListItemButton>
                     </ListItem>
                 ))}

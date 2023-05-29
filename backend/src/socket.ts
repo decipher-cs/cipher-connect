@@ -1,5 +1,10 @@
 import { Server, Socket } from 'socket.io'
-import { addNewNetworkNameToNetworks, getUserNetworkList, getUsernameFromRefreshToken } from './model.js'
+import {
+    addNewNetworkNameToNetworks,
+    getUserNetworkList,
+    getUsernameFromRefreshToken,
+    removeConnectionFromNetword,
+} from './model.js'
 import cookieParser from 'cookie-parser'
 import { NextFunction } from 'express'
 
@@ -19,6 +24,7 @@ interface ClientToServerEvents {
     privateMessage: (target: string, msg: string) => void
     updateNetworkList: (users: string[]) => void
     addUserToNetwork: (newConnectionName: string) => void // might wanna use acknowledgment here
+    removeUserFromNetwork: (newConnectionName: string) => void // might wanna use acknowledgment here
 }
 
 interface SocketData {
@@ -66,6 +72,13 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
             if (userNetworkList.includes(newConnectionName) === false)
                 addNewNetworkNameToNetworks(username, [newConnectionName]).then(_ => {
                     userNetworkList.push(newConnectionName)
+                })
+        })
+        socket.on('removeUserFromNetwork', (connectionName: string) => {
+            if (userNetworkList.includes(connectionName) === true)
+                removeConnectionFromNetword(username, [connectionName]).then(_ => {
+                    const index = userNetworkList.indexOf(connectionName)
+                    if (index !== -1) userNetworkList.splice(index)
                 })
         })
 

@@ -89,7 +89,13 @@ export const Chat = () => {
 
             <Typography variant='subtitle1'>Recipient: {recipient === undefined ? 'none' : recipient} </Typography>
 
-            <TemporaryDrawer network={network} handleRoomOnClick={room => setRecipient(room)}>
+            <TemporaryDrawer
+                network={network}
+                handleRoomOnClick={room => setRecipient(room)}
+                listClickAction={clickedUsername => {
+                    socket.emit('removeUserFromNetwork', clickedUsername)
+                }}
+            >
                 {FiendListTextField({ placeholder: "Enter Friend's username" })}
             </TemporaryDrawer>
 
