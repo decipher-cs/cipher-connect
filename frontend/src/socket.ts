@@ -12,7 +12,7 @@ interface ServerToClientEvents {
 interface ClientToServerEvents {
     privateMessage: (target: string, msg: Message) => void
     updateNetworkList: (users: string[]) => void
-    addUserToNetwork: (newConnectionName: string) => void // might wanna use acknowledgment here
+    addUserToNetwork: (newConnectionName: string, callback: (response: null | string) => void) => void
     removeUserFromNetwork: (newConnectionName: string) => void // might wanna use acknowledgment here
 }
 

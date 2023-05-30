@@ -23,7 +23,7 @@ interface InterServerEvents {}
 interface ClientToServerEvents {
     privateMessage: (target: string, msg: string) => void
     updateNetworkList: (users: string[]) => void
-    addUserToNetwork: (newConnectionName: string) => void // might wanna use acknowledgment here
+    addUserToNetwork: (newConnectionName: string, callback: (response: null | string) => void) => void
     removeUserFromNetwork: (newConnectionName: string) => void // might wanna use acknowledgment here
 }
 
@@ -68,12 +68,18 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
             socket.emit('updateNetworkList', userNetworkList)
         })
 
-        socket.on('addUserToNetwork', (newConnectionName: string) => {
+        socket.on('addUserToNetwork', (newConnectionName: string, callback) => {
             if (userNetworkList.includes(newConnectionName) === false)
-                addNewNetworkNameToNetworks(username, [newConnectionName]).then(_ => {
-                    userNetworkList.push(newConnectionName)
-                })
+                addNewNetworkNameToNetworks(username, [newConnectionName])
+                    .then(usernameUpdateCount => {
+                        userNetworkList.push(newConnectionName)
+                    })
+                    .catch(err => {
+                        callback('some err found')
+                        console.log('err is :', err)
+                    }) // show error to client that user doesn't exist
         })
+
         socket.on('removeUserFromNetwork', (connectionName: string) => {
             if (userNetworkList.includes(connectionName) === true)
                 removeConnectionFromNetwork(username, [connectionName])

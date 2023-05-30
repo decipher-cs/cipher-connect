@@ -39,8 +39,10 @@ export const Chat = () => {
     const { username, isLoggedIn } = useContext(CredentialContext)
 
     const { ControlledTextField: FiendListTextField } = useControlledTextField(TextFieldValue => {
-        socket.emit('addUserToNetwork', TextFieldValue)
-        setNetwork(prev => prev.concat(TextFieldValue))
+        socket.emit('addUserToNetwork', TextFieldValue, response => {
+            console.log('res from addUserToNetwork emit is :', response)
+            if (response === null) setNetwork(prev => prev.concat(TextFieldValue))
+        })
     })
 
     useEffect(() => {
