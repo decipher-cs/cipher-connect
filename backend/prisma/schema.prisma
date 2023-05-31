@@ -15,6 +15,9 @@ model user {
   refreshTokens             refreshToken[]
   userNetworkUsername       userNetwork[]  @relation("userNetworkUsername")
   userNetworkConnectionName userNetwork[]  @relation("userNetworkConnectionName")
+  room                      room?          @relation(fields: [roomKey], references: [key])
+  roomKey                   Int?
+  message                   message[]
 
   @@map("users")
 }
@@ -35,4 +38,24 @@ model userNetwork {
   connectionUsername       String @map("connection_username")
 
   @@map("user_network")
+}
+
+model room {
+  key                 Int       @id @default(autoincrement())
+  roomName            String    @unique @default(cuid())
+  roomDisplayName     String    @db.VarChar(16)
+  participantsUsername user[]
+  isMaxCapacityTwo    Boolean
+  message             message[]
+}
+
+model message {
+  key            Int      @id @default(autoincrement())
+  sender         user     @relation(fields: [senderUsername], references: [username])
+  senderUsername String   @db.VarChar(16)
+  room           room     @relation(fields: [roomKey], references: [key])
+  roomKey        Int
+  content        String   @db.LongText
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
