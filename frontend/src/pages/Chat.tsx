@@ -6,6 +6,7 @@ import TemporaryDrawer from '../components/TemporaryDrawer'
 import { CredentialContext } from '../contexts/Credentials'
 import { useControlledTextField } from '../hooks/useTextField'
 import { socket } from '../socket'
+import { PulseLoader } from 'react-spinners'
 
 export interface Message {
     uuid: string
@@ -38,10 +39,22 @@ export const Chat = () => {
 
     const { username, isLoggedIn } = useContext(CredentialContext)
 
-    const { ControlledTextField: FiendListTextField } = useControlledTextField(TextFieldValue => {
+    const [currRoom, setCurrRoom] = useState('')
+
+    const {
+        setError: FriendListTextFieldSetError,
+        setHelperText,
+        ControlledTextField: FriendListTextField,
+    } = useControlledTextField(TextFieldValue => {
         socket.emit('addUserToNetwork', TextFieldValue, response => {
-            console.log('res from addUserToNetwork emit is :', response)
-            if (response === null) setNetwork(prev => prev.concat(TextFieldValue))
+            if (response === null) {
+                FriendListTextFieldSetError(false)
+                setHelperText('')
+                setNetwork(prev => prev.concat(TextFieldValue))
+            } else {
+                FriendListTextFieldSetError(true)
+                setHelperText(response)
+            }
         })
     })
 
@@ -73,10 +86,10 @@ export const Chat = () => {
         })
 
         setIsLoading(false)
+
         return () => {
             socket.removeAllListeners()
             if (socket.connected === true) {
-                console.log('disabling socket')
                 socket.disconnect()
             }
         }
@@ -85,6 +98,9 @@ export const Chat = () => {
     useEffect(() => {}, [chatMessageList])
 
     const fakeScrollDiv = useRef<HTMLDivElement | null>(null)
+
+    if (isLoading) return <PulseLoader color='#36d7b7' />
+
     return (
         <>
             <Typography variant='subtitle1'>Userid is: {userId} </Typography>
@@ -93,13 +109,16 @@ export const Chat = () => {
 
             <TemporaryDrawer
                 network={network}
-                handleClickOnList={room => setRecipient(room)}
+                handleClickOnList={room => {
+                    setRecipient(room)
+                    // socket.emit
+                }}
                 handleClickOnListIcon={clickedUsername => {
                     socket.emit('removeUserFromNetwork', clickedUsername)
-                    setNetwork(prev => prev.filter(username => (username !== clickedUsername ? true : false)))
+                    setNetwork(prev => prev.filter(username => username !== clickedUsername))
                 }}
             >
-                {FiendListTextField({ placeholder: "Enter Friend's username" })}
+                {FriendListTextField({ placeholder: "Enter Friend's username" })}
             </TemporaryDrawer>
 
             <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
