@@ -6,14 +6,18 @@ interface ServerToClientEvents {
     withAck: (d: string, callback: (e: number) => void) => void
     updateNetworkList: (users: string[]) => void
     privateMessage: (target: string, msg: Message) => void
+    userRooms: (rooms: string[]) => void
+    roomChanged: (roomId: string) => void
 }
 
 // for socket.on()
 interface ClientToServerEvents {
     privateMessage: (target: string, msg: Message) => void
     updateNetworkList: (users: string[]) => void
-    addUserToNetwork: (newConnectionName: string, callback: (response: null | string) => void) => void
     removeUserFromNetwork: (newConnectionName: string) => void // might wanna use acknowledgment here
+    selectRoom: (roomId: string) => void
+    addRoom: (roomId: string, callback: (response: null | string) => void) => void
+    addUsersToRoom: (usersToAdd: string[], roomName: string) => void
 }
 
 const URL = import.meta.env.PROD ? window.location.origin : import.meta.env.VITE_SERVER_DEV_URL
