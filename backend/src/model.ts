@@ -25,10 +25,12 @@ export const deleteAllUsers = async () => {
     return deletedUsers
 }
 
-export const getUser = async (username: string) => {
-    prisma.user.findUnique({
+export const getUserFromDB = async (username: string) => {
+    const users = await prisma.user.findUnique({
         where: { username },
     })
+
+    return users
 }
 
 export const getUserHash = async (username: string) => {
@@ -92,4 +94,34 @@ export const removeConnectionFromNetwork = async (username: string, connectionNa
     })
 
     return removedCount
+}
+
+export const getUserAndUserRoomsFromDB = async (username: string) => {
+    const rooms = await prisma.user.findUnique({
+        where: { username },
+        include: { rooms: {include: {participants: true}} },
+    })
+
+    return rooms
+}
+
+export const getUserRoomsFromDB = async (username: string) => {
+    const rooms = await getUserAndUserRoomsFromDB(username)
+
+    return rooms?.rooms
+}
+
+
+export const createPrivateRoom = async (participant1: string, participant2: string) => {
+    const room = await prisma.room.create({
+        data: {
+            roomDisplayName: `${participant1}-${participant2}`.slice(33),
+            participants: {
+                connect: [{ username: participant1 }, { username: participant2 }],
+            },
+            isMaxCapacityTwo: true,
+        },
+    })
+
+    return room
 }
