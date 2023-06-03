@@ -1,12 +1,13 @@
-import { Server, Socket } from 'socket.io'
+import { Server } from 'socket.io'
 import {
-    addNewNetworkNameToNetworks,
+    createPrivateRoom,
+    getUserAndUserRoomsFromDB,
+    getUserFromDB,
     getUserNetworkList,
-    getUsernameFromRefreshToken,
+    getUserRoomsFromDB,
     removeConnectionFromNetwork,
 } from './model.js'
-import cookieParser from 'cookie-parser'
-import { NextFunction } from 'express'
+import { room } from '@prisma/client'
 
 interface ServerToClientEvents {
     noArg: () => void
@@ -14,6 +15,8 @@ interface ServerToClientEvents {
     withAck: (d: string, callback: (e: number) => void) => void
     updateNetworkList: (users: string[]) => void
     privateMessage: (target: string, msg: string) => void
+    userRoomsLoaded: (rooms: room[]) => void
+    roomChanged: (roomId: string) => void
 }
 
 // for io.on()
@@ -23,8 +26,10 @@ interface InterServerEvents {}
 interface ClientToServerEvents {
     privateMessage: (target: string, msg: string) => void
     updateNetworkList: (users: string[]) => void
-    addUserToNetwork: (newConnectionName: string, callback: (err: null | 'username not found') => void) => void
     removeUserFromNetwork: (newConnectionName: string) => void // might wanna use acknowledgment here
+    addUsersToRoom: (usersToAdd: string[], roomName: string) => void
+    selectRoom: (roomId: string) => void
+    addRoom: (participant: string, callback: (response: null | string) => void) => void
 }
 
 interface SocketData {
@@ -48,12 +53,23 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
 
         const username = socket.data.username
 
-        const userNetworkList: string[] = []
+        // const userNetworkList: string[] = []
+
+        const userRooms: Awaited<ReturnType<typeof getUserRoomsFromDB>> = []
+        // const userRooms: Awaited<ReturnType<typeof getUserRoomsFromDB>> = []
 
         // Get list of network from the DB
-        getUserNetworkList(username).then(networkList => {
-            userNetworkList.push(...networkList)
-            socket.emit('updateNetworkList', userNetworkList)
+        // getUserNetworkList(username).then(networkList => {
+        //     userNetworkList.push(...networkList)
+        //     socket.emit('updateNetworkList', userNetworkList)
+        // })
+
+        getUserRoomsFromDB(username).then(rooms => {
+            console.log(rooms)
+            if (rooms !== undefined) {
+                userRooms.push(...rooms)
+                socket.emit('userRoomsLoaded', rooms)
+            }
         })
 
         socket.join(username)
@@ -64,28 +80,41 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
             } else throw new Error('Message cannot be sent to self')
         })
 
-        socket.on('updateNetworkList', () => {
-            socket.emit('updateNetworkList', userNetworkList)
+        // socket.on('updateNetworkList', () => {
+        //     socket.emit('updateNetworkList', userNetworkList)
+        // })
+
+        // socket.on('removeUserFromNetwork', (connectionName: string) => {
+        //     if (userNetworkList.includes(connectionName) === true)
+        //         removeConnectionFromNetwork(username, [connectionName])
+        //             .then(_ => {
+        //                 const index = userNetworkList.indexOf(connectionName)
+        //                 if (index !== -1) userNetworkList.splice(index)
+        //             })
+        //             .catch(err => console.log('while deleting a user from the network list:', err))
+        // })
+
+        socket.on('addRoom', async (participant, callback) => {
+            // check if participant exists
+            const participantUserDetails = await getUserAndUserRoomsFromDB(participant)
+
+            if (participantUserDetails === null) {
+                callback('User Does Not Exist')
+                return
+            }
+
+            // check if participants are already in a private group with username
+            participantUserDetails.rooms
+            createPrivateRoom(username, participant)
+                .then(room => {
+                    userRooms.push(room)
+                })
+                .catch(_ => callback('some sort of error?')) // analyise which types of error can occur here.
         })
 
-        socket.on('addUserToNetwork', (newConnectionName: string, callback) => {
-            if (userNetworkList.includes(newConnectionName) === false)
-                addNewNetworkNameToNetworks(username, [newConnectionName])
-                    .then(usernameUpdateCount => {
-                        userNetworkList.push(newConnectionName)
-                        callback(null)
-                    })
-                    .catch(_ => callback('username not found'))
-        })
-
-        socket.on('removeUserFromNetwork', (connectionName: string) => {
-            if (userNetworkList.includes(connectionName) === true)
-                removeConnectionFromNetwork(username, [connectionName])
-                    .then(_ => {
-                        const index = userNetworkList.indexOf(connectionName)
-                        if (index !== -1) userNetworkList.splice(index)
-                    })
-                    .catch(err => console.log('while deleting a user from the network list:', err))
+        socket.on('selectRoom', roomId => {
+            socket.join(roomId)
+            socket.emit('roomChanged', roomId)
         })
 
         socket.on('disconnect', () => {})
