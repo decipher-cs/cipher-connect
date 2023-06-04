@@ -71,6 +71,7 @@ Install my-project with yarn
 - [ ] Show ghost text when user types (not good performance but would look really good).
 - [ ] Send a private message to yourself.
 - [ ] Extract list function from TemproratyDrawer into a separate component.
+- [ ] A loader/ spinner for each element that depends on fetching data from server.
 
 ## License
 
