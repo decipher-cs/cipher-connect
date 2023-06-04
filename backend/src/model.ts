@@ -125,3 +125,15 @@ export const createPrivateRoom = async (participant1: string, participant2: stri
 
     return room
 }
+
+export const addMessageToDB = async (msgSender: string, roomId: string, textContent: string) => {
+    const msg = await prisma.message.create({
+        data: {
+            content: textContent,
+            roomId: roomId,
+            senderUsername: msgSender,
+        },
+    })
+
+    return msg
+}
