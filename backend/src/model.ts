@@ -99,7 +99,7 @@ export const removeConnectionFromNetwork = async (username: string, connectionNa
 export const getUserAndUserRoomsFromDB = async (username: string) => {
     const rooms = await prisma.user.findUnique({
         where: { username },
-        include: { rooms: {include: {participants: true}} },
+        include: { rooms: { include: { participants: true } } },
     })
 
     return rooms
@@ -111,16 +111,16 @@ export const getUserRoomsFromDB = async (username: string) => {
     return rooms?.rooms
 }
 
-
 export const createPrivateRoom = async (participant1: string, participant2: string) => {
     const room = await prisma.room.create({
         data: {
-            roomDisplayName: `${participant1}-${participant2}`.slice(33),
+            roomDisplayName: `${participant1}-${participant2}`.slice(0, 33),
             participants: {
                 connect: [{ username: participant1 }, { username: participant2 }],
             },
             isMaxCapacityTwo: true,
         },
+        include: { participants: true },
     })
 
     return room
