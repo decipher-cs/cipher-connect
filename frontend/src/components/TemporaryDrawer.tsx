@@ -12,7 +12,7 @@ import { AccountCircleSharp, DeleteSharp } from '@mui/icons-material'
 
 export default function TemporaryDrawer(
     props: React.PropsWithChildren<{
-        network: string[]
+        listItems: string[]
         handleClickOnList: (key: string) => void
         handleClickOnListIcon: (clickedUsername: string) => void
     }>
@@ -33,7 +33,7 @@ export default function TemporaryDrawer(
     const list = () => (
         <Box sx={{ width: 'auto' }} role='presentation'>
             <List>
-                {props.network.map(text => (
+                {props.listItems.map(text => (
                     <ListItem key={text} disablePadding onClick={() => props.handleClickOnList(text)}>
                         <ListItemButton>
                             <ListItemIcon onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
