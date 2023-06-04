@@ -1,12 +1,5 @@
 import { Server } from 'socket.io'
-import {
-    createPrivateRoom,
-    getUserAndUserRoomsFromDB,
-    getUserFromDB,
-    getUserNetworkList,
-    getUserRoomsFromDB,
-    removeConnectionFromNetwork,
-} from './model.js'
+import { createPrivateRoom, getUserAndUserRoomsFromDB, getUserRoomsFromDB } from './model.js'
 import { room } from '@prisma/client'
 
 interface ServerToClientEvents {
@@ -15,7 +8,7 @@ interface ServerToClientEvents {
     withAck: (d: string, callback: (e: number) => void) => void
     updateNetworkList: (users: string[]) => void
     privateMessage: (target: string, msg: string) => void
-    userRoomsLoaded: (rooms: room[]) => void
+    userRoomsUpdated: (rooms: room[]) => void
     roomChanged: (roomId: string) => void
 }
 
@@ -28,8 +21,8 @@ interface ClientToServerEvents {
     updateNetworkList: (users: string[]) => void
     removeUserFromNetwork: (newConnectionName: string) => void // might wanna use acknowledgment here
     addUsersToRoom: (usersToAdd: string[], roomName: string) => void
-    selectRoom: (roomId: string) => void
-    addRoom: (participant: string, callback: (response: null | string) => void) => void
+    createNewRoom: (participant: string, callback: (response: null | string) => void) => void
+    roomSelected: (roomId: string) => void
 }
 
 interface SocketData {
@@ -56,7 +49,6 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         // const userNetworkList: string[] = []
 
         const userRooms: Awaited<ReturnType<typeof getUserRoomsFromDB>> = []
-        // const userRooms: Awaited<ReturnType<typeof getUserRoomsFromDB>> = []
 
         // Get list of network from the DB
         // getUserNetworkList(username).then(networkList => {
@@ -65,11 +57,9 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         // })
 
         getUserRoomsFromDB(username).then(rooms => {
-            console.log(rooms)
-            if (rooms !== undefined) {
-                userRooms.push(...rooms)
-                socket.emit('userRoomsLoaded', rooms)
-            }
+            if (rooms === undefined) return
+            userRooms.push(...rooms)
+            socket.emit('userRoomsUpdated', rooms)
         })
 
         socket.join(username)
@@ -94,7 +84,7 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         //             .catch(err => console.log('while deleting a user from the network list:', err))
         // })
 
-        socket.on('addRoom', async (participant, callback) => {
+        socket.on('createNewRoom', async (participant, callback) => {
             // check if participant exists
             const participantUserDetails = await getUserAndUserRoomsFromDB(participant)
 
@@ -103,16 +93,27 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
                 return
             }
 
-            // check if participants are already in a private group with username
-            participantUserDetails.rooms
-            createPrivateRoom(username, participant)
-                .then(room => {
-                    userRooms.push(room)
-                })
-                .catch(_ => callback('some sort of error?')) // analyise which types of error can occur here.
+            // check if participants are already in a private group with current username. If they are not, then create a new room
+            const roomDoesExists = participantUserDetails.rooms.find(room => {
+                return room.isMaxCapacityTwo && room.participants.find(user => user.username === username)
+            })
+
+            if (roomDoesExists !== undefined) {
+                callback('Already In A Room With User')
+                return
+            }
+
+            try {
+                const room = await createPrivateRoom(username, participant)
+                userRooms.push(room)
+                socket.emit('userRoomsUpdated', userRooms)
+                callback(null)
+            } catch (err) {
+                callback('Unknown Server Error')
+            }
         })
 
-        socket.on('selectRoom', roomId => {
+        socket.on('roomSelected', roomId => {
             socket.join(roomId)
             socket.emit('roomChanged', roomId)
         })
