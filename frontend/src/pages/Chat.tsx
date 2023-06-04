@@ -7,6 +7,7 @@ import { CredentialContext } from '../contexts/Credentials'
 import { useControlledTextField } from '../hooks/useTextField'
 import { socket } from '../socket'
 import { PulseLoader } from 'react-spinners'
+import { room } from '../types/prisma.client'
 
 export interface Message {
     uuid: string
@@ -39,20 +40,21 @@ export const Chat = () => {
 
     const { username, isLoggedIn } = useContext(CredentialContext)
 
-    const [currRoom, setCurrRoom] = useState('')
+    const [currRoom, setCurrRoom] = useState<room>()
+
+    const [rooms, setRooms] = useState<room[]>([])
 
     const {
-        setError: FriendListTextFieldSetError,
+        setError,
         setHelperText,
         ControlledTextField: FriendListTextField,
-    } = useControlledTextField(TextFieldValue => {
-        socket.emit('addUserToNetwork', TextFieldValue, response => {
+    } = useControlledTextField(participantName => {
+        socket.emit('createNewRoom', participantName, response => {
             if (response === null) {
-                FriendListTextFieldSetError(false)
+                setError(false)
                 setHelperText('')
-                setNetwork(prev => prev.concat(TextFieldValue))
             } else {
-                FriendListTextFieldSetError(true)
+                setError(true)
                 setHelperText(response)
             }
         })
@@ -64,18 +66,12 @@ export const Chat = () => {
             socket.connect() // TODO this should be removed in prod. In prod this should run after varifying credentials.
         }
 
-        socket.on('connect', () => {
-            console.log('connection established to', socket.id)
-            setUserId(socket.id)
-        })
+        socket.on('connect', () => setUserId(socket.id))
 
-        // socket.on('session', ()=>{
-        //
-        // })
+        setIsLoading(false)
 
         socket.on('privateMessage', (from, msg) => {
-            console.log(from, 'said', msg)
-            setChatMessageList(prev => prev.concat(msg))
+            setChatMessageList(prev => prev.concat(generateDummyMessage(msg)))
         })
 
         socket.on('updateNetworkList', (users: string[]) => {
@@ -85,7 +81,14 @@ export const Chat = () => {
             }
         })
 
-        setIsLoading(false)
+        socket.on('userRoomsUpdated', rooms => {
+            setRooms(rooms)
+        })
+
+        socket.on('roomChanged', roomId => {
+            const room = rooms.find(room => room.roomId === roomId)
+            if (room !== undefined) setCurrRoom(room)
+        })
 
         return () => {
             socket.removeAllListeners()
@@ -94,8 +97,6 @@ export const Chat = () => {
             }
         }
     }, [])
-
-    useEffect(() => {}, [chatMessageList])
 
     const fakeScrollDiv = useRef<HTMLDivElement | null>(null)
 
@@ -108,14 +109,11 @@ export const Chat = () => {
             <Typography variant='subtitle1'>Recipient: {recipient === undefined ? 'none' : recipient} </Typography>
 
             <TemporaryDrawer
-                network={network}
-                handleClickOnList={room => {
-                    setRecipient(room)
-                    // socket.emit
-                }}
+                listItems={rooms.map(({ roomDisplayName }) => roomDisplayName)}
+                handleClickOnList={room => socket.emit('roomSelected', room)}
                 handleClickOnListIcon={clickedUsername => {
-                    socket.emit('removeUserFromNetwork', clickedUsername)
-                    setNetwork(prev => prev.filter(username => username !== clickedUsername))
+                    // socket.emit('removeUserFromNetwork', clickedUsername)
+                    // setNetwork(prev => prev.filter(username => username !== clickedUsername))
                 }}
             >
                 {FriendListTextField({ placeholder: "Enter Friend's username" })}
