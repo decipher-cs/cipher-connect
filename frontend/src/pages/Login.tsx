@@ -5,6 +5,7 @@ import { useFormik } from 'formik'
 import { CredentialContext } from '../contexts/Credentials'
 import { Navigate, useNavigate } from 'react-router-dom'
 
+// Formik uses this regex criteria to validate the input string
 const validate = (values: { username: string; password: string }) => {
     const errors: any = {}
 
@@ -36,45 +37,45 @@ export const Login = () => {
 
     const selectedTab = isLogin === true ? 0 : 1
 
+    const formikFetchOnSubmit = async (values: { username: string; password: string }) => {
+        const username = values.username
+        const password = values.password
+
+        const URL = import.meta.env.PROD ? import.meta.env.VITE_SERVER_PROD_URL : import.meta.env.VITE_SERVER_DEV_URL
+
+        const response = await fetch(`${URL}/${formType}`, {
+            body: JSON.stringify({ username, password }),
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+        })
+        const responseType = response.statusText
+        console.log(responseType)
+        switch (responseType) {
+            case 'OK':
+                handleCredentialChange({ username, isLoggedIn: true })
+                navigate('/chat')
+                break
+
+            default:
+                break
+        }
+    }
+
     const formik = useFormik({
         initialValues: {
             username: import.meta.env.DEV === true ? 'password' : '',
             password: import.meta.env.DEV === true ? 'password' : '',
         },
         validate,
-        onSubmit: async values => {
-            const username = values.username
-            const password = values.password
-
-            const URL = import.meta.env.PROD
-                ? import.meta.env.VITE_SERVER_PROD_URL
-                : import.meta.env.VITE_SERVER_DEV_URL
-
-            const response = await fetch(`${URL}/${formType}`, {
-                body: JSON.stringify({ username, password }),
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                },
-            })
-            const responseType = response.statusText
-            console.log(responseType)
-            switch (responseType) {
-                case 'OK':
-                    handleCredentialChange({ username, isLoggedIn: true })
-                    navigate('/chat')
-                    break
-
-                default:
-                    break
-            }
-        },
+        onSubmit: formikFetchOnSubmit,
     })
 
     if (isLoggedIn === true) {
-        return <Navigate to='/chat' />
+        return <Navigate to='/chat' replace />
     }
 
     return (
