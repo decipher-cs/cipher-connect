@@ -10,13 +10,13 @@ import React, { useState } from 'react'
 import { IconButton, Tooltip } from '@mui/material'
 import { AccountCircleSharp, DeleteSharp } from '@mui/icons-material'
 
-export default function TemporaryDrawer(
-    props: React.PropsWithChildren<{
-        listItems: string[]
-        handleClickOnList: (key: string) => void
-        handleClickOnListIcon: (clickedUsername: string) => void
-    }>
-) {
+interface TemporaryDrawerProps extends React.PropsWithChildren{
+    listItems: string[]
+    handleClickOnList: (key: string) => void
+    handleClickOnListIcon: (clickedItem: string) => void
+}
+
+const TemporaryDrawer = (props: TemporaryDrawerProps) => {
     const [drawerIsOpen, setDrawerIsOpen] = useState(false)
 
     const toggleDrawer = (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
@@ -68,3 +68,5 @@ export default function TemporaryDrawer(
         </>
     )
 }
+
+export default TemporaryDrawer
