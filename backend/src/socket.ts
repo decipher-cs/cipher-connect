@@ -1,5 +1,5 @@
 import { Server } from 'socket.io'
-import { createPrivateRoom, getUserAndUserRoomsFromDB, getUserRoomsFromDB } from './model.js'
+import { addMessageToDB, createPrivateRoom, getUserAndUserRoomsFromDB, getUserRoomsFromDB } from './model.js'
 import { room } from '@prisma/client'
 
 interface ServerToClientEvents {
@@ -51,12 +51,16 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
             socket.emit('userRoomsUpdated', rooms)
         })
 
+        socket.rooms.forEach(roomId => socket.leave(roomId))
+
         socket.join(username)
 
         socket.on('privateMessage', (msg: string) => {
-            if (target !== socket.id) {
-                socket.to(target).emit('privateMessage', target, msg)
-            } else throw new Error('Message cannot be sent to self')
+            socket.emit('privateMessage', msg)
+            // This might send messages to multiple rooms. Fix this.
+            socket.rooms.forEach(roomId => {
+                addMessageToDB(username, roomId, msg)
+            })
         })
 
         socket.on('createNewRoom', async (participant, callback) => {
@@ -89,6 +93,7 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         })
 
         socket.on('roomSelected', roomId => {
+            socket.rooms.forEach(room => socket.leave(room))
             socket.join(roomId)
             socket.emit('roomChanged', roomId)
         })
