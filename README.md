@@ -72,6 +72,7 @@ Install my-project with yarn
 - [ ] Send a private message to yourself.
 - [ ] Extract list function from TemproratyDrawer into a separate component.
 - [ ] A loader/ spinner for each element that depends on fetching data from server.
+- [ ] Remove abstraction from TemporaryDrawer, It is causing unnecessary confusion. 
 
 ## License
 
