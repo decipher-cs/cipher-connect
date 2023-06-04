@@ -9,34 +9,21 @@ import { socket } from '../socket'
 import { PulseLoader } from 'react-spinners'
 import { room } from '../types/prisma.client'
 
-export interface Message {
-    uuid: string
-    sender: string
-    time: Date
-    text: string
-}
+// const generateDummyMessage = (msg?: string): Message => ({
+//     uuid: crypto.randomUUID(),
+//     sender: 'anon',
+//     time: new Date(),
+//     text: msg === undefined ? 'sample' : msg,
+// })
 
-export type MessageList = Message[]
-
-const generateDummyMessage = (msg?: string): Message => ({
-    uuid: crypto.randomUUID(),
-    sender: 'anon',
-    time: new Date(),
-    text: msg === undefined ? 'sample' : msg,
-})
-
-const sampleMsg = [generateDummyMessage()]
+// const sampleMsg = [generateDummyMessage()]
 
 export const Chat = () => {
     const [isLoading, setIsLoading] = useState(true)
 
-    const [userId, setUserId] = useState('')
-
-    const [chatMessageList, setChatMessageList] = useState<MessageList>(sampleMsg)
+    const [chatMessageList, setChatMessageList] = useState<string[]>(['hello world'])
 
     const [network, setNetwork] = useState<string[]>([])
-
-    const [recipient, setRecipient] = useState<string>()
 
     const { username, isLoggedIn } = useContext(CredentialContext)
 
@@ -66,12 +53,11 @@ export const Chat = () => {
             socket.connect() // TODO this should be removed in prod. In prod this should run after varifying credentials.
         }
 
-        socket.on('connect', () => setUserId(socket.id))
-
         setIsLoading(false)
 
-        socket.on('privateMessage', (from, msg) => {
-            setChatMessageList(prev => prev.concat(generateDummyMessage(msg)))
+        socket.on('privateMessage', msg => {
+            // setChatMessageList(prev => prev.concat(generateDummyMessage(msg)))
+            setChatMessageList(prev => prev.concat(msg))
         })
 
         socket.on('updateNetworkList', (users: string[]) => {
@@ -104,13 +90,18 @@ export const Chat = () => {
 
     return (
         <>
-            <Typography variant='subtitle1'>Userid is: {userId} </Typography>
-
-            <Typography variant='subtitle1'>Recipient: {recipient === undefined ? 'none' : recipient} </Typography>
+            <Typography variant='subtitle1'>
+                Recipient: {currRoom === undefined ? 'none' : currRoom.roomDisplayName}
+            </Typography>
 
             <TemporaryDrawer
                 listItems={rooms.map(({ roomDisplayName }) => roomDisplayName)}
-                handleClickOnList={room => socket.emit('roomSelected', room)}
+
+                handleClickOnList={roomDisplayName => {
+                    const roomId = rooms.find(room => room.roomDisplayName === roomDisplayName)?.roomId
+                    if (roomId !== undefined) socket.emit('roomSelected', roomId)
+                }}
+
                 handleClickOnListIcon={clickedUsername => {
                     // socket.emit('removeUserFromNetwork', clickedUsername)
                     // setNetwork(prev => prev.filter(username => username !== clickedUsername))
@@ -121,7 +112,7 @@ export const Chat = () => {
 
             <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
 
-            <ChatInputBar setChatMessageList={setChatMessageList} recipient={recipient} />
+            <ChatInputBar setChatMessageList={setChatMessageList} currRoom={currRoom?.roomId} />
         </>
     )
 }
