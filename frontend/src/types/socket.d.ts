@@ -6,7 +6,7 @@ export interface ServerToClientEvents {
     updateNetworkList: (users: string[]) => void
     privateMessage: (msg: string) => void
     userRoomsUpdated: (rooms: room[]) => void
-    roomChanged: (roomId: string) => void
+    roomChanged: (room: room) => void
 }
 
 // for socket.on()

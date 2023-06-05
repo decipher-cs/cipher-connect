@@ -1,8 +1,8 @@
 import { Button, Paper, Typography } from '@mui/material'
 import { Container } from '@mui/system'
 import { memo, useEffect, useRef } from 'react'
-import { MessageList } from '../pages/Chat'
-
+// import { MessageList } from '../pages/Chat'
+type MessageList = string[]
 export interface ChatDisplaySectionProps {
     chatMessageList: MessageList
     fakeScrollDiv: React.MutableRefObject<HTMLDivElement | null>
@@ -13,7 +13,7 @@ const SingleTextMessage = memo(
         return (
             <>
                 <Paper sx={{ width: 'fit-content', p: 1.5, placeSelf: 'flex-end' }} ref={props.endRef}>
-                    <Typography key={props.message.uuid}>{props.message.text}</Typography>
+                    <Typography>{props.message}</Typography>
                 </Paper>
             </>
         )
@@ -46,7 +46,8 @@ const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                 {props.chatMessageList.map((message, i) => {
                     return (
                         <SingleTextMessage
-                            key={message.uuid}
+                            // key={message.uuid}
+                            key={i}
                             message={message}
                             // If newest message in the list, put ref on it
                             endRef={i === props.chatMessageList.length - 1 ? scrollToBottomRef : null}

@@ -8,7 +8,7 @@ interface ServerToClientEvents {
     withAck: (d: string, callback: (e: number) => void) => void
     privateMessage: (msg: string) => void
     userRoomsUpdated: (rooms: room[]) => void
-    roomChanged: (roomId: string) => void
+    roomChanged: (room: room) => void
 }
 
 // for io.on()
@@ -56,11 +56,11 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         socket.join(username)
 
         socket.on('privateMessage', (msg: string) => {
-            socket.emit('privateMessage', msg)
-            // This might send messages to multiple rooms. Fix this.
-            socket.rooms.forEach(roomId => {
-                addMessageToDB(username, roomId, msg)
-            })
+            socket.broadcast.emit('privateMessage', msg)
+            // // This might send messages to multiple rooms. Fix this.
+            // socket.rooms.forEach(roomId => {
+            //     addMessageToDB(username, roomId, msg)
+            // })
         })
 
         socket.on('createNewRoom', async (participant, callback) => {
@@ -93,9 +93,12 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         })
 
         socket.on('roomSelected', roomId => {
+            const room = userRooms.find(room => room.roomId === roomId)
+            if (room !== undefined) {
+                socket.emit('roomChanged', room)
+            }
             socket.rooms.forEach(room => socket.leave(room))
             socket.join(roomId)
-            socket.emit('roomChanged', roomId)
         })
 
         socket.on('disconnect', () => {})

@@ -1,4 +1,4 @@
-import { Button, TextField, textFieldClasses, Typography } from '@mui/material'
+import { Button, Typography } from '@mui/material'
 import { useContext, useEffect, useRef, useState } from 'react'
 import ChatDisplaySection from '../components/ChatDisplaySection'
 import ChatInputBar from '../components/ChatInputBar'
@@ -22,8 +22,6 @@ export const Chat = () => {
     const [isLoading, setIsLoading] = useState(true)
 
     const [chatMessageList, setChatMessageList] = useState<string[]>(['hello world'])
-
-    const [network, setNetwork] = useState<string[]>([])
 
     const { username, isLoggedIn } = useContext(CredentialContext)
 
@@ -60,19 +58,11 @@ export const Chat = () => {
             setChatMessageList(prev => prev.concat(msg))
         })
 
-        socket.on('updateNetworkList', (users: string[]) => {
-            if (users !== undefined) {
-                // const userListWithoutSelf = users.filter(user => user !== username) // Actually the user should be able to msg self
-                setNetwork(users)
-            }
-        })
-
         socket.on('userRoomsUpdated', rooms => {
             setRooms(rooms)
         })
 
-        socket.on('roomChanged', roomId => {
-            const room = rooms.find(room => room.roomId === roomId)
+        socket.on('roomChanged', room => {
             if (room !== undefined) setCurrRoom(room)
         })
 
@@ -90,25 +80,33 @@ export const Chat = () => {
 
     return (
         <>
-            <Typography variant='subtitle1'>
-                Recipient: {currRoom === undefined ? 'none' : currRoom.roomDisplayName}
-            </Typography>
+            <Typography variant='subtitle1'>{currRoom === undefined ? 'undef' : currRoom.roomDisplayName}</Typography>
 
-            <TemporaryDrawer
-                listItems={rooms.map(({ roomDisplayName }) => roomDisplayName)}
-
-                handleClickOnList={roomDisplayName => {
-                    const roomId = rooms.find(room => room.roomDisplayName === roomDisplayName)?.roomId
-                    if (roomId !== undefined) socket.emit('roomSelected', roomId)
-                }}
-
-                handleClickOnListIcon={clickedUsername => {
-                    // socket.emit('removeUserFromNetwork', clickedUsername)
-                    // setNetwork(prev => prev.filter(username => username !== clickedUsername))
-                }}
-            >
-                {FriendListTextField({ placeholder: "Enter Friend's username" })}
-            </TemporaryDrawer>
+            {rooms.map(({ roomDisplayName }, i) => (
+                <Button
+                    key={i}
+                    onClick={() => {
+                        const roomId = rooms.find(room => room.roomDisplayName === roomDisplayName)?.roomId
+                        if (roomId !== undefined) {
+                            socket.emit('roomSelected', roomId)
+                        }
+                    }}
+                >
+                    {roomDisplayName}
+                </Button>
+            ))}
+            {/* <TemporaryDrawer */}
+            {/*     listItems={rooms.map(({ roomDisplayName }) => roomDisplayName)} */}
+            {/**/}
+            {/*     handleClickOnList={roomDisplayName => { */}
+            {/*         const roomId = rooms.find(room => room.roomDisplayName === roomDisplayName)?.roomId */}
+            {/*         if (roomId !== undefined) socket.emit('roomSelected', roomId) */}
+            {/*     }} */}
+            {/**/}
+            {/*     handleClickOnListIcon={clickedUsername => {}} */}
+            {/* > */}
+            {/*     {FriendListTextField({ placeholder: "Enter Friend's username" })} */}
+            {/* </TemporaryDrawer> */}
 
             <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
 
