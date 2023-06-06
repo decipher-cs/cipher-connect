@@ -6,7 +6,7 @@ interface ServerToClientEvents {
     noArg: () => void
     basicEmit: (a: number, b: string, c: Buffer) => void
     withAck: (d: string, callback: (e: number) => void) => void
-    privateMessage: (msg: string) => void
+    privateMessage: (targetRoomId: string, msg: string, senderUsername: string) => void
     userRoomsUpdated: (rooms: room[]) => void
     roomChanged: (room: room) => void
 }
@@ -16,7 +16,7 @@ interface InterServerEvents {}
 
 // for socket.on()
 interface ClientToServerEvents {
-    privateMessage: (msg: string) => void
+    privateMessage: (targetRoomId: string, msg: string) => void
     addUsersToRoom: (usersToAdd: string[], roomName: string) => void
     createNewRoom: (participant: string, callback: (response: null | string) => void) => void
     roomSelected: (roomId: string) => void
@@ -55,12 +55,10 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
 
         socket.join(username)
 
-        socket.on('privateMessage', (msg: string) => {
-            socket.broadcast.emit('privateMessage', msg)
-            // // This might send messages to multiple rooms. Fix this.
-            // socket.rooms.forEach(roomId => {
-            //     addMessageToDB(username, roomId, msg)
-            // })
+        socket.on('privateMessage', async (targetRoomId, messageContent) => {
+            socket.broadcast.to(targetRoomId).emit('privateMessage', targetRoomId, messageContent, username)
+            // Sync the broadcast and the insert call made to DB
+            const msg = await addMessageToDB(username, targetRoomId, messageContent)
         })
 
         socket.on('createNewRoom', async (participant, callback) => {
