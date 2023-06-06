@@ -7,27 +7,28 @@ import { CredentialContext } from '../contexts/Credentials'
 import { useControlledTextField } from '../hooks/useTextField'
 import { socket } from '../socket'
 import { PulseLoader } from 'react-spinners'
-import { room } from '../types/prisma.client'
+import { message as MessageFromDB, room as Room } from '../types/prisma.client'
 
-// const generateDummyMessage = (msg?: string): Message => ({
-//     uuid: crypto.randomUUID(),
-//     sender: 'anon',
-//     time: new Date(),
-//     text: msg === undefined ? 'sample' : msg,
-// })
+export type Message = Pick<MessageFromDB, 'senderUsername' | 'content' | 'createdAt'>
 
-// const sampleMsg = [generateDummyMessage()]
+export const generateDummyMessage = (msg: string, sender?: string): Message => ({
+    senderUsername: sender === undefined ? 'undef sender' : sender,
+    content: msg,
+    createdAt: new Date(),
+})
+
+const sampleMsg = [generateDummyMessage('hello world')]
 
 export const Chat = () => {
     const [isLoading, setIsLoading] = useState(true)
 
-    const [chatMessageList, setChatMessageList] = useState<string[]>(['hello world'])
+    const [chatMessageList, setChatMessageList] = useState<Message[]>(sampleMsg)
 
     const { username, isLoggedIn } = useContext(CredentialContext)
 
-    const [currRoom, setCurrRoom] = useState<room>()
+    const [currRoom, setCurrRoom] = useState<Room>()
 
-    const [rooms, setRooms] = useState<room[]>([])
+    const [rooms, setRooms] = useState<Room[]>([])
 
     const {
         setError,
@@ -53,8 +54,9 @@ export const Chat = () => {
 
         setIsLoading(false)
 
-        socket.on('privateMessage', msg => {
-            // setChatMessageList(prev => prev.concat(generateDummyMessage(msg)))
+        socket.on('privateMessage', (targetRoomId, messageContents, senderUsername) => {
+            const msg = generateDummyMessage(messageContents, senderUsername)
+            console.log(msg.senderUsername)
             setChatMessageList(prev => prev.concat(msg))
         })
 
@@ -81,32 +83,18 @@ export const Chat = () => {
     return (
         <>
             <Typography variant='subtitle1'>{currRoom === undefined ? 'undef' : currRoom.roomDisplayName}</Typography>
+            <Button onClick={() => console.log(chatMessageList)} />
 
-            {rooms.map(({ roomDisplayName }, i) => (
-                <Button
-                    key={i}
-                    onClick={() => {
-                        const roomId = rooms.find(room => room.roomDisplayName === roomDisplayName)?.roomId
-                        if (roomId !== undefined) {
-                            socket.emit('roomSelected', roomId)
-                        }
-                    }}
-                >
-                    {roomDisplayName}
-                </Button>
-            ))}
-            {/* <TemporaryDrawer */}
-            {/*     listItems={rooms.map(({ roomDisplayName }) => roomDisplayName)} */}
-            {/**/}
-            {/*     handleClickOnList={roomDisplayName => { */}
-            {/*         const roomId = rooms.find(room => room.roomDisplayName === roomDisplayName)?.roomId */}
-            {/*         if (roomId !== undefined) socket.emit('roomSelected', roomId) */}
-            {/*     }} */}
-            {/**/}
-            {/*     handleClickOnListIcon={clickedUsername => {}} */}
-            {/* > */}
-            {/*     {FriendListTextField({ placeholder: "Enter Friend's username" })} */}
-            {/* </TemporaryDrawer> */}
+            <TemporaryDrawer
+                listItems={rooms.map(({ roomDisplayName }) => roomDisplayName)}
+                handleClickOnList={roomDisplayName => {
+                    const roomId = rooms.find(room => room.roomDisplayName === roomDisplayName)?.roomId
+                    if (roomId !== undefined) socket.emit('roomSelected', roomId)
+                }}
+                handleClickOnListIcon={clickedUsername => {}}
+            >
+                {FriendListTextField({ placeholder: "Enter Friend's username" })}
+            </TemporaryDrawer>
 
             <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
 
