@@ -1,24 +1,35 @@
 import { Button, Paper, Typography } from '@mui/material'
 import { Container } from '@mui/system'
-import { memo, useEffect, useRef } from 'react'
-// import { MessageList } from '../pages/Chat'
-type MessageList = string[]
-export interface ChatDisplaySectionProps {
-    chatMessageList: MessageList
-    fakeScrollDiv: React.MutableRefObject<HTMLDivElement | null>
+import { memo, useContext, useEffect, useRef } from 'react'
+import { CredentialContext } from '../contexts/Credentials'
+import { Message } from '../pages/Chat'
+
+interface SingleTextMessageProps {
+    message: Message
+    endRef: React.RefObject<HTMLDivElement> | null
 }
 
-const SingleTextMessage = memo(
-    (props: { message: MessageList[number]; endRef: React.RefObject<HTMLDivElement> | null }) => {
-        return (
-            <>
-                <Paper sx={{ width: 'fit-content', p: 1.5, placeSelf: 'flex-end' }} ref={props.endRef}>
-                    <Typography>{props.message}</Typography>
-                </Paper>
-            </>
-        )
-    }
-)
+const SingleTextMessage = memo((props: SingleTextMessageProps) => {
+    const { username } = useContext(CredentialContext)
+
+    return (
+        <Paper
+            sx={{
+                width: 'fit-content',
+                p: 1.5,
+                placeSelf: props.message.senderUsername === username ? 'flex-end' : 'flex-start',
+            }}
+            ref={props.endRef}
+        >
+            <Typography>{props.message.content}</Typography>
+        </Paper>
+    )
+})
+
+export interface ChatDisplaySectionProps {
+    chatMessageList: Message[]
+    fakeScrollDiv: React.MutableRefObject<HTMLDivElement | null>
+}
 
 const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     const scrollToBottomRef = useRef<HTMLDivElement>(null)
@@ -46,7 +57,6 @@ const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                 {props.chatMessageList.map((message, i) => {
                     return (
                         <SingleTextMessage
-                            // key={message.uuid}
                             key={i}
                             message={message}
                             // If newest message in the list, put ref on it
