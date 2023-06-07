@@ -137,3 +137,14 @@ export const addMessageToDB = async (msgSender: string, roomId: string, textCont
 
     return msg
 }
+
+export const getAllMessagesFromRoom = async (roomId: string) => {
+    const messages = await prisma.room.findUnique({
+        where: { roomId },
+        select: {
+            message: true,
+        },
+    })
+
+    return messages?.message
+}
