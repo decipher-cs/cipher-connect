@@ -1,6 +1,12 @@
 import { Server } from 'socket.io'
-import { addMessageToDB, createPrivateRoom, getUserAndUserRoomsFromDB, getUserRoomsFromDB } from './model.js'
-import { room } from '@prisma/client'
+import {
+    addMessageToDB,
+    createPrivateRoom,
+    getAllMessagesFromRoom,
+    getUserAndUserRoomsFromDB,
+    getUserRoomsFromDB,
+} from './model.js'
+import { message, room } from '@prisma/client'
 
 interface ServerToClientEvents {
     noArg: () => void
@@ -9,6 +15,7 @@ interface ServerToClientEvents {
     privateMessage: (targetRoomId: string, msg: string, senderUsername: string) => void
     userRoomsUpdated: (rooms: room[]) => void
     roomChanged: (room: room) => void
+    messagesRequested: (messages: message[]) => void
 }
 
 // for io.on()
@@ -20,6 +27,7 @@ interface ClientToServerEvents {
     addUsersToRoom: (usersToAdd: string[], roomName: string) => void
     createNewRoom: (participant: string, callback: (response: null | string) => void) => void
     roomSelected: (roomId: string) => void
+    messagesRequested: (roomId: string) => void
 }
 
 interface SocketData {
@@ -59,6 +67,7 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
             socket.broadcast.to(targetRoomId).emit('privateMessage', targetRoomId, messageContent, username)
             // Sync the broadcast and the insert call made to DB
             const msg = await addMessageToDB(username, targetRoomId, messageContent)
+            console.log(msg)
         })
 
         socket.on('createNewRoom', async (participant, callback) => {
@@ -97,6 +106,11 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
             }
             socket.rooms.forEach(room => socket.leave(room))
             socket.join(roomId)
+        })
+
+        socket.on('messagesRequested', async roomId => {
+            const messages = await getAllMessagesFromRoom(roomId)
+            if (messages !== undefined) socket.emit('messagesRequested', messages)
         })
 
         socket.on('disconnect', () => {})
