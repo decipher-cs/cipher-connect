@@ -1,4 +1,4 @@
-import { message, room as Room } from './prisma.client'
+import { message as Message, room as Room } from './prisma.client'
 
 export interface ServerToClientEvents {
     noArg: () => void
@@ -8,7 +8,7 @@ export interface ServerToClientEvents {
     userRoomsUpdated: (rooms: Room[]) => void
     roomChanged: (room: Room) => void
     sendingMessages: () => void
-    messagesRequested: (messages: message[]) => void
+    messagesRequested: (messages: Message[]) => void
 }
 
 // for socket.on()
