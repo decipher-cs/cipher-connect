@@ -68,6 +68,10 @@ export const Chat = () => {
             if (room !== undefined) setCurrRoom(room)
         })
 
+        socket.on('messagesRequested', messages => {
+            setChatMessageList(messages)
+        })
+
         return () => {
             socket.removeAllListeners()
             if (socket.connected === true) {
@@ -89,7 +93,10 @@ export const Chat = () => {
                 listItems={rooms.map(({ roomDisplayName }) => roomDisplayName)}
                 handleClickOnList={roomDisplayName => {
                     const roomId = rooms.find(room => room.roomDisplayName === roomDisplayName)?.roomId
-                    if (roomId !== undefined) socket.emit('roomSelected', roomId)
+                    if (roomId !== undefined) {
+                        socket.emit('roomSelected', roomId)
+                        socket.emit('messagesRequested', roomId)
+                    }
                 }}
                 handleClickOnListIcon={clickedUsername => {}}
             >
