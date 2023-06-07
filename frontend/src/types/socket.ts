@@ -7,6 +7,8 @@ export interface ServerToClientEvents {
     privateMessage: (targetRoomId: string, msg: string, senderUsername: string) => void
     userRoomsUpdated: (rooms: Room[]) => void
     roomChanged: (room: Room) => void
+    sendingMessages: () => void
+    messagesRequested: (messages: message[]) => void
 }
 
 // for socket.on()
@@ -17,4 +19,5 @@ export interface ClientToServerEvents {
     roomSelected: (roomId: string) => void
     createNewRoom: (participant: string, callback: (response: null | string) => void) => void
     addUsersToRoom: (usersToAdd: string[], roomName: string) => void
+    messagesRequested: (roomId: string) => void
 }
