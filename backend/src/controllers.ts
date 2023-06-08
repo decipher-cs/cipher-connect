@@ -132,7 +132,7 @@ export const renewAccessToken = async (req: Request, res: Response) => {
 export const logoutUser = async (req: Request, res: Response) => {
     const { username }: LoginCredentials = req.body
 
-    await deleteRefreshToken(username)
+    deleteRefreshToken(username)
 
     res.sendStatus(200)
 }
