@@ -12,6 +12,7 @@ export const CredentialContext = createContext({
     sessionId: '',
     isLoggedIn: false,
     handleCredentialChange: (newCredential: CredentialKey) => {},
+    logUserOut: () => {},
 })
 
 export interface Credentials {
@@ -32,8 +33,12 @@ export const CredentialContextProvider = (props: React.PropsWithChildren) => {
         if (newCredential?.username !== undefined) window.localStorage.setItem('username', newCredential.username)
     }
 
+    const logUserOut = () => {
+        setCredentials({ isLoggedIn: false, username: '', sessionId: '' })
+    }
+
     return (
-        <CredentialContext.Provider value={{ ...credential, handleCredentialChange }}>
+        <CredentialContext.Provider value={{ ...credential, handleCredentialChange, logUserOut }}>
             {props.children}
         </CredentialContext.Provider>
     )
