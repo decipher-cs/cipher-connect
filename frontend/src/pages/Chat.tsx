@@ -9,20 +9,19 @@ import { socket } from '../socket'
 import { PulseLoader } from 'react-spinners'
 import { message as MessageFromDB, room as Room } from '../types/prisma.client'
 
-export type Message = Pick<MessageFromDB, 'senderUsername' | 'content' | 'createdAt'>
+export type Message = Pick<MessageFromDB, 'senderUsername' | 'content' | 'createdAt' | 'roomId'>
 
-export const generateDummyMessage = (msg: string, sender?: string): Message => ({
+export const generateDummyMessage = (msg: string, sender?: string, roomId?: string): Message => ({
     senderUsername: sender === undefined ? 'undef sender' : sender,
+    roomId: roomId === undefined ? 'undef sender' : roomId,
     content: msg,
     createdAt: new Date(),
 })
 
-const sampleMsg = [generateDummyMessage('hello world')]
-
 export const Chat = () => {
     const [isLoading, setIsLoading] = useState(true)
 
-    const [chatMessageList, setChatMessageList] = useState<Message[]>(sampleMsg)
+    const [chatMessageList, setChatMessageList] = useState<Message[]>([])
 
     const { username, isLoggedIn } = useContext(CredentialContext)
 
