@@ -7,6 +7,7 @@ import { CredentialContext, CredentialContextProvider } from './contexts/Credent
 import { Chat } from './pages/Chat'
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
+import { Logout } from './pages/Logout'
 
 const TempUsernameDisplay = () => {
     const { username, handleCredentialChange, isLoggedIn } = useContext(CredentialContext)
@@ -44,11 +45,11 @@ const TempUsernameDisplay = () => {
     return <Typography>{isLoggedIn === true ? <>you are logged in as: {username}</> : <>Not logged in</>}</Typography>
 }
 
-function App() {
+const App = () => {
     return (
         <CredentialContextProvider>
             <BrowserRouter>
-                <Navbar redirectionPaths={['home', 'login', 'chat']} />
+                <Navbar redirectionPaths={['home', 'login', 'logout', 'chat']} />
                 <TempUsernameDisplay />
 
                 <Routes>
@@ -62,6 +63,7 @@ function App() {
                         }
                     />
                     <Route path='/login' element={<Login />} />
+                    <Route path='/logout' element={<Logout />} />
                     <Route path='*' element={<Navigate to='/home' replace />} />
                 </Routes>
             </BrowserRouter>
