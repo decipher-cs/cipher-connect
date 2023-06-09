@@ -126,6 +126,20 @@ export const createPrivateRoom = async (participant1: string, participant2: stri
     return room
 }
 
+export const createGroup = async (participantsUsernames: string[], roomDisplayName: string) => {
+    const participantsUsernamesObj = participantsUsernames.map(username => ({ username }))
+
+    const group = await prisma.room.create({
+        data: {
+            roomDisplayName,
+            isMaxCapacityTwo: false,
+            participants: { connect: participantsUsernamesObj },
+        },
+    })
+
+    return group
+}
+
 export const addMessageToDB = async (msgSender: string, roomId: string, textContent: string) => {
     const msg = await prisma.message.create({
         data: {
