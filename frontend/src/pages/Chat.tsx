@@ -102,7 +102,11 @@ export const Chat = () => {
                 {FriendListTextField({ placeholder: "Enter Friend's username" })}
             </TemporaryDrawer>
 
-            <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
+            {currRoom === undefined ? (
+                <div>Select a room/ user</div>
+            ) : (
+                <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
+            )}
 
             <ChatInputBar setChatMessageList={setChatMessageList} currRoom={currRoom?.roomId} />
         </>
