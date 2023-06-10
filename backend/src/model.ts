@@ -135,6 +135,7 @@ export const createGroup = async (participantsUsernames: string[], roomDisplayNa
             isMaxCapacityTwo: false,
             participants: { connect: participantsUsernamesObj },
         },
+        include: { participants: true },
     })
 
     return group
