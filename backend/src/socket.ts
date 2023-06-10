@@ -1,6 +1,7 @@
 import { Server } from 'socket.io'
 import {
     addMessageToDB,
+    createGroup,
     createPrivateRoom,
     getAllMessagesFromRoom,
     getUserAndUserRoomsFromDB,
@@ -25,7 +26,8 @@ interface InterServerEvents {}
 interface ClientToServerEvents {
     privateMessage: (targetRoomId: string, msg: string) => void
     addUsersToRoom: (usersToAdd: string[], roomName: string) => void
-    createNewRoom: (participant: string, callback: (response: null | string) => void) => void
+    createNewPrivateRoom: (participant: string, callback: (response: null | string) => void) => void
+    createNewGroup: (participants: string[], displayName: string, callback: (response: null | string) => void) => void
     roomSelected: (roomId: string) => void
     messagesRequested: (roomId: string) => void
 }
@@ -70,7 +72,7 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
             console.log(msg)
         })
 
-        socket.on('createNewRoom', async (participant, callback) => {
+        socket.on('createNewPrivateRoom', async (participant, callback) => {
             // check if participant exists
             const participantUserDetails = await getUserAndUserRoomsFromDB(participant)
 
@@ -94,6 +96,17 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
                 userRooms.push(room)
                 socket.emit('userRoomsUpdated', userRooms)
                 callback(null)
+            } catch (err) {
+                callback('Unknown Server Error')
+            }
+        })
+
+        socket.on('createNewGroup', async (participants, displayName, callback) => {
+            //create new group
+            try {
+                const groupDetails = await createGroup(participants, displayName)
+                userRooms.push(groupDetails)
+                socket.emit('userRoomsUpdated', userRooms)
             } catch (err) {
                 callback('Unknown Server Error')
             }
