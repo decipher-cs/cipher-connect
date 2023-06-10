@@ -2,7 +2,7 @@ import { Button, Typography } from '@mui/material'
 import { useContext, useEffect, useRef, useState } from 'react'
 import ChatDisplaySection from '../components/ChatDisplaySection'
 import ChatInputBar from '../components/ChatInputBar'
-import TemporaryDrawer from '../components/TemporaryDrawer'
+import Sidebar from '../components/Sidebar'
 import { CredentialContext } from '../contexts/Credentials'
 import { useControlledTextField } from '../hooks/useTextField'
 import { socket } from '../socket'
@@ -86,21 +86,19 @@ export const Chat = () => {
     return (
         <>
             <Typography variant='subtitle1'>{currRoom === undefined ? 'undef' : currRoom.roomDisplayName}</Typography>
-            <Button onClick={() => console.log(chatMessageList)} />
 
-            <TemporaryDrawer
-                listItems={rooms.map(({ roomDisplayName }) => roomDisplayName)}
+            <Sidebar
+                listItems={rooms}
+                handleClickOnListDeleteIcon={clickedUsername => {}}
                 handleClickOnList={roomDisplayName => {
                     const roomId = rooms.find(room => room.roomDisplayName === roomDisplayName)?.roomId
                     if (roomId !== undefined) {
                         socket.emit('roomSelected', roomId)
                         socket.emit('messagesRequested', roomId)
                     }
+                    // {FriendListTextField({ placeholder: "Enter Friend's username" })}
                 }}
-                handleClickOnListIcon={clickedUsername => {}}
-            >
-                {FriendListTextField({ placeholder: "Enter Friend's username" })}
-            </TemporaryDrawer>
+            />
 
             {currRoom === undefined ? (
                 <div>Select a room/ user</div>
