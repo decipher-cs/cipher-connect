@@ -4,6 +4,7 @@ import {
     createGroup,
     createPrivateRoom,
     getAllMessagesFromRoom,
+    getAllUsers,
     getUserAndUserRoomsFromDB,
     getUserRoomsFromDB,
 } from './model.js'
@@ -54,6 +55,8 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         const username = socket.data.username
 
         const userRooms: Awaited<ReturnType<typeof getUserRoomsFromDB>> = []
+
+        getAllUsers().then(data => console.log('data is', data))
 
         getUserRoomsFromDB(username).then(rooms => {
             if (rooms === undefined) return
