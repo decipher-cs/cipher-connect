@@ -17,7 +17,8 @@ export interface ClientToServerEvents {
     updateNetworkList: (users: string[]) => void
     removeUserFromNetwork: (newConnectionName: string) => void // might wanna use acknowledgment here
     roomSelected: (roomId: string) => void
-    createNewRoom: (participant: string, callback: (response: null | string) => void) => void
+    createNewPrivateRoom: (participant: string, callback: (response: null | string) => void) => void
+    createNewGroup: (participants: string[], displayName: string, callback: (response: null | string) => void) => void
     addUsersToRoom: (usersToAdd: string[], roomName: string) => void
     messagesRequested: (roomId: string) => void
 }
