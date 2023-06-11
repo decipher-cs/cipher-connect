@@ -1,10 +1,9 @@
-import { Button, Typography } from '@mui/material'
+import { Button, TextField, Typography } from '@mui/material'
 import { useContext, useEffect, useRef, useState } from 'react'
 import ChatDisplaySection from '../components/ChatDisplaySection'
 import ChatInputBar from '../components/ChatInputBar'
 import Sidebar from '../components/Sidebar'
 import { CredentialContext } from '../contexts/Credentials'
-import { useControlledTextField } from '../hooks/useTextField'
 import { socket } from '../socket'
 import { PulseLoader } from 'react-spinners'
 import { message as MessageFromDB, room as Room } from '../types/prisma.client'
@@ -29,21 +28,23 @@ export const Chat = () => {
 
     const [rooms, setRooms] = useState<Room[]>([])
 
-    const {
-        setError,
-        setHelperText,
-        ControlledTextField: FriendListTextField,
-    } = useControlledTextField(participantName => {
-        socket.emit('createNewRoom', participantName, response => {
-            if (response === null) {
-                setError(false)
-                setHelperText('')
-            } else {
-                setError(true)
-                setHelperText(response)
-            }
-        })
-    })
+    const [newUserUsername, setNewUserUsername] = useState('')
+
+    // const {
+    //     setError,
+    //     setHelperText,
+    //     ControlledTextField: FriendListTextField,
+    // } = useControlledTextField(participantName => {
+    //     socket.emit('createNewPrivateRoom', participantName, response => {
+    //         if (response === null) {
+    //             setError(false)
+    //             setHelperText('')
+    //         } else {
+    //             setError(true)
+    //             setHelperText(response)
+    //         }
+    //     })
+    // })
 
     useEffect(() => {
         if (socket.connected === false && isLoggedIn === true) {
@@ -86,6 +87,25 @@ export const Chat = () => {
     return (
         <>
             <Typography variant='subtitle1'>{currRoom === undefined ? 'undef' : currRoom.roomDisplayName}</Typography>
+
+            <TextField
+                onKeyDown={e => {
+                    if (e.key.toLowerCase() !== 'enter') return
+                    socket.emit('createNewPrivateRoom', newUserUsername, response => {
+                        if (response === null) {
+                            // setError(false)
+                            // setHelperText('')
+                        } else {
+                            console.log(response)
+                            // setError(true)
+                            // setHelperText(response)
+                        }
+                    })
+                }}
+                value={newUserUsername}
+                onChange={e => setNewUserUsername(e.target.value)}
+                helperText='Add new group'
+            />
 
             <Sidebar
                 listItems={rooms}
