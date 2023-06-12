@@ -56,8 +56,6 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
 
         const userRooms: Awaited<ReturnType<typeof getUserRoomsFromDB>> = []
 
-        getAllUsers().then(data => console.log('data is', data))
-
         getUserRoomsFromDB(username).then(rooms => {
             if (rooms === undefined) return
             userRooms.push(...rooms)
@@ -84,7 +82,7 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
                 return
             }
 
-            // check if participants are already in a private group with current username. If they are not, then create a new room
+            // check if participants are already in a private room with current username. If they are not, then create a new room
             const roomDoesExists = participantUserDetails.rooms.find(room => {
                 return room.isMaxCapacityTwo && room.participants.find(user => user.username === username)
             })
@@ -125,6 +123,7 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         })
 
         socket.on('messagesRequested', async roomId => {
+            if (userRooms.find((room)=> room.roomId === roomId) === undefined) return 
             const messages = await getAllMessagesFromRoom(roomId)
             if (messages !== undefined) socket.emit('messagesRequested', messages)
         })
