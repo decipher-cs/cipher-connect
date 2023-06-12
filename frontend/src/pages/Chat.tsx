@@ -91,6 +91,26 @@ export const Chat = () => {
             <TextField
                 onKeyDown={e => {
                     if (e.key.toLowerCase() !== 'enter') return
+                    socket.emit('createNewGroup', [], 'foobarRandom'+crypto.randomUUID().slice(0,5), response => {
+                        if (response === null) {
+                            // setError(false)
+                            // setHelperText('')
+                            console.log('success?error')
+                        } else {
+                            console.log(response)
+                            // setError(true)
+                            // setHelperText(response)
+                        }
+                    })
+                }}
+                value={newUserUsername}
+                onChange={e => setNewUserUsername(e.target.value)}
+                helperText='Add new group'
+            />
+
+            <TextField
+                onKeyDown={e => {
+                    if (e.key.toLowerCase() !== 'enter') return
                     socket.emit('createNewPrivateRoom', newUserUsername, response => {
                         if (response === null) {
                             // setError(false)
@@ -104,7 +124,7 @@ export const Chat = () => {
                 }}
                 value={newUserUsername}
                 onChange={e => setNewUserUsername(e.target.value)}
-                helperText='Add new group'
+                helperText='Add new user'
             />
 
             <Sidebar
