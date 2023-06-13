@@ -1,4 +1,4 @@
-import { Button, TextField, Typography } from '@mui/material'
+import { Button, Dialog, TextField, Typography } from '@mui/material'
 import { useContext, useEffect, useRef, useState } from 'react'
 import ChatDisplaySection from '../components/ChatDisplaySection'
 import ChatInputBar from '../components/ChatInputBar'
@@ -7,6 +7,7 @@ import { CredentialContext } from '../contexts/Credentials'
 import { socket } from '../socket'
 import { PulseLoader } from 'react-spinners'
 import { message as MessageFromDB, room as Room } from '../types/prisma.client'
+import AddRoom from '../components/AddRoom'
 
 export type Message = Pick<MessageFromDB, 'senderUsername' | 'content' | 'createdAt' | 'roomId'>
 
@@ -88,10 +89,12 @@ export const Chat = () => {
         <>
             <Typography variant='subtitle1'>{currRoom === undefined ? 'undef' : currRoom.roomDisplayName}</Typography>
 
+            <AddRoom/>
+
             <TextField
                 onKeyDown={e => {
                     if (e.key.toLowerCase() !== 'enter') return
-                    socket.emit('createNewGroup', [], 'foobarRandom'+crypto.randomUUID().slice(0,5), response => {
+                    socket.emit('createNewGroup', [], 'foobarRandom' + crypto.randomUUID().slice(0, 5), response => {
                         if (response === null) {
                             // setError(false)
                             // setHelperText('')
