@@ -87,7 +87,8 @@ export const Chat = () => {
                 }}
                 keyDownActionAddGroup={(e, newGroupName) => {
                     if (e.key.toLowerCase() !== 'enter') return
-                    socket.emit('createNewGroup', [], newGroupName, response => {
+                    console.log(newGroupName)
+                    socket.emit('createNewGroup', [username], newGroupName, response => {
                         if (response === null) {
                             // setError(false)
                             // setHelperText('')
