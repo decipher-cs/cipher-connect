@@ -127,6 +127,8 @@ export const createPrivateRoom = async (participant1: string, participant2: stri
 }
 
 export const createGroup = async (participantsUsernames: string[], roomDisplayName: string) => {
+    if (participantsUsernames.length === 0) return undefined
+
     const participantsUsernamesObj = participantsUsernames.map(username => ({ username }))
 
     const group = await prisma.room.create({
