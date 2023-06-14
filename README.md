@@ -75,6 +75,7 @@ Install my-project with yarn
 - [ ] Remove abstraction from TemporaryDrawer, It is causing unnecessary confusion. 
 - [ ] DO NOT SEND OTHER PEOPLE'S PASSWORD HASHS TO OTHER USERS!!! (How did this even happen??)
 - [ ] userRooms in backend should be stored in a set (or something similar) not an array.
+- [ ] Ensure a room without participants can not exist OR run a scheduled job in DB to delete all rooms without participants.
 
 ## License
 
