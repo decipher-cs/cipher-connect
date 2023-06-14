@@ -103,10 +103,13 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         })
 
         socket.on('createNewGroup', async (participants, displayName, callback) => {
+            if (participants.length === 0) {
+                console.log('No participants provided to new group')
+            }
             //create new group
             try {
                 const groupDetails = await createGroup(participants, displayName)
-                userRooms.push(groupDetails)
+                if (groupDetails !== undefined) userRooms.push(groupDetails)
                 socket.emit('userRoomsUpdated', userRooms)
             } catch (err) {
                 callback('Unknown Server Error')
@@ -123,7 +126,7 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         })
 
         socket.on('messagesRequested', async roomId => {
-            if (userRooms.find((room)=> room.roomId === roomId) === undefined) return 
+            if (userRooms.find(room => room.roomId === roomId) === undefined) return
             const messages = await getAllMessagesFromRoom(roomId)
             if (messages !== undefined) socket.emit('messagesRequested', messages)
         })
