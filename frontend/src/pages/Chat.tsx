@@ -29,24 +29,6 @@ export const Chat = () => {
 
     const [rooms, setRooms] = useState<Room[]>([])
 
-    const [newUserUsername, setNewUserUsername] = useState('')
-
-    // const {
-    //     setError,
-    //     setHelperText,
-    //     ControlledTextField: FriendListTextField,
-    // } = useControlledTextField(participantName => {
-    //     socket.emit('createNewPrivateRoom', participantName, response => {
-    //         if (response === null) {
-    //             setError(false)
-    //             setHelperText('')
-    //         } else {
-    //             setError(true)
-    //             setHelperText(response)
-    //         }
-    //     })
-    // })
-
     useEffect(() => {
         if (socket.connected === false && isLoggedIn === true) {
             socket.auth = { username }
@@ -89,12 +71,23 @@ export const Chat = () => {
         <>
             <Typography variant='subtitle1'>{currRoom === undefined ? 'undef' : currRoom.roomDisplayName}</Typography>
 
-            <AddRoom/>
-
-            <TextField
-                onKeyDown={e => {
+            <AddRoom
+                keyDownActionAddRoom={(e, newUser) => {
                     if (e.key.toLowerCase() !== 'enter') return
-                    socket.emit('createNewGroup', [], 'foobarRandom' + crypto.randomUUID().slice(0, 5), response => {
+                    socket.emit('createNewPrivateRoom', newUser, response => {
+                        if (response === null) {
+                            // setError(false)
+                            // setHelperText('')
+                        } else {
+                            console.log(response)
+                            // setError(true)
+                            // setHelperText(response)
+                        }
+                    })
+                }}
+                keyDownActionAddGroup={(e, newGroupName) => {
+                    if (e.key.toLowerCase() !== 'enter') return
+                    socket.emit('createNewGroup', [], newGroupName, response => {
                         if (response === null) {
                             // setError(false)
                             // setHelperText('')
@@ -106,28 +99,6 @@ export const Chat = () => {
                         }
                     })
                 }}
-                value={newUserUsername}
-                onChange={e => setNewUserUsername(e.target.value)}
-                helperText='Add new group'
-            />
-
-            <TextField
-                onKeyDown={e => {
-                    if (e.key.toLowerCase() !== 'enter') return
-                    socket.emit('createNewPrivateRoom', newUserUsername, response => {
-                        if (response === null) {
-                            // setError(false)
-                            // setHelperText('')
-                        } else {
-                            console.log(response)
-                            // setError(true)
-                            // setHelperText(response)
-                        }
-                    })
-                }}
-                value={newUserUsername}
-                onChange={e => setNewUserUsername(e.target.value)}
-                helperText='Add new user'
             />
 
             <Sidebar
