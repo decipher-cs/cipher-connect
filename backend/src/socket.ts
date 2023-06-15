@@ -106,6 +106,11 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
             if (participants.length === 0) {
                 console.log('No participants provided to new group')
             }
+            if (displayName.length === 0) {
+                callback('Empty display name not allowed')
+                return
+            }
+
             //create new group
             try {
                 const groupDetails = await createGroup(participants, displayName)
