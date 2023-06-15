@@ -72,33 +72,17 @@ export const Chat = () => {
             <Typography variant='subtitle1'>{currRoom === undefined ? 'undef' : currRoom.roomDisplayName}</Typography>
 
             <AddRoom
-                keyDownActionAddRoom={(e, newUser) => {
-                    if (e.key.toLowerCase() !== 'enter') return
-                    socket.emit('createNewPrivateRoom', newUser, response => {
-                        if (response === null) {
-                            // setError(false)
-                            // setHelperText('')
-                        } else {
-                            console.log(response)
-                            // setError(true)
-                            // setHelperText(response)
-                        }
-                    })
+                keyDownActionAddRoom={async newUser => {
+                    const myPromise = new Promise<string | null>(resolve =>
+                        socket.emit('createNewPrivateRoom', newUser, response => resolve(response))
+                    )
+                    return await myPromise
                 }}
-                keyDownActionAddGroup={(e, newGroupName) => {
-                    if (e.key.toLowerCase() !== 'enter') return
-                    console.log(newGroupName)
-                    socket.emit('createNewGroup', [username], newGroupName, response => {
-                        if (response === null) {
-                            // setError(false)
-                            // setHelperText('')
-                            console.log('success?error')
-                        } else {
-                            console.log(response)
-                            // setError(true)
-                            // setHelperText(response)
-                        }
-                    })
+                keyDownActionAddGroup={async newGroupName => {
+                    const myPromise = new Promise<string | null>(resolve =>
+                        socket.emit('createNewGroup', [username], newGroupName, response => resolve(response))
+                    )
+                    return await myPromise
                 }}
             />
 
