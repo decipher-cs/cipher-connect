@@ -1,4 +1,5 @@
 import * as React from 'react'
+import GroupAddIcon from '@mui/icons-material/GroupAdd'
 import Button from '@mui/material/Button'
 import Dialog from '@mui/material/Dialog'
 import AppBar from '@mui/material/AppBar'
@@ -10,6 +11,7 @@ import Slide from '@mui/material/Slide'
 import { TransitionProps } from '@mui/material/transitions'
 import { Container, TextField } from '@mui/material'
 import { useState } from 'react'
+import { ClientToServerEvents } from '../types/socket'
 
 const Transition = React.forwardRef(function Transition(
     props: TransitionProps & {
@@ -20,9 +22,13 @@ const Transition = React.forwardRef(function Transition(
     return <Slide direction='up' ref={ref} {...props} />
 })
 
+// This is the type of callback parameters in socket.emit('eventName', args, callback)
+type ErrorStatusOnPrivateRoom = Parameters<Parameters<ClientToServerEvents['createNewPrivateRoom']>[1]>[0]
+type ErrorStatusOnGroup = Parameters<Parameters<ClientToServerEvents['createNewGroup']>[2]>[0]
+
 interface AddRoomProps {
-    keyDownActionAddRoom: (e: React.KeyboardEvent<HTMLDivElement>, newUser: string) => void
-    keyDownActionAddGroup: (e: React.KeyboardEvent<HTMLDivElement>, newGroupName: string) => void
+    keyDownActionAddRoom: (newUser: string) => Promise<ErrorStatusOnPrivateRoom | undefined>
+    keyDownActionAddGroup: (newGroupName: string) => Promise<ErrorStatusOnGroup | undefined>
 }
 
 // export default function FullScreenDialog() {
@@ -31,17 +37,21 @@ export default function AddRoom(props: AddRoomProps) {
 
     const [newUserUsername, setNewUserUsername] = useState('')
 
+    const [newUserUsernameErrorStatus, setNewUserUsernameErrorStatus] = useState({ error: false, errorDesc: '' })
+
     const [newGroupName, setNewGroupName] = useState('')
+
+    const [newGroupNameErrorStatus, setNewGroupNameErrorStatus] = useState({ error: false, errorDesc: '' })
 
     const handleClickOpen = () => setOpen(true)
 
     const handleClose = () => setOpen(false)
 
     return (
-        <div>
-            <Button variant='outlined' onClick={handleClickOpen}>
-                Open full-screen dialog
-            </Button>
+        <span>
+            <IconButton aria-label='open-menu' onClick={handleClickOpen}>
+                <GroupAddIcon />
+            </IconButton>
             <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={Transition}>
                 <AppBar sx={{ position: 'relative' }}>
                     <Toolbar>
@@ -56,19 +66,37 @@ export default function AddRoom(props: AddRoomProps) {
 
                 <Container>
                     <TextField
-                        onKeyDown={e => props.keyDownActionAddRoom(e, newUserUsername)}
+                        onKeyDown={async e => {
+                            if (e.key.toLowerCase() === 'enter') {
+                                const error = await props.keyDownActionAddRoom(newUserUsername)
+                                if (error !== null && error !== undefined) {
+                                    setNewUserUsernameErrorStatus({ error: true, errorDesc: error })
+                                } else setNewUserUsernameErrorStatus({ error: false, errorDesc: '' })
+                            }
+                        }}
+                        error={newUserUsernameErrorStatus.error}
+                        helperText={newUserUsernameErrorStatus.errorDesc}
                         value={newUserUsername}
                         onChange={e => setNewUserUsername(e.target.value)}
-                        helperText='Add new user'
+                        placeholder='enter username to add to list'
                     />
                     <TextField
-                        onKeyDown={e => props.keyDownActionAddGroup(e, newGroupName)}
+                        onKeyDown={async e => {
+                            if (e.key.toLowerCase() === 'enter') {
+                                const error = await props.keyDownActionAddGroup(newUserUsername)
+                                if (error !== null && error !== undefined) {
+                                    setNewGroupNameErrorStatus({ error: true, errorDesc: error })
+                                } else setNewGroupNameErrorStatus({ error: false, errorDesc: '' })
+                            }
+                        }}
+                        error={newGroupNameErrorStatus.error}
+                        helperText={newGroupNameErrorStatus.errorDesc}
                         value={newGroupName}
                         onChange={e => setNewGroupName(e.target.value)}
-                        helperText='Add new group'
+                        placeholder='enter group name to add to list'
                     />
                 </Container>
             </Dialog>
-        </div>
+        </span>
     )
 }
