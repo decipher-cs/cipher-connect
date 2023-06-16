@@ -7,6 +7,7 @@ import {
     getAllUsers,
     getUserAndUserRoomsFromDB,
     getUserRoomsFromDB,
+    removeParticipantFromRoom,
 } from './model.js'
 import { message, room } from '@prisma/client'
 
@@ -31,6 +32,7 @@ interface ClientToServerEvents {
     createNewGroup: (participants: string[], displayName: string, callback: (response: null | string) => void) => void
     roomSelected: (roomId: string) => void
     messagesRequested: (roomId: string) => void
+    leaveRoom: (roomId: string) => void
 }
 
 interface SocketData {
@@ -71,6 +73,18 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
             // Sync the broadcast and the insert call made to DB
             const msg = await addMessageToDB(username, targetRoomId, messageContent)
             console.log(msg)
+        })
+
+        socket.on('leaveRoom', roomId => {
+            userRooms.forEach((room, i) => {
+                if (room.roomId === roomId) {
+                    userRooms[i].participants = userRooms[i].participants.filter(
+                        participant => participant.username !== username
+                    )
+                }
+            })
+            removeParticipantFromRoom(roomId, username)
+            socket.emit('userRoomsUpdated', userRooms)
         })
 
         socket.on('createNewPrivateRoom', async (participant, callback) => {
