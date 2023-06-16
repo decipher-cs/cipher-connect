@@ -165,3 +165,16 @@ export const getAllMessagesFromRoom = async (roomId: string) => {
 
     return messages?.message
 }
+
+export const removeParticipantFromRoom = async (roomId: string, participantUsername: string) => {
+    const room = await prisma.room.update({
+        where: {
+            roomId,
+        },
+        data: {
+            participants: { disconnect: { username: participantUsername } },
+        },
+        include: { participants: true },
+    })
+    return room
+}
