@@ -38,8 +38,8 @@ const Sidebar = (props: SidebarProps) => {
         return (
             <Box sx={{ width: 'auto' }} role='presentation'>
                 <List>
-                    {props.listItems.map(({ roomDisplayName, isMaxCapacityTwo }, i) => (
-                        <ListItem key={i} disablePadding onClick={() => props.handleClickOnList(roomDisplayName)}>
+                    {props.listItems.map(({ roomId, roomDisplayName, isMaxCapacityTwo }, i) => (
+                        <ListItem key={i} disablePadding onClick={() => props.handleClickOnList(roomId)}>
                             <ListItemButton>
                                 <ListItemIcon onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
                                     <AccountCircleSharp />
@@ -49,10 +49,10 @@ const Sidebar = (props: SidebarProps) => {
                                     onClick={toggleDrawer(false)}
                                     onKeyDown={toggleDrawer(false)}
                                 />
-                                <IconButton onClick={() => props.handleClickOnListDeleteIcon(roomDisplayName)}>
-                                    <DeleteSharp />
-                                </IconButton>
                             </ListItemButton>
+                            <IconButton onClick={() => props.handleClickOnListDeleteIcon(roomId)}>
+                                <DeleteSharp />
+                            </IconButton>
                         </ListItem>
                     ))}
                 </List>
