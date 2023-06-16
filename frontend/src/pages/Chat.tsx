@@ -88,9 +88,12 @@ export const Chat = () => {
 
             <Sidebar
                 listItems={rooms}
-                handleClickOnListDeleteIcon={clickedUsername => {}}
-                handleClickOnList={roomDisplayName => {
-                    const roomId = rooms.find(room => room.roomDisplayName === roomDisplayName)?.roomId
+                handleClickOnListDeleteIcon={roomId => {
+                    if (roomId !== undefined) {
+                        socket.emit('leaveRoom', roomId)
+                    }
+                }}
+                handleClickOnList={roomId => {
                     if (roomId !== undefined) {
                         socket.emit('roomSelected', roomId)
                         socket.emit('messagesRequested', roomId)
@@ -102,10 +105,11 @@ export const Chat = () => {
             {currRoom === undefined ? (
                 <div>Select a room/ user</div>
             ) : (
-                <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
+                <>
+                    <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
+                    <ChatInputBar setChatMessageList={setChatMessageList} currRoom={currRoom?.roomId} />
+                </>
             )}
-
-            <ChatInputBar setChatMessageList={setChatMessageList} currRoom={currRoom?.roomId} />
         </>
     )
 }
