@@ -76,6 +76,7 @@ Install my-project with yarn
 - [ ] DO NOT SEND OTHER PEOPLE'S PASSWORD HASHS TO OTHER USERS!!! (How did this even happen??)
 - [ ] userRooms in backend should be stored in a set (or something similar) not an array.
 - [ ] Ensure a room without participants can not exist OR run a scheduled job in DB to delete all rooms without participants.
+- [ ] Might wanna use a library like [promise-retry](https://www.npmjs.com/package/promise-retry) to re-run failed queries to DB.
 
 ## License
 
