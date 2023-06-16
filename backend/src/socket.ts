@@ -81,6 +81,7 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
                     userRooms[i].participants = userRooms[i].participants.filter(
                         participant => participant.username !== username
                     )
+                    userRooms.splice(i)
                 }
             })
             removeParticipantFromRoom(roomId, username)
