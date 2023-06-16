@@ -50,7 +50,12 @@ const Sidebar = (props: SidebarProps) => {
                                     onKeyDown={toggleDrawer(false)}
                                 />
                             </ListItemButton>
-                            <IconButton onClick={() => props.handleClickOnListDeleteIcon(roomId)}>
+                            <IconButton
+                                onClick={() => {
+                                    props.handleClickOnListDeleteIcon(roomId)
+                                    toggleDrawer(false)
+                                }}
+                            >
                                 <DeleteSharp />
                             </IconButton>
                         </ListItem>
