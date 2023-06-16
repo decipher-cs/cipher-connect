@@ -21,4 +21,5 @@ export interface ClientToServerEvents {
     createNewGroup: (participants: string[], displayName: string, callback: (response: null | string) => void) => void
     addUsersToRoom: (usersToAdd: string[], roomName: string) => void
     messagesRequested: (roomId: string) => void
+    leaveRoom: (roomId: string) => void
 }
