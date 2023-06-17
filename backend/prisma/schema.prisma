@@ -8,15 +8,14 @@ datasource db {
 }
 
 model user {
-  username                  String         @id @db.VarChar(16)
-  displayName               String         @unique @map("display_name") @db.VarChar(16)
-  passwordHash              String         @map("password_hash") @db.VarChar(60)
-  createTime                DateTime       @default(now()) @map("create_time") @db.Timestamp(0)
-  refreshTokens             refreshToken[]
-  userNetworkUsername       userNetwork[]  @relation("userNetworkUsername")
-  userNetworkConnectionName userNetwork[]  @relation("userNetworkConnectionName")
-  rooms                     room[]
-  message                   message[]
+  username       String           @id @db.VarChar(16)
+  displayName    String           @unique @map("display_name") @db.VarChar(16)
+  passwordHash   String           @map("password_hash") @db.VarChar(60)
+  createTime     DateTime         @default(now()) @map("create_time") @db.Timestamp(0)
+  refreshTokens  refreshToken[]
+  message        message[]
+  userRoomConfig userRoomConfig[]
+  roomRoomId     String?
 
   @@map("users")
 }
@@ -29,22 +28,23 @@ model refreshToken {
   @@map("refresh_tokens")
 }
 
-model userNetwork {
-  key                      Int    @id @default(autoincrement())
-  userToUsername           user   @relation("userNetworkUsername", fields: [username], references: [username])
-  userToConnectionUsername user   @relation("userNetworkConnectionName", fields: [connectionUsername], references: [username])
-  username                 String
-  connectionUsername       String @map("connection_username")
+model userRoomConfig {
+  key            Int     @id
+  userRelation   user    @relation(fields: [userUsername], references: [username])
+  userUsername   String  @db.VarChar(16)
+  roomIdRelation room    @relation(fields: [roomId], references: [roomId])
+  roomId         String
+  isHidden       Boolean @default(false)
 
-  @@map("user_network")
+  @@map("user_room_config")
 }
 
 model room {
-  roomId           String    @id @default(cuid())
-  roomDisplayName  String    @db.VarChar(33)
-  participants     user[]
-  isMaxCapacityTwo Boolean   @default(false)
+  roomId           String           @id @default(cuid())
+  roomDisplayName  String           @db.VarChar(33)
+  isMaxCapacityTwo Boolean          @default(false)
   message          message[]
+  userRoomConfig   userRoomConfig[]
 }
 
 model message {
