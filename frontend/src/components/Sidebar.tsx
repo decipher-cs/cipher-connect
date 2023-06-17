@@ -7,21 +7,27 @@ import ListItemButton from '@mui/material/ListItemButton'
 import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
 import React, { useState } from 'react'
-import { IconButton, Tooltip } from '@mui/material'
+import { Collapse, IconButton, Tooltip } from '@mui/material'
 import { AccountCircleSharp, DeleteSharp } from '@mui/icons-material'
 import { room as Room } from '../types/prisma.client'
-
-// interface SidebarListProps extends Pick<SidebarProps, 'listItems'> {}
+import VisibilityOff from '@mui/icons-material/VisibilityOff'
 
 interface SidebarProps extends React.PropsWithChildren {
     listItems: Room[]
 
     handleClickOnList: (key: string) => void
     handleClickOnListDeleteIcon: (clickedItem: string) => void
+    handleClickOnItemHideIcon: (clickedItem: string) => void
 }
 
 const Sidebar = (props: SidebarProps) => {
     const [drawerIsOpen, setDrawerIsOpen] = useState(false)
+
+    const [open, setOpen] = useState(true)
+
+    const handleClick = () => {
+        setOpen(!open)
+    }
 
     const toggleDrawer = (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
         if (
@@ -59,26 +65,51 @@ const Sidebar = (props: SidebarProps) => {
                             </ListItemButton>
                             <IconButton
                                 onClick={() => {
-                                    props.handleClickOnListDeleteIcon(roomId)
+                                    props.handleClickOnItemHideIcon(roomId)
+                                }}
+                                onKeyDown={toggleDrawer(false)}
+                            >
+                                <VisibilityOff />
+                            </IconButton>
+                            <IconButton
+                                onClick={() => {
+                                    // props.handleClickOnListDeleteIcon(roomId)
+                                    console.log('Functionality Temporarily Disabled')
                                 }}
                                 onKeyDown={toggleDrawer(false)}
                             >
                                 <DeleteSharp />
                             </IconButton>
                         </ListItem>
+                        // collapsable list here with all hidden users.
+                        //
                     ))}
+                </List>
+                <List>
+                    <IconButton
+                        onClick={() => {
+                            handleClick()
+                        }}
+                    >
+                        <VisibilityOff />
+                    </IconButton>
+                    <Collapse in={open} timeout='auto' unmountOnExit>
+                        <ListItem>sample_Item</ListItem>
+                        <ListItem>sample_Item</ListItem>
+                        <ListItem>sample_Item</ListItem>
+                    </Collapse>
                 </List>
             </Box>
         )
     }
     return (
         <>
-            <Tooltip title='Change Room' placement='top'>
+            <Tooltip title='Change Room' placement='left'>
                 <IconButton onClick={toggleDrawer(true)}>
                     <MenuRoundedIcon />
                 </IconButton>
             </Tooltip>
-            <Drawer anchor='bottom' open={drawerIsOpen} onClose={toggleDrawer(false)}>
+            <Drawer anchor='left' open={drawerIsOpen} onClose={toggleDrawer(false)}>
                 <SidebarList />
             </Drawer>
         </>
