@@ -4,7 +4,6 @@ import {
     createGroup,
     createPrivateRoom,
     getAllMessagesFromRoom,
-    getAllUsers,
     getUserAndUserRoomsFromDB,
     getUserRoomsFromDB,
     removeParticipantFromRoom,
