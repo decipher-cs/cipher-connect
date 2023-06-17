@@ -88,17 +88,22 @@ export const Chat = () => {
 
             <Sidebar
                 listItems={rooms}
-                handleClickOnListDeleteIcon={roomId => {
-                    if (roomId !== undefined) {
-                        socket.emit('leaveRoom', roomId)
-                    }
-                }}
                 handleClickOnList={roomId => {
                     if (roomId !== undefined) {
                         socket.emit('roomSelected', roomId)
                         socket.emit('messagesRequested', roomId)
                     }
-                    // {FriendListTextField({ placeholder: "Enter Friend's username" })}
+                }}
+                handleClickOnItemHideIcon={roomId => {
+                    if (roomId !== undefined) {
+                        // socket.emit('roomSelected', roomId)
+                        // socket.emit('messagesRequested', roomId)
+                    }
+                }}
+                handleClickOnListDeleteIcon={roomId => {
+                    if (roomId !== undefined) {
+                        socket.emit('leaveRoom', roomId)
+                    }
                 }}
             />
 
