@@ -70,36 +70,10 @@ export const getUsernameFromRefreshToken = async (token: string) => {
     return username
 }
 
-export const addNewNetworkNameToNetworks = async (username: string, connectionNames: string[]) => {
-    const data = connectionNames.map(connectionUsername => ({ username, connectionUsername }))
-
-    const updatedUsernameCount = await prisma.userNetwork.createMany({ data: data })
-
-    return updatedUsernameCount
-}
-
-export const getUserNetworkList = async (username: string) => {
-    const network = await prisma.userNetwork.findMany({ where: { username }, select: { connectionUsername: true } })
-
-    const networkArr = network.map(({ connectionUsername }) => connectionUsername)
-
-    return networkArr
-}
-
-export const removeConnectionFromNetwork = async (username: string, connectionNames: string[]) => {
-    const data = connectionNames.map(connectionUsername => ({ username, connectionUsername }))
-
-    const removedCount = await prisma.userNetwork.deleteMany({
-        where: { OR: data },
-    })
-
-    return removedCount
-}
-
 export const getUserAndUserRoomsFromDB = async (username: string) => {
-    const rooms = await prisma.user.findUnique({
-        where: { username },
-        include: { rooms: { include: { participants: true } } },
+    const rooms = await prisma.userRoomConfig.findMany({
+        where: { userUsername: username },
+        include: { roomIdRelation: true },
     })
 
     return rooms
@@ -108,19 +82,28 @@ export const getUserAndUserRoomsFromDB = async (username: string) => {
 export const getUserRoomsFromDB = async (username: string) => {
     const rooms = await getUserAndUserRoomsFromDB(username)
 
-    return rooms?.rooms
+    return rooms
 }
 
 export const createPrivateRoom = async (participant1: string, participant2: string) => {
-    const room = await prisma.room.create({
+    // const room = await prisma.userRoomConfig.createMany({
+    //     data: [{ roomId: 'fawe', userUsername: 'afwe' }],
+    // })
+    const room = await prisma.userRoomConfig.createMany({
         data: {
-            roomDisplayName: `${participant1}-${participant2}`.slice(0, 33),
-            participants: {
-                connect: [{ username: participant1 }, { username: participant2 }],
-            },
-            isMaxCapacityTwo: true,
+
+            // roomIdRelation: {
+            //     create: {
+            //         roomDisplayName: `${participant1}-${participant2}`.slice(0, 33),
+            //         isMaxCapacityTwo: true,
+            //     },
+            // },
+            // userRelation: {
+            //     connect: {
+            //         username: 'exampleUser',
+            //     },
+            // },
         },
-        include: { participants: true },
     })
 
     return room
