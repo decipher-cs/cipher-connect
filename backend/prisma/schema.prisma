@@ -29,7 +29,7 @@ model refreshToken {
 }
 
 model userRoomConfig {
-  key            Int     @id
+  key            Int     @id @unique @default(autoincrement())
   userRelation   user    @relation(fields: [userUsername], references: [username])
   userUsername   String  @db.VarChar(16)
   roomIdRelation room    @relation(fields: [roomId], references: [roomId])
