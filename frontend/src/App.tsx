@@ -1,4 +1,4 @@
-import { Button, Typography } from '@mui/material'
+import { ThemeProvider, Typography } from '@mui/material'
 import { useContext, useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Navbar } from './components/Navbar'
@@ -8,6 +8,7 @@ import { Chat } from './pages/Chat'
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
 import { Logout } from './pages/Logout'
+import { lightMod } from './theme/customThemes/lightModTheme'
 
 const TempUsernameDisplay = () => {
     const { username, handleCredentialChange, isLoggedIn } = useContext(CredentialContext)
@@ -47,27 +48,29 @@ const TempUsernameDisplay = () => {
 
 const App = () => {
     return (
-        <CredentialContextProvider>
-            <BrowserRouter>
-                <Navbar redirectionPaths={['home', 'login', 'logout', 'chat']} />
-                <TempUsernameDisplay />
+        <ThemeProvider theme={lightMod}>
+            <CredentialContextProvider>
+                <BrowserRouter>
+                    <Navbar redirectionPaths={['home', 'login', 'logout', 'chat']} />
+                    <TempUsernameDisplay />
 
-                <Routes>
-                    <Route path='/home' element={<Home />} />
-                    <Route
-                        path='/chat'
-                        element={
-                            <RequireAuth>
-                                <Chat />
-                            </RequireAuth>
-                        }
-                    />
-                    <Route path='/login' element={<Login />} />
-                    <Route path='/logout' element={<Logout />} />
-                    <Route path='*' element={<Navigate to='/home' replace />} />
-                </Routes>
-            </BrowserRouter>
-        </CredentialContextProvider>
+                    <Routes>
+                        <Route path='/home' element={<Home />} />
+                        <Route
+                            path='/chat'
+                            element={
+                                <RequireAuth>
+                                    <Chat />
+                                </RequireAuth>
+                            }
+                        />
+                        <Route path='/login' element={<Login />} />
+                        <Route path='/logout' element={<Logout />} />
+                        <Route path='*' element={<Navigate to='/home' replace />} />
+                    </Routes>
+                </BrowserRouter>
+            </CredentialContextProvider>
+        </ThemeProvider>
     )
 }
 
