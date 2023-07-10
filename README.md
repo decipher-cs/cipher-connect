@@ -59,12 +59,17 @@ Install my-project with yarn
 
 ![App Screenshot](./frontend/public/)
 
+## Design
+
+[Mohammad Hashemi](https://dribbble.com/shots/18945888-Messenger-Mobile-Web-Application-Light-Mode/attachments/14116324?mode=media) from [dribble](https://dribbble.com/)
+![design source](./assets/design_source.jpg)
 
 ## Acknowledgements
 
  - [Awesome Readme Templates](https://awesomeopensource.com/project/elangosundar/awesome-README-templates)
  - [Awesome README](https://github.com/matiassingers/awesome-readme)
  - [How to write a Good readme](https://bulldogjob.com/news/449-how-to-write-a-good-readme-for-your-github-project)
+ - [Design inspiration](https://dribbble.com/shots/18945888-Messenger-Mobile-Web-Application-Light-Mode/attachments/14116324?mode=media)
 
 ## ToDo
 
