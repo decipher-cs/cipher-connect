@@ -7,53 +7,70 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model user {
-  username       String           @id @db.VarChar(16)
-  displayName    String           @unique @map("display_name") @db.VarChar(16)
-  passwordHash   String           @map("password_hash") @db.VarChar(60)
-  createTime     DateTime         @default(now()) @map("create_time") @db.Timestamp(0)
-  refreshTokens  refreshToken[]
-  message        message[]
-  userRoomConfig userRoomConfig[]
-  roomRoomId     String?
-
-  @@map("users")
-}
-
 model refreshToken {
   tokenOwnerIdRelation user   @relation(fields: [username], references: [username])
   tokenValue           String @id @map("token_value")
   username             String @map("username") @db.VarChar(16)
 
-  @@map("refresh_tokens")
+  @@map("refresh_token")
 }
 
-model userRoomConfig {
-  key            Int     @id @unique @default(autoincrement())
-  userRelation   user    @relation(fields: [userUsername], references: [username])
-  userUsername   String  @db.VarChar(16)
-  roomIdRelation room    @relation(fields: [roomId], references: [roomId])
-  roomId         String
-  isHidden       Boolean @default(false)
+model user {
+  username     String   @id @db.VarChar(16)
+  displayName  String   @unique @map("display_name") @db.VarChar(16)
+  passwordHash String   @map("password_hash") @db.VarChar(60)
+  createTime   DateTime @default(now()) @map("create_time") @db.Timestamp(0)
 
-  @@map("user_room_config")
+  refreshTokens refreshToken[]
+  message       message[]
+  roomConfig    roomConfig[]
+  participation userRoomParticipation[]
+}
+
+model roomConfig {
+  key      Int    @id @unique @default(autoincrement())
+  username String @db.VarChar(16)
+  roomId   String
+
+  isHidden Boolean @default(false)
+
+  userRelation   user @relation(fields: [username], references: [username])
+  roomIdRelation room @relation(fields: [roomId], references: [roomId])
+
+  @@map("room_config")
+  @@unique([username, roomId])
 }
 
 model room {
-  roomId           String           @id @default(cuid())
-  roomDisplayName  String           @db.VarChar(33)
-  isMaxCapacityTwo Boolean          @default(false)
-  message          message[]
-  userRoomConfig   userRoomConfig[]
+  roomId           String  @id @default(cuid())
+  roomDisplayName  String  @db.VarChar(33)
+  isMaxCapacityTwo Boolean @default(false)
+
+  message        message[]
+  userRoomConfig roomConfig[]
+  participation  userRoomParticipation[]
+}
+
+model userRoomParticipation {
+  key      Int    @id @unique @default(autoincrement())
+  roomId   String
+  username String
+
+  roomIdRelation   room @relation(fields: [roomId], references: [roomId])
+  usernameRelation user @relation(fields: [username], references: [username])
+
+  @@map("user_room_participation")
 }
 
 model message {
   key            Int      @id @default(autoincrement())
-  sender         user     @relation(fields: [senderUsername], references: [username])
   senderUsername String   @db.VarChar(16)
-  room           room     @relation(fields: [roomId], references: [roomId])
   roomId         String
   content        String   @db.LongText
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  editedAt       DateTime
+
+  sender user @relation(fields: [senderUsername], references: [username])
+  room   room @relation(fields: [roomId], references: [roomId])
 }
