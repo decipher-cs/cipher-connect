@@ -9,15 +9,25 @@ export const MessageSidebar = (props: {}) => {
             }}
         >
             <List>
-                <ListItem>
-                    <ListItemIcon>
-                        <Avatar />
-                    </ListItemIcon>
-                    <ListItemText primary={<>name</>} secondary={<>subtext</>} />
-                </ListItem>
+                {Array(2)
+                    .fill('')
+                    .map(() => (
+                        <MessageListItem />
+                    ))}
             </List>
         </Box>
     )
 }
 
-
+const MessageListItem = () => {
+    return (
+        <>
+            <ListItem>
+                <ListItemIcon>
+                    <Avatar />
+                </ListItemIcon>
+                <ListItemText primary={<>name</>} secondary={<>subtext</>} />
+            </ListItem>
+        </>
+    )
+}
