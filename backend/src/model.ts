@@ -150,35 +150,51 @@ export const createPrivateRoomAndAddParticipants = async (participant1: string, 
     addParticipantsToPrivateRoom(participant1, participant2, roomDetails.roomId)
 }
 
-// Deprecating this in favour of ...
-export const createGroup = async (participantsUsernames: string[], roomDisplayName: string) => {
-    if (participantsUsernames.length === 0) return undefined
+// Deprecating this in favour of createRoomForMany, addParticipantsToGroup, and createGroupAndAddParticipantsToGroup
+// export const createGroup = async (participantsUsernames: string[], roomDisplayName: string) => {
+//     if (participantsUsernames.length === 0) return undefined
+//
+//     const participantsUsernamesObj = participantsUsernames.map(username => ({ username }))
+//
+//     const group = await prisma.room.create({
+//         data: {
+//             roomDisplayName,
+//             isMaxCapacityTwo: false,
+//             participants: { connect: participantsUsernamesObj },
+//         },
+//         include: { participants: true },
+//     })
+//
+//     return group
+// }
 
-    const participantsUsernamesObj = participantsUsernames.map(username => ({ username }))
-
-    const group = await prisma.room.create({
+export const createRoomForMany = async () => {
+    return prisma.room.create({
         data: {
-            roomDisplayName,
+            roomDisplayName: 'Group',
             isMaxCapacityTwo: false,
-            participants: { connect: participantsUsernamesObj },
         },
-        include: { participants: true },
     })
-
-    return group
 }
 
+export const addParticipantsToGroup = async (participants: string[], roomId: string) => {
+    const usernameWithRoomId = participants.map(username => ({ username, roomId }))
+    return await prisma.userRoomParticipation.createMany({ data: usernameWithRoomId })
+}
+
+export const createGroupAndAddParticipantsToGroup = async (participants: string[]) => {
+    const room = await createRoomForMany()
+    return addParticipantsToGroup(participants, room.roomId)
+}
 
 export const addMessageToDB = async (msgSender: string, roomId: string, textContent: string) => {
-    const msg = await prisma.message.create({
+    return await prisma.message.create({
         data: {
-            content: textContent,
-            roomId: roomId,
             senderUsername: msgSender,
+            roomId,
+            content: textContent,
         },
     })
-
-    return msg
 }
 
 export const getAllMessagesFromRoom = async (roomId: string) => {
@@ -192,15 +208,16 @@ export const getAllMessagesFromRoom = async (roomId: string) => {
     return messages?.message
 }
 
-export const removeParticipantFromRoom = async (roomId: string, participantUsername: string) => {
-    const room = await prisma.room.update({
-        where: {
-            roomId,
-        },
-        data: {
-            participants: { disconnect: { username: participantUsername } },
-        },
-        include: { participants: true },
-    })
-    return room
-}
+// This will be kept in stasis until its use is found
+// export const removeParticipantFromRoom = async (roomId: string, participantUsername: string) => {
+//     const room = await prisma.room.update({
+//         where: {
+//             roomId,
+//         },
+//         data: {
+//             participants: { disconnect: { username: participantUsername } },
+//         },
+//         include: { participants: true },
+//     })
+//     return room
+// }
