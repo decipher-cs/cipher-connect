@@ -1,6 +1,6 @@
 {
     "name": "server-auth",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "description": "backend for messaging app",
     "main": "./dist/server.js",
     "license": "GNU General Public License v3.0",
@@ -29,6 +29,7 @@
         "express": "^4.18.2",
         "express-openid-connect": "^2.14.0",
         "prisma": "^4.14.1",
+        "prisma-erd-generator": "^1.8.0",
         "ts-node": "^10.9.1",
         "tsc-watch": "^6.0.4"
     }
