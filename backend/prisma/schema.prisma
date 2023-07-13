@@ -16,15 +16,25 @@ model refreshToken {
 }
 
 model user {
-  username     String   @id @db.VarChar(16)
-  displayName  String   @unique @map("display_name") @db.VarChar(16)
-  passwordHash String   @map("password_hash") @db.VarChar(60)
-  createTime   DateTime @default(now()) @map("create_time") @db.Timestamp(0)
+  username    String   @id @db.VarChar(16)
+  displayName String   @unique @map("display_name") @db.VarChar(16)
+  createTime  DateTime @default(now()) @map("create_time") @db.Timestamp(0)
 
   refreshTokens refreshToken[]
   message       message[]
   roomConfig    roomConfig[]
   participation userRoomParticipation[]
+  passwordHash  passwordHash?
+}
+
+model passwordHash {
+  key      Int    @id @unique @default(autoincrement())
+  username String @unique @db.VarChar(16)
+  hash     String @map("hash") @db.VarChar(60)
+
+  usernameRelation user @relation(fields: [username], references: [username])
+
+  @@map("password_hash")
 }
 
 model roomConfig {
@@ -37,8 +47,8 @@ model roomConfig {
   userRelation   user @relation(fields: [username], references: [username])
   roomIdRelation room @relation(fields: [roomId], references: [roomId])
 
-  @@map("room_config")
   @@unique([username, roomId])
+  @@map("room_config")
 }
 
 model room {
@@ -53,12 +63,13 @@ model room {
 
 model userRoomParticipation {
   key      Int    @id @unique @default(autoincrement())
-  roomId   String
   username String
+  roomId   String
 
-  roomIdRelation   room @relation(fields: [roomId], references: [roomId])
   usernameRelation user @relation(fields: [username], references: [username])
+  roomIdRelation   room @relation(fields: [roomId], references: [roomId])
 
+  @@unique([username, roomId])
   @@map("user_room_participation")
 }
 
@@ -68,8 +79,7 @@ model message {
   roomId         String
   content        String   @db.LongText
   createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  editedAt       DateTime
+  editedAt      DateTime @updatedAt
 
   sender user @relation(fields: [senderUsername], references: [username])
   room   room @relation(fields: [roomId], references: [roomId])
