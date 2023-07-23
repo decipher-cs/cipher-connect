@@ -23,7 +23,7 @@ model user {
   refreshTokens refreshToken[]
   message       message[]
   roomConfig    roomConfig[]
-  participation userRoomParticipation[]
+  participants  userRoomParticipation[]
   passwordHash  passwordHash?
 }
 
@@ -58,7 +58,7 @@ model room {
 
   message        message[]
   userRoomConfig roomConfig[]
-  participates   userRoomParticipation[]
+  participants   userRoomParticipation[]
 }
 
 model userRoomParticipation {
