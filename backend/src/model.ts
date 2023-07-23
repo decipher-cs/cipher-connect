@@ -82,7 +82,35 @@ export const getUsernameFromRefreshToken = async (token: string) => {
     return username
 }
 
-// Deprecating this in favour of getAllUserRooms
+export const getAllRooms = async (username: string) => {
+    return await prisma.userRoomParticipation.findMany()
+}
+
+export const getBasicRoomDetails = async (roomId: string) => {
+    return await prisma.room.findUnique({
+        where: {
+            roomId,
+        },
+    })
+}
+
+export const getRoomDetailsWithParticipants = async (roomId: string) => {
+    return await prisma.room.findUnique({
+        where: {
+            roomId,
+        },
+        include: {
+            participants: {
+                select: {
+                    key: true,
+                    username: true,
+                },
+            },
+        },
+    })
+}
+
+// Deprecating this in favour of getRoomsContainingUser
 // export const getUserAndUserRoomsFromDB = async (username: string) => {
 //     const rooms = await prisma.roomConfig.findMany({
 //         where: { userUsername: username },
@@ -91,18 +119,44 @@ export const getUsernameFromRefreshToken = async (token: string) => {
 //
 //     return rooms
 // }
-export const getAllUserRooms = async (username: string) => {
-    return await prisma.userRoomParticipation.findMany({
-        where: { username },
-    })
-}
 
-// Deprecating this in favour of ?___?
+// Deprecating this in favour of getRoomsContainingUser
 // export const getUserRoomsFromDB = async (username: string) => {
 //     const rooms = await getUserAndUserRoomsFromDB(username)
 //
 //     return rooms
 // }
+export const getRoomsContainingUser = async (username: string) => {
+    return await prisma.room.findMany({
+        where: { participants: { some: { username } } },
+    })
+}
+
+export const getRoomsContainingUserWithRoomParticipants = async (username: string) => {
+    const rooms = await prisma.userRoomParticipation.findMany({
+        where: { username },
+        select: {
+            roomId: true,
+            roomIdRelation: {
+                select: {
+                    roomDisplayName: true,
+                    participants: {
+                        select: {
+                            username: true,
+                        },
+                    },
+                    isMaxCapacityTwo: true,
+                },
+            },
+        },
+    })
+    return rooms.map(({ roomId, roomIdRelation: { participants, isMaxCapacityTwo, roomDisplayName } }) => ({
+        roomId,
+        roomDisplayName,
+        isMaxCapacityTwo,
+        participants,
+    }))
+}
 
 // Deprecating this in favour of createRoomForTwo, createPrivateRoomAndAddParticipants, and createRoomForTwo
 // export const createPrivateRoom = async (participant1: string, participant2: string) => {
@@ -147,7 +201,8 @@ export const addParticipantsToPrivateRoom = async (participant1: string, partici
 
 export const createPrivateRoomAndAddParticipants = async (participant1: string, participant2: string) => {
     const roomDetails = await createRoomForTwo()
-    addParticipantsToPrivateRoom(participant1, participant2, roomDetails.roomId)
+    await addParticipantsToPrivateRoom(participant1, participant2, roomDetails.roomId)
+    return await getRoomDetailsWithParticipants(roomDetails.roomId)
 }
 
 // Deprecating this in favour of createRoomForMany, addParticipantsToGroup, and createGroupAndAddParticipantsToGroup
