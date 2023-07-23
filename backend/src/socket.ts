@@ -1,21 +1,38 @@
 import { Server } from 'socket.io'
 import {
     addMessageToDB,
-    createGroup,
-    createPrivateRoom,
+    createPrivateRoomAndAddParticipants,
+    // createGroup,
+    // createPrivateRoom,
     getAllMessagesFromRoom,
-    getUserAndUserRoomsFromDB,
-    getUserRoomsFromDB,
-    removeParticipantFromRoom,
+    getRoomDetailsWithParticipants,
+    // getAllUserRooms,
+    getRoomsContainingUser,
+    getRoomsContainingUserWithRoomParticipants,
+    getUserFromDB,
+    // getUserAndUserRoomsFromDB,
+    // getUserRoomsFromDB,
+    // removeParticipantFromRoom,
 } from './model.js'
-import { message, room } from '@prisma/client'
+import { message, room, userRoomParticipation } from '@prisma/client'
 
 interface ServerToClientEvents {
     noArg: () => void
     basicEmit: (a: number, b: string, c: Buffer) => void
     withAck: (d: string, callback: (e: number) => void) => void
     privateMessage: (targetRoomId: string, msg: string, senderUsername: string) => void
-    userRoomsUpdated: (rooms: room[]) => void
+    userRoomsUpdated: (
+        rooms: {
+            roomId: string
+            roomDisplayName: string
+            isMaxCapacityTwo: boolean
+            participants: {
+                username: string
+                key?: number
+            }[]
+        }[]
+    ) => void
+
     roomChanged: (room: room) => void
     messagesRequested: (messages: message[]) => void
 }
@@ -27,8 +44,8 @@ interface InterServerEvents {}
 interface ClientToServerEvents {
     privateMessage: (targetRoomId: string, msg: string) => void
     addUsersToRoom: (usersToAdd: string[], roomName: string) => void
-    createNewPrivateRoom: (participant: string, callback: (response: null | string) => void) => void
-    createNewGroup: (participants: string[], displayName: string, callback: (response: null | string) => void) => void
+    createNewPrivateRoom: (participant: string, callback: (response: string) => void) => void
+    createNewGroup: (participants: string[], displayName: string, callback: (response: string) => void) => void
     roomSelected: (roomId: string) => void
     messagesRequested: (roomId: string) => void
     leaveRoom: (roomId: string) => void
@@ -40,10 +57,11 @@ interface SocketData {
 
 export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>) => {
     // Set socket.data.username on socket
-    io.use((socket, next) => {
+    io.use(async (socket, next) => {
         const username: string | undefined = socket.handshake.auth.username
 
         if (username === undefined) return next(new Error('Username not valid'))
+        if ((await getUserFromDB(username)) === null) return next(new Error('Username not in database'))
 
         socket.data.username = username
 
@@ -55,16 +73,16 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
 
         const username = socket.data.username
 
-        const userRooms: Awaited<ReturnType<typeof getUserRoomsFromDB>> = []
+        const userRooms: Awaited<ReturnType<typeof getRoomsContainingUserWithRoomParticipants>> = []
 
-        getUserRoomsFromDB(username).then(rooms => {
+        getRoomsContainingUserWithRoomParticipants(username).then(rooms => {
             if (rooms === undefined) return
             userRooms.push(...rooms)
             socket.emit('userRoomsUpdated', rooms)
         })
 
+        // Following 2 lines do not make any sense anymore. I forgot why I put them here. I'll have to figure it out ;P
         socket.rooms.forEach(roomId => socket.leave(roomId))
-
         socket.join(username)
 
         socket.on('privateMessage', async (targetRoomId, messageContent) => {
@@ -74,75 +92,46 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
             console.log(msg)
         })
 
-        socket.on('leaveRoom', roomId => {
-            userRooms.forEach((room, i) => {
-                if (room.roomId === roomId) {
-                    userRooms[i].participants = userRooms[i].participants.filter(
-                        participant => participant.username !== username
-                    )
-                    userRooms.splice(i)
-                }
-            })
-            removeParticipantFromRoom(roomId, username)
-            socket.emit('userRoomsUpdated', userRooms)
-        })
-
         socket.on('createNewPrivateRoom', async (participant, callback) => {
-            // check if participant exists
-            const participantUserDetails = await getUserAndUserRoomsFromDB(participant)
-
-            if (participantUserDetails === null) {
-                callback('User Does Not Exist')
-                return
-            }
+            const roomsContainingUser = await getRoomsContainingUserWithRoomParticipants(participant)
 
             // check if participants are already in a private room with current username. If they are not, then create a new room
-            const roomDoesExists = participantUserDetails.rooms.find(room => {
-                return room.isMaxCapacityTwo && room.participants.find(user => user.username === username)
+            const roomAlreadyExists = roomsContainingUser.some(room => {
+                return room.isMaxCapacityTwo && room.participants.some(obj => obj.username === participant)
             })
 
-            if (roomDoesExists !== undefined) {
+            if (roomAlreadyExists !== false) {
                 callback('Already In A Room With User')
                 return
             }
 
-            try {
-                const room = await createPrivateRoom(username, participant)
-                userRooms.push(room)
-                socket.emit('userRoomsUpdated', userRooms)
-                callback(null)
-            } catch (err) {
-                callback('Unknown Server Error')
-            }
-        })
-
-        socket.on('createNewGroup', async (participants, displayName, callback) => {
-            if (participants.length === 0) {
-                console.log('No participants provided to new group')
-            }
-            if (displayName.length === 0) {
-                callback('Empty display name not allowed')
+            const participantExists = await getUserFromDB(participant)
+            if (participantExists === null) {
+                callback('User does not exists')
                 return
             }
 
-            //create new group
             try {
-                const groupDetails = await createGroup(participants, displayName)
-                if (groupDetails !== undefined) userRooms.push(groupDetails)
-                socket.emit('userRoomsUpdated', userRooms)
+                const room = await createPrivateRoomAndAddParticipants(username, participant)
+                if (room !== null) {
+                    userRooms.push(room)
+                    socket.emit('userRoomsUpdated', userRooms)
+                    callback('Success')
+                }
             } catch (err) {
+                console.log(err)
                 callback('Unknown Server Error')
             }
         })
 
-        socket.on('roomSelected', roomId => {
-            const room = userRooms.find(room => room.roomId === roomId)
-            if (room !== undefined) {
-                socket.emit('roomChanged', room)
-            }
-            socket.rooms.forEach(room => socket.leave(room))
-            socket.join(roomId)
-        })
+        // socket.on('roomSelected', roomId => {
+        //     const room = userRooms.find(room => room.roomId === roomId)
+        //     if (room !== undefined) {
+        //         socket.emit('roomChanged', room)
+        //     }
+        //     socket.rooms.forEach(room => socket.leave(room))
+        //     socket.join(roomId)
+        // })
 
         socket.on('messagesRequested', async roomId => {
             if (userRooms.find(room => room.roomId === roomId) === undefined) return
