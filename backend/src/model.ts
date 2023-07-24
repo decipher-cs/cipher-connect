@@ -223,10 +223,10 @@ export const createPrivateRoomAndAddParticipants = async (participant1: string, 
 //     return group
 // }
 
-export const createRoomForMany = async () => {
+export const createRoomForMany = async (roomDisplayName: string) => {
     return prisma.room.create({
         data: {
-            roomDisplayName: 'Group',
+            roomDisplayName,
             isMaxCapacityTwo: false,
         },
     })
@@ -237,9 +237,10 @@ export const addParticipantsToGroup = async (participants: string[], roomId: str
     return await prisma.userRoomParticipation.createMany({ data: usernameWithRoomId })
 }
 
-export const createGroupAndAddParticipantsToGroup = async (participants: string[]) => {
-    const room = await createRoomForMany()
-    return addParticipantsToGroup(participants, room.roomId)
+export const createGroupAndAddParticipantsToGroup = async (participants: string[], groupDisplayName: string) => {
+    const room = await createRoomForMany(groupDisplayName)
+    await addParticipantsToGroup(participants, room.roomId)
+    return await getRoomDetailsWithParticipants(room.roomId)
 }
 
 export const addMessageToDB = async (msgSender: string, roomId: string, textContent: string) => {
