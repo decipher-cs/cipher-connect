@@ -74,15 +74,16 @@ Install my-project with yarn
 
 ## ToDo
 
-- [ ] Show ghost text when user types (not good performance but would look really good).
+- [ ] Show ghost text when user types (not good for performance but it would look really nice).
 - [ ] Send a private message to yourself.
 - [ ] Extract list function from TemproratyDrawer into a separate component.
 - [ ] A loader/ spinner for each element that depends on fetching data from server.
 - [ ] Remove abstraction from TemporaryDrawer, It is causing unnecessary confusion. 
-- [ ] DO NOT SEND OTHER PEOPLE'S PASSWORD HASHS TO OTHER USERS!!! (How did this even happen??)
+- [x] DO NOT SEND OTHER PEOPLE'S PASSWORD HASHS TO OTHER USERS!!! (How did this even happen??)
 - [ ] userRooms in backend should be stored in a set (or something similar) not an array.
 - [ ] Ensure a room without participants can not exist OR run a scheduled job in DB to delete all rooms without participants.
 - [ ] Might wanna use a library like [promise-retry](https://www.npmjs.com/package/promise-retry) to re-run failed queries to DB.
+- [ ] Add support for group chat.
 
 ## License
 
