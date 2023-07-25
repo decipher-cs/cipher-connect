@@ -110,22 +110,6 @@ export const getRoomDetailsWithParticipants = async (roomId: string) => {
     })
 }
 
-// Deprecating this in favour of getRoomsContainingUser
-// export const getUserAndUserRoomsFromDB = async (username: string) => {
-//     const rooms = await prisma.roomConfig.findMany({
-//         where: { userUsername: username },
-//         include: { roomIdRelation: true },
-//     })
-//
-//     return rooms
-// }
-
-// Deprecating this in favour of getRoomsContainingUser
-// export const getUserRoomsFromDB = async (username: string) => {
-//     const rooms = await getUserAndUserRoomsFromDB(username)
-//
-//     return rooms
-// }
 export const getRoomsContainingUser = async (username: string) => {
     return await prisma.room.findMany({
         where: { participants: { some: { username } } },
@@ -158,29 +142,6 @@ export const getRoomsContainingUserWithRoomParticipants = async (username: strin
     }))
 }
 
-// Deprecating this in favour of createRoomForTwo, createPrivateRoomAndAddParticipants, and createRoomForTwo
-// export const createPrivateRoom = async (participant1: string, participant2: string) => {
-//     // const room = await prisma.userRoomConfig.createMany({
-//     //     data: [{ roomId: 'fawe', userUsername: 'afwe' }],
-//     // })
-//     const room = await prisma.userRoomConfig.createMany({
-//         data: {
-//             // roomIdRelation: {
-//             //     create: {
-//             //         roomDisplayName: `${participant1}-${participant2}`.slice(0, 33),
-//             //         isMaxCapacityTwo: true,
-//             //     },
-//             // },
-//             // userRelation: {
-//             //     connect: {
-//             //         username: 'exampleUser',
-//             //     },
-//             // },
-//         },
-//     })
-//
-//     return room
-// }
 export const createRoomForTwo = async () => {
     return prisma.room.create({
         data: {
@@ -205,24 +166,6 @@ export const createPrivateRoomAndAddParticipants = async (participant1: string, 
     return await getRoomDetailsWithParticipants(roomDetails.roomId)
 }
 
-// Deprecating this in favour of createRoomForMany, addParticipantsToGroup, and createGroupAndAddParticipantsToGroup
-// export const createGroup = async (participantsUsernames: string[], roomDisplayName: string) => {
-//     if (participantsUsernames.length === 0) return undefined
-//
-//     const participantsUsernamesObj = participantsUsernames.map(username => ({ username }))
-//
-//     const group = await prisma.room.create({
-//         data: {
-//             roomDisplayName,
-//             isMaxCapacityTwo: false,
-//             participants: { connect: participantsUsernamesObj },
-//         },
-//         include: { participants: true },
-//     })
-//
-//     return group
-// }
-
 export const createRoomForMany = async (roomDisplayName: string) => {
     return prisma.room.create({
         data: {
@@ -234,7 +177,8 @@ export const createRoomForMany = async (roomDisplayName: string) => {
 
 export const addParticipantsToGroup = async (participants: string[], roomId: string) => {
     const usernameWithRoomId = participants.map(username => ({ username, roomId }))
-    return await prisma.userRoomParticipation.createMany({ data: usernameWithRoomId })
+    await prisma.userRoomParticipation.createMany({ data: usernameWithRoomId })
+    return await getRoomDetailsWithParticipants(roomId)
 }
 
 export const createGroupAndAddParticipantsToGroup = async (participants: string[], groupDisplayName: string) => {
@@ -263,17 +207,3 @@ export const getAllMessagesFromRoom = async (roomId: string) => {
 
     return messages?.message
 }
-
-// This will be kept in stasis until its use is found
-// export const removeParticipantFromRoom = async (roomId: string, participantUsername: string) => {
-//     const room = await prisma.room.update({
-//         where: {
-//             roomId,
-//         },
-//         data: {
-//             participants: { disconnect: { username: participantUsername } },
-//         },
-//         include: { participants: true },
-//     })
-//     return room
-// }
