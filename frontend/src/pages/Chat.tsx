@@ -8,6 +8,9 @@ import { socket } from '../socket'
 import { PulseLoader } from 'react-spinners'
 import { message as MessageFromDB, room as Room } from '../types/prisma.client'
 import AddRoom from '../components/AddRoom'
+import { MessageSidebar } from '../components/MessageSidebar'
+import { RoomInfo } from '../components/RoomInfo'
+import { RoomWithParticipants } from '../types/socket'
 
 export type Message = Pick<MessageFromDB, 'senderUsername' | 'content' | 'createdAt' | 'roomId'>
 
@@ -25,9 +28,9 @@ export const Chat = () => {
 
     const { username, isLoggedIn } = useContext(CredentialContext)
 
-    const [currRoom, setCurrRoom] = useState<Room>()
+    const [currRoom, setCurrRoom] = useState<RoomWithParticipants>()
 
-    const [rooms, setRooms] = useState<Room[]>([])
+    const [rooms, setRooms] = useState<RoomWithParticipants[]>([])
 
     useEffect(() => {
         if (socket.connected === false && isLoggedIn === true) {
@@ -39,12 +42,25 @@ export const Chat = () => {
 
         socket.on('privateMessage', (targetRoomId, messageContents, senderUsername) => {
             const msg = generateDummyMessage(messageContents, senderUsername)
-            console.log(msg.senderUsername)
             setChatMessageList(prev => prev.concat(msg))
+            if (targetRoomId === undefined || targetRoomId !== currRoom?.roomId) {
+                // TODO send notification for a new message
+            }
         })
 
         socket.on('userRoomsUpdated', rooms => {
             setRooms(rooms)
+        })
+
+        socket.on('userRoomUpdated', room => {
+            console.log('faefew',room)
+            setRooms((prevRooms)=>{
+                prevRooms.forEach((prevRoom)=>{
+                    if (room.roomId === prevRoom.roomId)
+                        prevRoom=room
+                })
+                return prevRooms
+            })
         })
 
         socket.on('roomChanged', room => {
@@ -57,9 +73,7 @@ export const Chat = () => {
 
         return () => {
             socket.removeAllListeners()
-            if (socket.connected === true) {
-                socket.disconnect()
-            }
+            socket.disconnect()
         }
     }, [])
 
@@ -71,41 +85,7 @@ export const Chat = () => {
         <>
             <Typography variant='subtitle1'>{currRoom === undefined ? 'undef' : currRoom.roomDisplayName}</Typography>
 
-            <AddRoom
-                keyDownActionAddRoom={async newUser => {
-                    const myPromise = new Promise<string | null>(resolve =>
-                        socket.emit('createNewPrivateRoom', newUser, response => resolve(response))
-                    )
-                    return await myPromise
-                }}
-                keyDownActionAddGroup={async newGroupName => {
-                    const myPromise = new Promise<string | null>(resolve =>
-                        socket.emit('createNewGroup', [username], newGroupName, response => resolve(response))
-                    )
-                    return await myPromise
-                }}
-            />
-
-            <Sidebar
-                listItems={rooms}
-                handleClickOnList={roomId => {
-                    if (roomId !== undefined) {
-                        socket.emit('roomSelected', roomId)
-                        socket.emit('messagesRequested', roomId)
-                    }
-                }}
-                handleClickOnItemHideIcon={roomId => {
-                    if (roomId !== undefined) {
-                        // socket.emit('roomSelected', roomId)
-                        // socket.emit('messagesRequested', roomId)
-                    }
-                }}
-                handleClickOnListDeleteIcon={roomId => {
-                    if (roomId !== undefined) {
-                        socket.emit('leaveRoom', roomId)
-                    }
-                }}
-            />
+            <MessageSidebar rooms={rooms} socketObject={socket} />
 
             {currRoom === undefined ? (
                 <div>Select a room/ user</div>
@@ -115,6 +95,7 @@ export const Chat = () => {
                     <ChatInputBar setChatMessageList={setChatMessageList} currRoom={currRoom?.roomId} />
                 </>
             )}
+            <RoomInfo selectedRoom={currRoom}  socketObject={socket}/>
         </>
     )
 }
