@@ -53,14 +53,15 @@ export const Chat = () => {
         })
 
         socket.on('userRoomUpdated', room => {
-            console.log('faefew',room)
-            setRooms((prevRooms)=>{
-                prevRooms.forEach((prevRoom)=>{
-                    if (room.roomId === prevRoom.roomId)
-                        prevRoom=room
+            setRooms(prevRooms => {
+                prevRooms.forEach((prevRoom, i) => {
+                    if (room.roomId === prevRoom.roomId) {
+                        prevRooms[i] = room
+                    }
                 })
                 return prevRooms
             })
+            setCurrRoom(room)
         })
 
         socket.on('roomChanged', room => {
@@ -87,6 +88,13 @@ export const Chat = () => {
 
             <MessageSidebar rooms={rooms} socketObject={socket} />
 
+            <Button
+                onClick={() => {
+                    console.log(rooms[0].participants)
+                }}
+            >
+                Degub
+            </Button>
             {currRoom === undefined ? (
                 <div>Select a room/ user</div>
             ) : (
@@ -95,7 +103,7 @@ export const Chat = () => {
                     <ChatInputBar setChatMessageList={setChatMessageList} currRoom={currRoom?.roomId} />
                 </>
             )}
-            <RoomInfo selectedRoom={currRoom}  socketObject={socket}/>
+            <RoomInfo selectedRoom={currRoom} socketObject={socket} />
         </>
     )
 }
