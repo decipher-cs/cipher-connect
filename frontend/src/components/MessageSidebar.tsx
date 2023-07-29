@@ -10,12 +10,10 @@ import {
     TextField,
     Typography,
 } from '@mui/material'
-import { room } from '../types/prisma.client'
-import { RoomWithParticipants } from '../pages/Chat'
 import { useContext, useState } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
 import AddIcon from '@mui/icons-material/Add'
-import { SocketWithCustomEvents } from '../types/socket'
+import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
 
 interface MessageListItemProps {
     rooms: RoomWithParticipants[]
@@ -37,12 +35,15 @@ const MessageListItem = () => {
 interface MessageSidebarProps {
     rooms: RoomWithParticipants[]
     socketObject: SocketWithCustomEvents
+    setSelectedRoomIndex: React.Dispatch<React.SetStateAction<number | undefined>>
 }
 
 export const MessageSidebar = (props: MessageSidebarProps) => {
     const { username } = useContext(CredentialContext)
-    const [value, setValue] = useState('')
-    const [status, setStatus] = useState('')
+    const [contactFieldValue, setContactFieldValue] = useState('')
+    const [contactFieldHelperText, setContactFieldHelperText] = useState('')
+    const [createGroupFieldValue, setCreateGroupFieldValue] = useState('')
+    const [createGroupFieldHelperText, setCreateGroupFieldHelperText] = useState('')
     return (
         <Box
             sx={{
@@ -57,18 +58,35 @@ export const MessageSidebar = (props: MessageSidebarProps) => {
             {/* Hide textField or Make it collapse */}
             <TextField
                 onChange={e => {
-                    setValue(e.target.value)
-                    if (status !== '') setStatus('')
+                    setContactFieldValue(e.target.value)
+                    if (contactFieldHelperText !== '') setContactFieldHelperText('')
                 }}
                 onKeyDown={e => {
                     if (e.key === 'Enter')
-                        props.socketObject.emit('createNewPrivateRoom', value, response => {
+                        props.socketObject.emit('createNewPrivateRoom', contactFieldValue, response => {
                             console.log(response)
-                            setStatus(response)
+                            setContactFieldHelperText(response)
                         })
                 }}
-                value={value}
-                helperText={status}
+                value={contactFieldValue}
+                helperText={contactFieldHelperText}
+                placeholder='Add contact'
+            />
+            <TextField
+                onChange={e => {
+                    setCreateGroupFieldValue(e.target.value)
+                    if (createGroupFieldHelperText !== '') setCreateGroupFieldHelperText('')
+                }}
+                onKeyDown={e => {
+                    if (e.key === 'Enter')
+                        props.socketObject.emit('createNewGroup', [username], createGroupFieldValue, response => {
+                            console.log(response)
+                            setCreateGroupFieldValue(response)
+                        })
+                }}
+                value={createGroupFieldValue}
+                helperText={createGroupFieldHelperText}
+                placeholder='Create group'
             />
             <List>
                 {props.rooms.map((room, i) => {
@@ -86,6 +104,10 @@ export const MessageSidebar = (props: MessageSidebarProps) => {
                             <ListItemButton
                                 onClick={() => {
                                     props.socketObject.emit('roomSelected', room.roomId)
+
+                                    const roomIndex = props.rooms.findIndex(r => r.roomId === room.roomId)
+                                    props.setSelectedRoomIndex(roomIndex !== -1 ? roomIndex : undefined)
+
                                     props.socketObject.emit('messagesRequested', room.roomId)
                                 }}
                             >
