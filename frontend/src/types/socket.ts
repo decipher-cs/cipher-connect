@@ -7,6 +7,7 @@ export interface ServerToClientEvents {
     updateNetworkList: (users: string[]) => void
     privateMessage: (targetRoomId: string, msg: string, senderUsername: string) => void
     userRoomsUpdated: (rooms: RoomWithParticipants[]) => void
+    userRoomUpdated: (room: RoomWithParticipants) => void
     roomChanged: (room: RoomWithParticipants) => void
     sendingMessages: () => void
     messagesRequested: (messages: Message[]) => void
@@ -22,7 +23,7 @@ export interface ClientToServerEvents {
     createNewGroup: (participants: string[], displayName: string, callback: (response: string) => void) => void
     addUsersToRoom: (usersToAdd: string[], roomName: string) => void
     messagesRequested: (roomId: string) => void
-    leaveRoom: (roomId: string) => void
+    addParticipantsToGroup: (participants: string[],roomId: string,callback: (response: string) => void)=>void
 }
 
 export type SocketWithCustomEvents = Socket<ServerToClientEvents, ClientToServerEvents>
