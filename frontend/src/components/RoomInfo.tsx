@@ -20,7 +20,7 @@ export const RoomInfo = (props: RoomInfoProps) => {
         <Box
             sx={{
                 border: 'solid blue 3px',
-                maxWidth: '20%',
+                flexBasis: '25%',
             }}
         >
             {/* Group Image */}
@@ -51,17 +51,11 @@ export const RoomInfo = (props: RoomInfoProps) => {
                 helperText={contactFieldHelperText}
                 placeholder='Add contact'
             />
-            <Button
-                onClick={() => {
-                    console.log(props.rooms)
-                    // console.log(props.rooms[props.selectedRoomIndex!].participants)
-                }}
-            >
-                Degub
-            </Button>
             {props.rooms[props.selectedRoomIndex].participants.map(({ username }, i) => (
                 <div key={i}>{username}</div>
             ))}
+            <Button onClick={() => {}}>Delete Group</Button>
+            <Button onClick={() => {}}>Leave Group</Button>
         </Box>
     )
 }

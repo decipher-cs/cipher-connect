@@ -48,7 +48,7 @@ export const MessageSidebar = (props: MessageSidebarProps) => {
         <Box
             sx={{
                 border: 'solid red 3px',
-                maxWidth: '30%',
+                flexBasis: '20%',
             }}
         >
             <Typography>Messages</Typography>

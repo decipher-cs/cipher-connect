@@ -1,4 +1,4 @@
-import { Button, Dialog, TextField, Typography } from '@mui/material'
+import { Box, Button, Container, Dialog, TextField, Typography } from '@mui/material'
 import { useContext, useEffect, useRef, useState } from 'react'
 import ChatDisplaySection from '../components/ChatDisplaySection'
 import ChatInputBar from '../components/ChatInputBar'
@@ -86,44 +86,28 @@ export const Chat = () => {
                 {selectedRoomIndex === undefined ? 'Room not selected' : rooms[selectedRoomIndex].roomDisplayName}
             </Typography>
 
-            <MessageSidebar rooms={rooms} socketObject={socket} setSelectedRoomIndex={setSelectedRoomIndex} />
+            <Box sx={{ display: 'flex',  }}>
+                <MessageSidebar rooms={rooms} socketObject={socket} setSelectedRoomIndex={setSelectedRoomIndex} />
 
-            <Button
-                onClick={() => {
-                    // if (selectedRoomIndex !== undefined) console.log(rooms[selectedRoomIndex]?.participants)
-                    setRooms([
-                        {
-                            roomId: 'clkk139aj0000lyla06v8zc6a',
-                            roomDisplayName: 'helloGroup',
-                            isMaxCapacityTwo: false,
-                            participants: [
-                                {
-                                    username: 'lord ferco',
-                                },
-                                {
-                                    username: 'fa',
-                                },
-                                {
-                                    username: 'fasefawefewlk',
-                                },
-                            ],
-                        },
-                    ])
-                }}
-            >
-                Degub
-            </Button>
+                {selectedRoomIndex === undefined ? (
+                    <div>Select a room/ user</div>
+                ) : (
+                    <Box
+                        sx={{
+                            border: 'solid blue 3px',
+                            flexBasis: '50%',
+                        }}
+                    >
+                        <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
+                        <ChatInputBar
+                            setChatMessageList={setChatMessageList}
+                            currRoom={rooms[selectedRoomIndex]?.roomId}
+                        />
+                    </Box>
+                )}
 
-            {selectedRoomIndex === undefined ? (
-                <div>Select a room/ user</div>
-            ) : (
-                <>
-                    <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
-                    <ChatInputBar setChatMessageList={setChatMessageList} currRoom={rooms[selectedRoomIndex]?.roomId} />
-                </>
-            )}
-
-            <RoomInfo rooms={rooms} selectedRoomIndex={selectedRoomIndex} socketObject={socket} />
+                <RoomInfo rooms={rooms} selectedRoomIndex={selectedRoomIndex} socketObject={socket} />
+            </Box>
         </>
     )
 }
