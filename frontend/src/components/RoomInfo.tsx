@@ -1,20 +1,20 @@
-import { Avatar,TextField, Box, Icon, Typography, IconButton } from '@mui/material'
+import { Avatar, TextField, Box, Icon, Typography, IconButton, Button } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
-import { RoomWithParticipants } from '../types/socket'
+import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
 import { useState } from 'react'
 
 interface RoomInfoProps {
-    selectedRoom: RoomWithParticipants | undefined
+    rooms: RoomWithParticipants[]
+    selectedRoomIndex: number | undefined
     socketObject: SocketWithCustomEvents
 }
 
 export const RoomInfo = (props: RoomInfoProps) => {
-
-    const [contactFieldValue, setContactFieldValue] = useState('')
+    const [contactFieldValue, setContactFieldValue] = useState('password')
 
     const [contactFieldHelperText, setContactFieldHelperText] = useState('')
 
-    if (props.selectedRoom === undefined) return <>Select a room</>
+    if (props.selectedRoomIndex === undefined) return <>Select a room</>
 
     return (
         <Box
@@ -24,32 +24,44 @@ export const RoomInfo = (props: RoomInfoProps) => {
             }}
         >
             {/* Group Image */}
-            <Avatar/>
-            <Typography variant='h6'>
-                {props.selectedRoom.roomDisplayName}
-            </Typography>
-                {props.selectedRoom.participants.length} members
+            <Avatar />
+            <Typography variant='h6'>{props.rooms[props.selectedRoomIndex].roomDisplayName}</Typography>
+            {props.rooms[props.selectedRoomIndex].participants.length} members
             <IconButton>
                 <AddIcon />
             </IconButton>
-
             <TextField
                 onChange={e => {
                     setContactFieldValue(e.target.value)
                     if (contactFieldHelperText !== '') setContactFieldHelperText('')
                 }}
                 onKeyDown={e => {
-                    if (e.key === 'Enter')
-                        props.socketObject.emit('createNewPrivateRoom', contactFieldValue, response => {
-                            console.log(response)
-                            setContactFieldHelperText(response)
-                        })
+                    if (e.key === 'Enter' && props.selectedRoomIndex !== undefined)
+                        props.socketObject.emit(
+                            'addParticipantsToGroup',
+                            [contactFieldValue],
+                            props.rooms[props.selectedRoomIndex].roomId,
+                            response => {
+                                console.log(response)
+                                setContactFieldHelperText(response)
+                            }
+                        )
                 }}
                 value={contactFieldValue}
                 helperText={contactFieldHelperText}
                 placeholder='Add contact'
             />
-            { props.selectedRoom.participants.map(({username})=>(<div>{username}</div>)) }
+            <Button
+                onClick={() => {
+                    console.log(props.rooms)
+                    // console.log(props.rooms[props.selectedRoomIndex!].participants)
+                }}
+            >
+                Degub
+            </Button>
+            {props.rooms[props.selectedRoomIndex].participants.map(({ username }, i) => (
+                <div key={i}>{username}</div>
+            ))}
         </Box>
     )
 }
