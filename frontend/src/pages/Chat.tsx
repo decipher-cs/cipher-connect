@@ -28,7 +28,7 @@ export const Chat = () => {
 
     const { username, isLoggedIn } = useContext(CredentialContext)
 
-    const [currRoom, setCurrRoom] = useState<RoomWithParticipants>()
+    const [selectedRoomIndex, setSelectedRoomIndex] = useState<number | undefined>(undefined)
 
     const [rooms, setRooms] = useState<RoomWithParticipants[]>([])
 
@@ -43,9 +43,9 @@ export const Chat = () => {
         socket.on('privateMessage', (targetRoomId, messageContents, senderUsername) => {
             const msg = generateDummyMessage(messageContents, senderUsername)
             setChatMessageList(prev => prev.concat(msg))
-            if (targetRoomId === undefined || targetRoomId !== currRoom?.roomId) {
-                // TODO send notification for a new message
-            }
+            // if (targetRoomId === undefined || targetRoomId !== rooms[selectedRoomIndex].roomId) {
+            //     // TODO send notification for a new message
+            // }
         })
 
         socket.on('userRoomsUpdated', rooms => {
@@ -54,18 +54,16 @@ export const Chat = () => {
 
         socket.on('userRoomUpdated', room => {
             setRooms(prevRooms => {
-                prevRooms.forEach((prevRoom, i) => {
-                    if (room.roomId === prevRoom.roomId) {
-                        prevRooms[i] = room
-                    }
-                })
-                return prevRooms
+                const newRooms: RoomWithParticipants[] = structuredClone(prevRooms)
+                const index = newRooms.findIndex(prevRoom => room.roomId === prevRoom.roomId)
+                newRooms[index] = room
+                return newRooms
             })
-            setCurrRoom(room)
+            // socket.emit('roomSelected', room.roomId)
         })
 
-        socket.on('roomChanged', room => {
-            if (room !== undefined) setCurrRoom(room)
+        socket.on('roomChanged', roomFromServer => {
+            // const roomIndex = findSelectedRoomIndex(roomFromServer.roomId)
         })
 
         socket.on('messagesRequested', messages => {
@@ -84,26 +82,48 @@ export const Chat = () => {
 
     return (
         <>
-            <Typography variant='subtitle1'>{currRoom === undefined ? 'undef' : currRoom.roomDisplayName}</Typography>
+            <Typography variant='subtitle1'>
+                {selectedRoomIndex === undefined ? 'Room not selected' : rooms[selectedRoomIndex].roomDisplayName}
+            </Typography>
 
-            <MessageSidebar rooms={rooms} socketObject={socket} />
+            <MessageSidebar rooms={rooms} socketObject={socket} setSelectedRoomIndex={setSelectedRoomIndex} />
 
             <Button
                 onClick={() => {
-                    console.log(rooms[0].participants)
+                    // if (selectedRoomIndex !== undefined) console.log(rooms[selectedRoomIndex]?.participants)
+                    setRooms([
+                        {
+                            roomId: 'clkk139aj0000lyla06v8zc6a',
+                            roomDisplayName: 'helloGroup',
+                            isMaxCapacityTwo: false,
+                            participants: [
+                                {
+                                    username: 'lord ferco',
+                                },
+                                {
+                                    username: 'fa',
+                                },
+                                {
+                                    username: 'fasefawefewlk',
+                                },
+                            ],
+                        },
+                    ])
                 }}
             >
                 Degub
             </Button>
-            {currRoom === undefined ? (
+
+            {selectedRoomIndex === undefined ? (
                 <div>Select a room/ user</div>
             ) : (
                 <>
                     <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
-                    <ChatInputBar setChatMessageList={setChatMessageList} currRoom={currRoom?.roomId} />
+                    <ChatInputBar setChatMessageList={setChatMessageList} currRoom={rooms[selectedRoomIndex]?.roomId} />
                 </>
             )}
-            <RoomInfo selectedRoom={currRoom} socketObject={socket} />
+
+            <RoomInfo rooms={rooms} selectedRoomIndex={selectedRoomIndex} socketObject={socket} />
         </>
     )
 }
