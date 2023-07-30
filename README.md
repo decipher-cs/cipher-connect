@@ -71,6 +71,7 @@ Install my-project with yarn
  - [How to write a Good readme](https://bulldogjob.com/news/449-how-to-write-a-good-readme-for-your-github-project)
  - [Design inspiration](https://dribbble.com/shots/18945888-Messenger-Mobile-Web-Application-Light-Mode/attachments/14116324?mode=media)
  - [prisma-erd-generator](npmjs.com/package/prisma-erd-generator)
+ - [prisma-dbml-generator](https://notiz.dev/blog/prisma-dbml-generator#dbml-generator)
 
 ## ToDo
 
