@@ -5,13 +5,14 @@ import {
     getAllMessagesFromRoom,
     getRoomsContainingUserWithRoomParticipants,
     getUserFromDB,
-    createRoomForMany,
     createGroupAndAddParticipantsToGroup,
+    addParticipantsToGroup,
 } from './model.js'
 import { message, room, userRoomParticipation } from '@prisma/client'
 
 export type Participants = Pick<userRoomParticipation, 'username'>[]
-export type RoomWithParticipants = room & { participants: Participants }
+export type RoomWithOptionalImg = Omit<room, 'roomDisplayName'> & Partial<Pick<room, 'roomDisplayImage'>>
+export type RoomWithParticipants = RoomWithOptionalImg & { participants: Participants }
 
 interface ServerToClientEvents {
     noArg: () => void
@@ -19,7 +20,8 @@ interface ServerToClientEvents {
     withAck: (d: string, callback: (e: number) => void) => void
     privateMessage: (targetRoomId: string, msg: string, senderUsername: string) => void
     userRoomsUpdated: (rooms: RoomWithParticipants[]) => void
-    roomChanged: (room: RoomWithParticipants[]) => void
+    userRoomUpdated: (room: RoomWithParticipants) => void
+    roomChanged: (room: RoomWithParticipants) => void
     messagesRequested: (messages: message[]) => void
 }
 
@@ -34,7 +36,7 @@ interface ClientToServerEvents {
     createNewGroup: (participants: string[], displayName: string, callback: (response: string) => void) => void
     roomSelected: (roomId: string) => void
     messagesRequested: (roomId: string) => void
-    leaveRoom: (roomId: string) => void
+    addParticipantsToGroup: (participants: string[], roomId: string, callback: (response: string) => void) => void
 }
 
 interface SocketData {
@@ -64,7 +66,6 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         getRoomsContainingUserWithRoomParticipants(username).then(rooms => {
             if (rooms === undefined) return
             userRooms.push(...rooms)
-            console.log(rooms)
             socket.emit('userRoomsUpdated', rooms)
         })
 
@@ -104,7 +105,7 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
                 const room = await createPrivateRoomAndAddParticipants(username, participant)
                 if (room !== null) {
                     userRooms.push(room)
-                    // socket.emit('userRoomsUpdated', userRooms)
+                    socket.emit('userRoomsUpdated', userRooms)
                     callback('Success')
                 }
             } catch (err) {
@@ -118,7 +119,7 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
                 const room = await createGroupAndAddParticipantsToGroup(participantsArray, groupDisplayName)
                 if (room !== null) {
                     userRooms.push(room)
-                    // socket.emit('userRoomsUpdated', userRooms)
+                    socket.emit('userRoomsUpdated', userRooms)
                     callback('Success')
                 }
             } catch (error) {
@@ -129,10 +130,23 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
 
         // function to amend group/ room info
 
+        socket.on('addParticipantsToGroup', async (participants, roomId) => {
+            try {
+                const room = await addParticipantsToGroup(participants, roomId)
+                console.log(room)
+                if (room !== null) {
+                    socket.emit('userRoomUpdated', room)
+                    // also emit to the participants that they have been added to a new group
+                }
+            } catch (error) {
+                console.log('Encountered error while adding participants to group. ERR:', error)
+            }
+        })
+
         socket.on('roomSelected', roomId => {
             const room = userRooms.find(room => room.roomId === roomId)
             if (room !== undefined) {
-                // socket.emit('roomChanged', room)
+                socket.emit('roomChanged', room)
             }
             socket.join(roomId)
         })
