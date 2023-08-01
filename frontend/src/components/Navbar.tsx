@@ -5,14 +5,20 @@ export const Navbar = (props: { redirectionPaths: string[] }) => {
     const navigate = useNavigate()
     return (
         <AppBar
-            position='static'
             color='default'
             variant='outlined'
-            elevation={0}
-            sx={{ placeItems: 'center', placeContent: 'center' }}
+            sx={{
+                placeItems: 'center',
+                placeContent: 'center',
+                height: '5vh',
+                p: 0,
+                m: 0,
+                top: 'calc(100% - 5vh)',
+                border: '0px',
+            }}
         >
             <Toolbar>
-                <ButtonGroup>
+                <ButtonGroup size='small'>
                     {props.redirectionPaths.map((pathName, i) => {
                         return (
                             <Button
