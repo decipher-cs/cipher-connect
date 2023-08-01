@@ -54,8 +54,12 @@ export const RoomInfo = (props: RoomInfoProps) => {
             {props.rooms[props.selectedRoomIndex].participants.map(({ username }, i) => (
                 <div key={i}>{username}</div>
             ))}
-            <Button onClick={() => {}}>Delete Group</Button>
-            <Button onClick={() => {}}>Leave Group</Button>
+            {props.rooms[props.selectedRoomIndex].isMaxCapacityTwo === false ? (
+                <>
+                    <Button onClick={() => {}}>Delete Group</Button>
+                    <Button onClick={() => {}}>Leave Group</Button>
+                </>
+            ) : null}
         </Box>
     )
 }
