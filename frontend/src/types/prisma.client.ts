@@ -13,7 +13,8 @@ export type refreshToken = {
  */
 export type user = {
   username: string
-  displayName: string
+  userDisplayName: string
+  userDisplayImage: string | null
   createTime: Date
 }
 
@@ -45,6 +46,7 @@ export type roomConfig = {
 export type room = {
   roomId: string
   roomDisplayName: string
+  roomDisplayImage: string | null
   isMaxCapacityTwo: boolean
 }
 
