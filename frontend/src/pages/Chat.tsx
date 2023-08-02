@@ -7,10 +7,10 @@ import { CredentialContext } from '../contexts/Credentials'
 import { socket } from '../socket'
 import { PulseLoader } from 'react-spinners'
 import { message as MessageFromDB, room as Room } from '../types/prisma.client'
-import AddRoom from '../components/AddRoom'
 import { MessageSidebar } from '../components/MessageSidebar'
 import { RoomInfo } from '../components/RoomInfo'
-import { RoomWithParticipants } from '../types/socket'
+import { RoomWithParticipants, Settings } from '../types/socket'
+import { ProfileSettingsDialog } from '../components/ProfileSettingsDialog'
 
 export type Message = Pick<MessageFromDB, 'senderUsername' | 'content' | 'createdAt' | 'roomId'>
 
@@ -32,6 +32,11 @@ export const Chat = () => {
 
     const [rooms, setRooms] = useState<RoomWithParticipants[]>([])
 
+    const [userSettings, setUserSettings] = useState<Settings>({
+        userDisplayName: username,
+        userDisplayImage: null,
+    })
+
     useEffect(() => {
         if (socket.connected === false && isLoggedIn === true) {
             socket.auth = { username }
@@ -46,6 +51,11 @@ export const Chat = () => {
             // if (targetRoomId === undefined || targetRoomId !== rooms[selectedRoomIndex].roomId) {
             //     // TODO send notification for a new message
             // }
+        })
+
+        socket.on('userSettingsUpdated', newSettings => {
+            // setUserSettings(newSettings)
+            console.log(newSettings)
         })
 
         socket.on('userRoomsUpdated', rooms => {
@@ -82,11 +92,17 @@ export const Chat = () => {
 
     return (
         <>
-            <Typography variant='subtitle1'>
-                {selectedRoomIndex === undefined ? 'Room not selected' : rooms[selectedRoomIndex].roomDisplayName}
-            </Typography>
+            <Box
+                sx={{
+                    display: 'flex',
+                    border: 'solid green 2px',
+                    alignContent: 'center',
+                    height: '',
+                    overflow: 'hidden',
+                }}
+            >
+                <Sidebar sx={{ flexBasis: '5%' }} socketObject={socket} userSettings={userSettings}/>
 
-            <Box sx={{ display: 'flex',  }}>
                 <MessageSidebar rooms={rooms} socketObject={socket} setSelectedRoomIndex={setSelectedRoomIndex} />
 
                 {selectedRoomIndex === undefined ? (
