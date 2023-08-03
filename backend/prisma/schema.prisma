@@ -20,10 +20,10 @@ model refreshToken {
 }
 
 model user {
-  username           String   @id @db.VarChar(16)
-  displayName        String   @unique @map("display_name") @db.VarChar(16)
-  userProfilePicture String   @db.Char(64)
-  createTime         DateTime @default(now()) @map("create_time") @db.Timestamp(0)
+  username         String   @id @db.VarChar(16)
+  userDisplayName  String   @unique @map("display_name") @db.VarChar(16)
+  userDisplayImage Bytes?    @db.Blob
+  createTime       DateTime @default(now()) @map("create_time") @db.Timestamp(0)
 
   refreshTokens refreshToken[]
   message       message[]
@@ -59,7 +59,7 @@ model roomConfig {
 model room {
   roomId           String  @id @default(cuid())
   roomDisplayName  String  @db.VarChar(33)
-  roomDisplayImage String  @db.Char(64)
+  roomDisplayImage Bytes?   @db.Blob
   isMaxCapacityTwo Boolean @default(false)
 
   message        message[]
