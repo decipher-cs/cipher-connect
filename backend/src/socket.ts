@@ -7,12 +7,20 @@ import {
     getUserFromDB,
     createGroupAndAddParticipantsToGroup,
     addParticipantsToGroup,
+    updateUserSettings,
+    getUserSettings,
 } from './model.js'
-import { message, room, userRoomParticipation } from '@prisma/client'
+import { message, room, user, userRoomParticipation } from '@prisma/client'
 
 export type Participants = Pick<userRoomParticipation, 'username'>[]
+
 export type RoomWithOptionalImg = Omit<room, 'roomDisplayName'> & Partial<Pick<room, 'roomDisplayImage'>>
+
 export type RoomWithParticipants = RoomWithOptionalImg & { participants: Participants }
+
+type Nullable<T> = { [U in keyof T]: null | T[U] }
+
+export type Settings = Nullable<Pick<user, 'userDisplayName'>> & { userDisplayImage: null | ArrayBuffer }
 
 interface ServerToClientEvents {
     noArg: () => void
@@ -23,6 +31,7 @@ interface ServerToClientEvents {
     userRoomUpdated: (room: RoomWithParticipants) => void
     roomChanged: (room: RoomWithParticipants) => void
     messagesRequested: (messages: message[]) => void
+    userSettingsUpdated: (newSettings: Settings) => void
 }
 
 // for io.on()
@@ -37,6 +46,7 @@ interface ClientToServerEvents {
     roomSelected: (roomId: string) => void
     messagesRequested: (roomId: string) => void
     addParticipantsToGroup: (participants: string[], roomId: string, callback: (response: string) => void) => void
+    userSettingsUpdated: (newSettings: Settings) => void
 }
 
 interface SocketData {
@@ -67,6 +77,10 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
             if (rooms === undefined) return
             userRooms.push(...rooms)
             socket.emit('userRoomsUpdated', rooms)
+        })
+
+        getUserSettings(username).then(settings => {
+            socket.emit('userSettingsUpdated', settings)
         })
 
         socket.join(username)
@@ -128,8 +142,6 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
             }
         })
 
-        // function to amend group/ room info
-
         socket.on('addParticipantsToGroup', async (participants, roomId) => {
             try {
                 const room = await addParticipantsToGroup(participants, roomId)
@@ -149,6 +161,18 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
                 socket.emit('roomChanged', room)
             }
             socket.join(roomId)
+        })
+
+        socket.on('userSettingsUpdated', newSettings => {
+            // If null (meaning value unchanged from last time) then send undefined
+            // to model because undefined while updaing entry in DB is treated as no-change.
+
+            const displayName = newSettings.userDisplayName === null ? undefined : newSettings.userDisplayName
+            const displayImage =
+                newSettings.userDisplayImage === null ? undefined : Buffer.from(newSettings.userDisplayImage)
+
+            updateUserSettings(username, displayName, displayImage)
+            socket.emit('userSettingsUpdated', newSettings)
         })
 
         socket.on('messagesRequested', async roomId => {

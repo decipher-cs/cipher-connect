@@ -28,7 +28,7 @@ export const Chat = () => {
 
     const { username, isLoggedIn } = useContext(CredentialContext)
 
-    const [selectedRoomIndex, setSelectedRoomIndex] = useState<number | undefined>(undefined)
+    const [selectedRoomIndex, setSelectedRoomIndex] = useState<number>()
 
     const [rooms, setRooms] = useState<RoomWithParticipants[]>([])
 
@@ -54,8 +54,7 @@ export const Chat = () => {
         })
 
         socket.on('userSettingsUpdated', newSettings => {
-            // setUserSettings(newSettings)
-            console.log(newSettings)
+            setUserSettings(newSettings)
         })
 
         socket.on('userRoomsUpdated', rooms => {
@@ -101,7 +100,7 @@ export const Chat = () => {
                     overflow: 'hidden',
                 }}
             >
-                <Sidebar sx={{ flexBasis: '5%' }} socketObject={socket} userSettings={userSettings}/>
+                <Sidebar sx={{ flexBasis: '5%' }} socketObject={socket} userSettings={userSettings} />
 
                 <MessageSidebar rooms={rooms} socketObject={socket} setSelectedRoomIndex={setSelectedRoomIndex} />
 

@@ -9,7 +9,7 @@ export const createNewUser = async (username: string, passwordHash: string) => {
             data: {
                 username,
                 // passwordHash,
-                displayName: username,
+                userDisplayName: username,
             },
         })
         await prisma.passwordHash.create({
@@ -124,6 +124,7 @@ export const getRoomsContainingUserWithRoomParticipants = async (username: strin
             roomIdRelation: {
                 select: {
                     roomDisplayName: true,
+                    roomDisplayImage: true,
                     participants: {
                         select: {
                             username: true,
@@ -134,12 +135,15 @@ export const getRoomsContainingUserWithRoomParticipants = async (username: strin
             },
         },
     })
-    return rooms.map(({ roomId, roomIdRelation: { participants, isMaxCapacityTwo, roomDisplayName } }) => ({
-        roomId,
-        roomDisplayName,
-        isMaxCapacityTwo,
-        participants,
-    }))
+    return rooms.map(
+        ({ roomId, roomIdRelation: { participants, isMaxCapacityTwo, roomDisplayName, roomDisplayImage } }) => ({
+            roomId,
+            roomDisplayImage,
+            roomDisplayName,
+            isMaxCapacityTwo,
+            participants,
+        })
+    )
 }
 
 export const createRoomForTwo = async () => {
@@ -206,4 +210,28 @@ export const getAllMessagesFromRoom = async (roomId: string) => {
     })
 
     return messages?.message
+}
+
+export const updateUserSettings = async (
+    username: string,
+    userDisplayName: string | undefined,
+    userDisplayImage: Buffer | null | undefined
+) => {
+    await prisma.user.update({
+        where: { username },
+        data: {
+            userDisplayName,
+            userDisplayImage,
+        },
+    })
+}
+
+export const getUserSettings = async (username: string) => {
+    return await prisma.user.findFirstOrThrow({
+        where: { username },
+        select: {
+            userDisplayName: true,
+            userDisplayImage: true,
+        },
+    })
 }
