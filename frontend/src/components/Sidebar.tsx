@@ -1,4 +1,4 @@
-import { Avatar, Box, Button, ButtonGroup, IconButton, SxProps, Tooltip } from '@mui/material'
+import { Avatar, Box, Button, ButtonGroup, IconButton, SxProps, Tooltip, Typography } from '@mui/material'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Settings, SocketWithCustomEvents } from '../types/socket'
@@ -29,6 +29,7 @@ const Sidebar = (props: SidebarProps) => {
                     <Avatar src={imgURL} />
                 </IconButton>
             </Tooltip>
+            <Typography variant='subtitle1'>{props.userSettings.userDisplayName}</Typography>
 
             <ProfileSettingsDialog
                 dialogOpen={dialogOpen}

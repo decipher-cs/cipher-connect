@@ -163,7 +163,7 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
             socket.join(roomId)
         })
 
-        socket.on('userSettingsUpdated', newSettings => {
+        socket.on('userSettingsUpdated', async (newSettings) => {
             // If null (meaning value unchanged from last time) then send undefined
             // to model because undefined while updaing entry in DB is treated as no-change.
 
@@ -171,8 +171,8 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
             const displayImage =
                 newSettings.userDisplayImage === null ? undefined : Buffer.from(newSettings.userDisplayImage)
 
-            updateUserSettings(username, displayName, displayImage)
-            socket.emit('userSettingsUpdated', newSettings)
+            const settings = await updateUserSettings(username, displayName, displayImage)
+            socket.emit('userSettingsUpdated', settings)
         })
 
         socket.on('messagesRequested', async roomId => {

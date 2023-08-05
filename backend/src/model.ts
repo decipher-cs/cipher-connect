@@ -217,12 +217,16 @@ export const updateUserSettings = async (
     userDisplayName: string | undefined,
     userDisplayImage: Buffer | null | undefined
 ) => {
-    await prisma.user.update({
+    return await prisma.user.update({
         where: { username },
         data: {
             userDisplayName,
             userDisplayImage,
         },
+        select: {
+            userDisplayName: true,
+            userDisplayImage: true,
+        }
     })
 }
 
