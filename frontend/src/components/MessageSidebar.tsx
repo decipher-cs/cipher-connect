@@ -1,6 +1,7 @@
 import {
     Avatar,
     Box,
+    Divider,
     IconButton,
     List,
     ListItem,
@@ -16,19 +17,45 @@ import AddIcon from '@mui/icons-material/Add'
 import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
 
 interface MessageListItemProps {
-    rooms: RoomWithParticipants[]
+    socketObject: SocketWithCustomEvents
+    room: RoomWithParticipants
+    username: string
+    // setSelectedRoomIndex: React.Dispatch<React.SetStateAction<number | undefined>>
 }
 
-const MessageListItem = () => {
+const MessageListItem = (props: MessageListItemProps) => {
+    let displayName: string
+    let displayImage: string
+
+    // check if it's a private room or a group
+    if (props.room.isMaxCapacityTwo === true) {
+        displayName = props.room.participants.find(p => p.username !== props.username)?.username ?? 'ERR:NO_NAME'
+    } else displayName = props.room.roomDisplayName
+
+    if (props.room.roomDisplayImage !== null) {
+        const imgBuffer = props.room.roomDisplayImage as ArrayBuffer
+        const imageFile = new File([imgBuffer], 'roomAvatar')
+        displayImage = URL.createObjectURL(imageFile)
+    } else displayImage = ''
+
     return (
-        <>
-            <ListItem>
+        <ListItem disableGutters disablePadding>
+            <ListItemButton
+                onClick={() => {
+                    props.socketObject.emit('roomSelected', props.room.roomId)
+                    //
+                    // const roomIndex = props.rooms.findIndex(r => r.roomId === props.roomId)
+                    // props.setSelectedRoomIndex(roomIndex !== -1 ? roomIndex : undefined)
+
+                    props.socketObject.emit('messagesRequested', props.room.roomId)
+                }}
+            >
                 <ListItemIcon>
-                    <Avatar />
+                    <Avatar src={displayImage} />
                 </ListItemIcon>
-                <ListItemText primary={<>name</>} secondary={<>subtext</>} />
-            </ListItem>
-        </>
+                <ListItemText primary={<>{displayName}</>} secondary={<>subtext</>} />
+            </ListItemButton>
+        </ListItem>
     )
 }
 
@@ -90,33 +117,14 @@ export const MessageSidebar = (props: MessageSidebarProps) => {
             />
             <List>
                 {props.rooms.map((room, i) => {
-                    // <MessageListItem key={i} />
-                    let displayName
-                    if (room.isMaxCapacityTwo === true) {
-                        displayName = room.participants.find(
-                            ({ username: participantUsername }) => participantUsername !== username
-                        )?.username
-                    } else {
-                        displayName = room.roomDisplayName
-                    }
                     return (
-                        <ListItem key={i} disableGutters disablePadding>
-                            <ListItemButton
-                                onClick={() => {
-                                    props.socketObject.emit('roomSelected', room.roomId)
-
-                                    const roomIndex = props.rooms.findIndex(r => r.roomId === room.roomId)
-                                    props.setSelectedRoomIndex(roomIndex !== -1 ? roomIndex : undefined)
-
-                                    props.socketObject.emit('messagesRequested', room.roomId)
-                                }}
-                            >
-                                <ListItemIcon>
-                                    <Avatar />
-                                </ListItemIcon>
-                                <ListItemText primary={<>{displayName}</>} secondary={<>subtext</>} />
-                            </ListItemButton>
-                        </ListItem>
+                        <MessageListItem
+                            key={i}
+                            room={room}
+                            socketObject={props.socketObject}
+                            username={username}
+                            // setSelectedRoomIndex={}
+                        />
                     )
                 })}
             </List>
