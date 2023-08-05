@@ -86,7 +86,7 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         socket.join(username)
 
         socket.on('privateMessage', async (targetRoomId, messageContent) => {
-            socket.broadcast.to(targetRoomId).emit('privateMessage', targetRoomId, messageContent, username)
+            io.to(targetRoomId).emit('privateMessage', targetRoomId, messageContent, username)
             // Sync the broadcast and the insert call made to DB
             try {
                 await addMessageToDB(username, targetRoomId, messageContent)
