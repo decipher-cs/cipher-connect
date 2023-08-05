@@ -32,6 +32,8 @@ export const Chat = () => {
 
     const [rooms, setRooms] = useState<RoomWithParticipants[]>([])
 
+    const roomsRef = useRef(rooms)
+
     const [userSettings, setUserSettings] = useState<Settings>({
         userDisplayName: username,
         userDisplayImage: null,
@@ -57,8 +59,8 @@ export const Chat = () => {
             setUserSettings(newSettings)
         })
 
-        socket.on('userRoomsUpdated', rooms => {
-            setRooms(rooms)
+        socket.on('userRoomsUpdated', updatedRooms => {
+            setRooms(updatedRooms)
         })
 
         socket.on('userRoomUpdated', room => {
@@ -72,7 +74,11 @@ export const Chat = () => {
         })
 
         socket.on('roomChanged', roomFromServer => {
-            // const roomIndex = findSelectedRoomIndex(roomFromServer.roomId)
+            console.log(roomsRef)
+            // const roomIndex = rooms.findIndex(r => r.roomId === roomFromServer.roomId)
+            // console.log(rooms)
+            // setSelectedRoomIndex(roomIndex !== -1 ? roomIndex : undefined)
+            // socket.emit('messagesRequested', rooms[roomIndex].roomId)
         })
 
         socket.on('messagesRequested', messages => {
@@ -85,6 +91,18 @@ export const Chat = () => {
         }
     }, [])
 
+    useEffect(() => {
+        if (socket.connected === true)
+            socket.on('roomChanged', roomFromServer => {
+                const roomIndex = rooms.findIndex(r => r.roomId === roomFromServer.roomId)
+                setSelectedRoomIndex(roomIndex !== -1 ? roomIndex : undefined)
+                socket.emit('messagesRequested', rooms[roomIndex].roomId)
+            })
+        return () => {
+            socket.removeListener('roomChanged')
+        }
+    }, [rooms])
+
     const fakeScrollDiv = useRef<HTMLDivElement | null>(null)
 
     if (isLoading) return <PulseLoader color='#36d7b7' />
@@ -94,16 +112,17 @@ export const Chat = () => {
             <Box
                 sx={{
                     display: 'flex',
-                    border: 'solid green 2px',
                     alignContent: 'center',
-                    height: '',
+                    minHeight: '100vh',
                     overflow: 'hidden',
                 }}
             >
                 <Sidebar sx={{ flexBasis: '5%' }} socketObject={socket} userSettings={userSettings} />
-
                 <MessageSidebar rooms={rooms} socketObject={socket} setSelectedRoomIndex={setSelectedRoomIndex} />
-
+                <br />i is:{selectedRoomIndex}
+                <Button onClick={() => console.log('logging;:', rooms)}></Button>
+                <br />
+                <br />
                 {selectedRoomIndex === undefined ? (
                     <div>Select a room/ user</div>
                 ) : (
@@ -120,7 +139,6 @@ export const Chat = () => {
                         />
                     </Box>
                 )}
-
                 <RoomInfo rooms={rooms} selectedRoomIndex={selectedRoomIndex} socketObject={socket} />
             </Box>
         </>
