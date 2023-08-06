@@ -3,12 +3,13 @@ import {
     addMessageToDB,
     createPrivateRoomAndAddParticipants,
     getAllMessagesFromRoom,
-    getRoomsContainingUserWithRoomParticipants,
     getUserFromDB,
     createGroupAndAddParticipantsToGroup,
     addParticipantsToGroup,
     updateUserSettings,
     getUserSettings,
+    getRoomsContainingUserWithRoomParticipantDetails,
+    getAllUsers,
 } from './model.js'
 import { message, room, user, userRoomParticipation } from '@prisma/client'
 
@@ -71,9 +72,9 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
 
         const username = socket.data.username
 
-        const userRooms: Awaited<ReturnType<typeof getRoomsContainingUserWithRoomParticipants>> = []
+        const userRooms: Awaited<ReturnType<typeof getRoomsContainingUserWithRoomParticipantDetails>> = []
 
-        getRoomsContainingUserWithRoomParticipants(username).then(rooms => {
+        getRoomsContainingUserWithRoomParticipantDetails(username).then(rooms => {
             if (rooms === undefined) return
             userRooms.push(...rooms)
             socket.emit('userRoomsUpdated', rooms)
@@ -86,6 +87,7 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         socket.join(username)
 
         socket.on('privateMessage', async (targetRoomId, messageContent) => {
+            // TODO 'private'Message also works for groups? Oversight on my part but if works then better to keep it.
             io.to(targetRoomId).emit('privateMessage', targetRoomId, messageContent, username)
             // Sync the broadcast and the insert call made to DB
             try {
@@ -97,11 +99,11 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         })
 
         socket.on('createNewPrivateRoom', async (participant, callback) => {
-            const roomsContainingUser = await getRoomsContainingUserWithRoomParticipants(participant)
+            const roomsContainingUser = await getRoomsContainingUserWithRoomParticipantDetails(username)
 
             // check if participants are already in a private room with current username. If they are not, then create a new room
             const roomAlreadyExists = roomsContainingUser.some(room => {
-                return room.isMaxCapacityTwo && room.participants.some(obj => obj.username === participant)
+                return room.isMaxCapacityTwo && room.participants.some(p => p.username === participant)
             })
 
             if (roomAlreadyExists !== false) {
@@ -143,6 +145,7 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         })
 
         socket.on('addParticipantsToGroup', async (participants, roomId) => {
+            if (userRooms.find(room => room.roomId === roomId)?.isMaxCapacityTwo === true) return
             try {
                 const room = await addParticipantsToGroup(participants, roomId)
                 console.log(room)
@@ -163,7 +166,7 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
             socket.join(roomId)
         })
 
-        socket.on('userSettingsUpdated', async (newSettings) => {
+        socket.on('userSettingsUpdated', async newSettings => {
             // If null (meaning value unchanged from last time) then send undefined
             // to model because undefined while updaing entry in DB is treated as no-change.
 
