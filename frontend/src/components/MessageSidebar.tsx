@@ -15,62 +15,27 @@ import { useContext, useState } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
 import AddIcon from '@mui/icons-material/Add'
 import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
-
-interface MessageListItemProps {
-    socketObject: SocketWithCustomEvents
-    room: RoomWithParticipants
-    username: string
-    // setSelectedRoomIndex: React.Dispatch<React.SetStateAction<number | undefined>>
-}
-
-const MessageListItem = (props: MessageListItemProps) => {
-    let displayName: string
-    let displayImage: string
-
-    // check if it's a private room or a group
-    if (props.room.isMaxCapacityTwo === true) {
-        displayName = props.room.participants.find(p => p.username !== props.username)?.username ?? 'ERR:NO_NAME'
-    } else displayName = props.room.roomDisplayName
-
-    if (props.room.roomDisplayImage !== null) {
-        const imgBuffer = props.room.roomDisplayImage as ArrayBuffer
-        const imageFile = new File([imgBuffer], 'roomAvatar')
-        displayImage = URL.createObjectURL(imageFile)
-    } else displayImage = ''
-
-    return (
-        <ListItem disableGutters disablePadding>
-            <ListItemButton
-                onClick={() => {
-                    props.socketObject.emit('roomSelected', props.room.roomId)
-                    //
-                    // const roomIndex = props.rooms.findIndex(r => r.roomId === props.roomId)
-                    // props.setSelectedRoomIndex(roomIndex !== -1 ? roomIndex : undefined)
-
-                    props.socketObject.emit('messagesRequested', props.room.roomId)
-                }}
-            >
-                <ListItemIcon>
-                    <Avatar src={displayImage} />
-                </ListItemIcon>
-                <ListItemText primary={<>{displayName}</>} secondary={<>subtext</>} />
-            </ListItemButton>
-        </ListItem>
-    )
-}
+import { Buffers } from '@react-frontend-developer/buffers'
+import { imageBufferToURLOrEmptyString } from '../pages/Chat'
 
 interface MessageSidebarProps {
     rooms: RoomWithParticipants[]
     socketObject: SocketWithCustomEvents
     setSelectedRoomIndex: React.Dispatch<React.SetStateAction<number | undefined>>
+    selectedRoomIndex: number | undefined
 }
 
 export const MessageSidebar = (props: MessageSidebarProps) => {
     const { username } = useContext(CredentialContext)
+
     const [contactFieldValue, setContactFieldValue] = useState('')
+
     const [contactFieldHelperText, setContactFieldHelperText] = useState('')
+
     const [createGroupFieldValue, setCreateGroupFieldValue] = useState('')
+
     const [createGroupFieldHelperText, setCreateGroupFieldHelperText] = useState('')
+
     return (
         <Box
             sx={{
@@ -118,16 +83,75 @@ export const MessageSidebar = (props: MessageSidebarProps) => {
             <List>
                 {props.rooms.map((room, i) => {
                     return (
-                        <MessageListItem
-                            key={i}
-                            room={room}
-                            socketObject={props.socketObject}
-                            username={username}
-                            // setSelectedRoomIndex={}
-                        />
+                        <div key={i}>
+                            {i === 0 ? null : <Divider component='li' />}
+                            <MessageListItem
+                                roomIndex={i}
+                                selectedRoomIndex={props.selectedRoomIndex}
+                                room={room}
+                                socketObject={props.socketObject}
+                                username={username}
+                                setSelectedRoomIndex={props.setSelectedRoomIndex}
+                            />
+                        </div>
                     )
                 })}
             </List>
         </Box>
+    )
+}
+
+interface MessageListItemProps {
+    socketObject: SocketWithCustomEvents
+    room: RoomWithParticipants
+    username: string
+    setSelectedRoomIndex: React.Dispatch<React.SetStateAction<number | undefined>>
+    selectedRoomIndex: number | undefined
+    roomIndex: number
+}
+
+const MessageListItem = (props: MessageListItemProps) => {
+    let displayName = ''
+    let displayImage = ''
+    let participantUsername = ''
+    const roomType = props.room.isMaxCapacityTwo === true ? 'private' : 'group'
+
+    if (roomType === 'private') {
+        const participantDetails = props.room.participants.find(p => p.username !== props.username)
+
+        const displayImageBuffer = participantDetails?.userDisplayImage ?? null
+
+        displayName = participantDetails?.username ?? ''
+
+        participantUsername = participantDetails?.userDisplayName ?? ''
+
+        displayImage = imageBufferToURLOrEmptyString(displayImageBuffer)
+    } else if (roomType === 'group') {
+        displayName = props.room.roomDisplayName
+
+        displayImage = imageBufferToURLOrEmptyString(props.room.roomDisplayImage)
+    }
+
+    return (
+        <ListItemButton
+            onClick={() => {
+                props.socketObject.emit('roomSelected', props.room.roomId)
+                props.socketObject.emit('messagesRequested', props.room.roomId)
+                props.setSelectedRoomIndex(props.roomIndex)
+            }}
+            selected={props.selectedRoomIndex === props.roomIndex}
+        >
+            <ListItem disableGutters disablePadding>
+                <ListItemIcon>
+                    <Avatar src={displayImage} />
+                </ListItemIcon>
+
+                {roomType === 'private' ? (
+                    <ListItemText primary={<>{displayName}</>} secondary={<>{participantUsername}</>} />
+                ) : (
+                    <ListItemText primary={<>{displayName}</>} secondary={<>{'Group'}</>} />
+                )}
+            </ListItem>
+        </ListItemButton>
     )
 }
