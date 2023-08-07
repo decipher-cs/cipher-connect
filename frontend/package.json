@@ -1,6 +1,6 @@
 {
     "name": "cipher-connect",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "type": "module",
     "License": "GNU General Public License v3.0",
     "author": "decipher",
@@ -14,6 +14,7 @@
         "@emotion/styled": "^11.10.6",
         "@mui/icons-material": "^5.11.16",
         "@mui/material": "^5.12.0",
+        "@react-frontend-developer/buffers": "^2.0.1",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-router-dom": "^6.10.0",
