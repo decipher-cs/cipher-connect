@@ -1,6 +1,8 @@
 import {
     Avatar,
     Box,
+    Checkbox,
+    Collapse,
     Divider,
     IconButton,
     List,
@@ -17,6 +19,7 @@ import AddIcon from '@mui/icons-material/Add'
 import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
 import { Buffers } from '@react-frontend-developer/buffers'
 import { imageBufferToURLOrEmptyString } from '../pages/Chat'
+import { BorderColorRounded } from '@mui/icons-material'
 
 interface MessageSidebarProps {
     rooms: RoomWithParticipants[]
@@ -36,6 +39,8 @@ export const MessageSidebar = (props: MessageSidebarProps) => {
 
     const [createGroupFieldHelperText, setCreateGroupFieldHelperText] = useState('')
 
+    const [showTextFields, setShowTextFields] = useState(false)
+
     return (
         <Box
             sx={{
@@ -43,43 +48,50 @@ export const MessageSidebar = (props: MessageSidebarProps) => {
                 flexBasis: '20%',
             }}
         >
-            <Typography>Messages</Typography>
-            <IconButton>
-                <AddIcon />
-            </IconButton>
+            <Typography display={'inline'}>Messages</Typography>
+            <Checkbox
+                icon={<BorderColorRounded />}
+                checkedIcon={<BorderColorRounded />}
+                onClick={() => {
+                    setShowTextFields(prev => !prev)
+                }}
+            />
             {/* Hide textField or Make it collapse */}
-            <TextField
-                onChange={e => {
-                    setContactFieldValue(e.target.value)
-                    if (contactFieldHelperText !== '') setContactFieldHelperText('')
-                }}
-                onKeyDown={e => {
-                    if (e.key === 'Enter')
-                        props.socketObject.emit('createNewPrivateRoom', contactFieldValue, response => {
-                            console.log(response)
-                            setContactFieldHelperText(response)
-                        })
-                }}
-                value={contactFieldValue}
-                helperText={contactFieldHelperText}
-                placeholder='Add contact'
-            />
-            <TextField
-                onChange={e => {
-                    setCreateGroupFieldValue(e.target.value)
-                    if (createGroupFieldHelperText !== '') setCreateGroupFieldHelperText('')
-                }}
-                onKeyDown={e => {
-                    if (e.key === 'Enter')
-                        props.socketObject.emit('createNewGroup', [username], createGroupFieldValue, response => {
-                            console.log(response)
-                            setCreateGroupFieldValue(response)
-                        })
-                }}
-                value={createGroupFieldValue}
-                helperText={createGroupFieldHelperText}
-                placeholder='Create group'
-            />
+            <Collapse in={showTextFields}>
+                <TextField
+                    onChange={e => {
+                        setContactFieldValue(e.target.value)
+                        if (contactFieldHelperText !== '') setContactFieldHelperText('')
+                    }}
+                    onKeyDown={e => {
+                        if (e.key === 'Enter')
+                            props.socketObject.emit('createNewPrivateRoom', contactFieldValue, response => {
+                                console.log(response)
+                                setContactFieldHelperText(response)
+                            })
+                    }}
+                    value={contactFieldValue}
+                    helperText={contactFieldHelperText}
+                    placeholder='Add contact'
+                />
+                <Typography display={'inline'}>OR</Typography>
+                <TextField
+                    onChange={e => {
+                        setCreateGroupFieldValue(e.target.value)
+                        if (createGroupFieldHelperText !== '') setCreateGroupFieldHelperText('')
+                    }}
+                    onKeyDown={e => {
+                        if (e.key === 'Enter')
+                            props.socketObject.emit('createNewGroup', [username], createGroupFieldValue, response => {
+                                console.log(response)
+                                setCreateGroupFieldValue(response)
+                            })
+                    }}
+                    value={createGroupFieldValue}
+                    helperText={createGroupFieldHelperText}
+                    placeholder='Create group'
+                />
+            </Collapse>
             <List>
                 {props.rooms.map((room, i) => {
                     return (
