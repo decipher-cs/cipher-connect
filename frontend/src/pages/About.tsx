@@ -1,6 +1,8 @@
 import { Box, Link, Typography } from '@mui/material'
+import { useNavigate } from 'react-router-dom'
 
 export const About = (props: {}) => {
+    const navigate = useNavigate()
     return (
         <Box>
             <Typography>
@@ -11,6 +13,7 @@ export const About = (props: {}) => {
                 </Link>
                 on dribble.
             </Typography>
+            <Link onClick={() => navigate('/chat')}>Go Back to chat</Link>
         </Box>
     )
 }
