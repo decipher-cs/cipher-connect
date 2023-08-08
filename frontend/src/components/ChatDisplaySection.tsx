@@ -1,4 +1,4 @@
-import { Button, Paper, Typography } from '@mui/material'
+import { Box, Button, Paper, Typography } from '@mui/material'
 import { Container } from '@mui/system'
 import { memo, useContext, useEffect, useRef } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
@@ -27,18 +27,24 @@ const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     }, [props.chatMessageList])
 
     return (
-        <>
+        <Box
+            sx={{
+                flexBasis: '50%',
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100vh',
+                backgroundColor: '#E8C7C8',
+            }}
+        >
             <Container
                 ref={props.fakeScrollDiv}
                 sx={{
-                    maxWidth: '90vw',
-                    height: '50vh',
-                    overflow: 'scroll',
-                    p: 2,
-                    backgroundColor: 'grey',
-                    gap: 2,
+                    flexGrow: 1,
                     display: 'flex',
                     flexDirection: 'column',
+                    overflowY: 'scroll',
+                    p: 2,
+                    gap: 2,
                 }}
             >
                 {props.chatMessageList.map((message, i) => {
@@ -51,11 +57,10 @@ const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                         />
                     )
                 })}
-                <div ref={scrollToBottomRef} style={{ display: 'none' }}></div>
+                {/* <div ref={scrollToBottomRef} style={{ display: 'none' }}></div> */}
             </Container>
-
             <ChatInputBar setChatMessageList={props.setChatMessageList} currRoom={props.currRoom} />
-        </>
+        </Box>
     )
 }
 
@@ -81,7 +86,6 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
     return (
         <>
             <TextField
-                sx={{ mt: 10 }}
                 InputProps={{
                     endAdornment: (
                         <InputAdornment position='end'>
