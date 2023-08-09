@@ -1,25 +1,27 @@
-import { Box, Button, Paper, Typography } from '@mui/material'
+import { AppBar, Avatar, Box, Button, ButtonGroup, Collapse, Drawer, Paper, Toolbar, Typography } from '@mui/material'
 import { Container } from '@mui/system'
 import { memo, useContext, useEffect, useRef } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
 import { Message } from '../pages/Chat'
-
-import { ArrowRight } from '@mui/icons-material'
+import SearchIcon from '@mui/icons-material/Search'
+import { ArrowRight, MoreVertRounded } from '@mui/icons-material'
 import { IconButton, InputAdornment, TextField } from '@mui/material'
 import React, { useState } from 'react'
-import { generateDummyMessage } from '../pages/Chat'
 import { socket } from '../socket'
+import { RoomInfo } from './RoomInfo'
+import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
 
 export interface ChatDisplaySectionProps {
     chatMessageList: Message[]
-    fakeScrollDiv: React.MutableRefObject<HTMLDivElement | null>
-
     setChatMessageList: React.Dispatch<React.SetStateAction<Message[]>>
-    currRoom: string | undefined
+    currRoom: RoomWithParticipants
+    socketObject: SocketWithCustomEvents
 }
 
 const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     const scrollToBottomRef = useRef<HTMLDivElement>(null)
+
+    const [roomInfoVisible, setRoomInfoVisible] = useState(true)
 
     useEffect(() => {
         if (scrollToBottomRef.current === null) return
@@ -29,44 +31,55 @@ const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     return (
         <Box
             sx={{
-                flexBasis: '50%',
                 display: 'flex',
-                flexDirection: 'column',
+                flexGrow: 1,
                 height: '100vh',
-                backgroundColor: '#E8C7C8',
             }}
         >
-            <Container
-                ref={props.fakeScrollDiv}
+            <Box
                 sx={{
                     flexGrow: 1,
                     display: 'flex',
                     flexDirection: 'column',
-                    overflowY: 'scroll',
-                    p: 2,
-                    gap: 2,
+                    background: 'linear-gradient(45deg, #e1eec3, #f05053)',
                 }}
             >
-                {props.chatMessageList.map((message, i) => {
-                    return (
-                        <SingleTextMessage
-                            key={i}
-                            message={message}
-                            // If newest message in the list, put ref on it
-                            endRef={i === props.chatMessageList.length - 1 ? scrollToBottomRef : null}
-                        />
-                    )
-                })}
-                {/* <div ref={scrollToBottomRef} style={{ display: 'none' }}></div> */}
-            </Container>
-            <ChatInputBar setChatMessageList={props.setChatMessageList} currRoom={props.currRoom} />
+                <RoomBanner setRoomInfoVisible={setRoomInfoVisible} />
+
+                <Container
+                    sx={{
+                        flexGrow: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflowY: 'scroll',
+                        p: 2,
+                        gap: 2,
+                    }}
+                >
+                    {props.chatMessageList.map((message, i) => {
+                        return (
+                            <SingleTextMessage
+                                key={i}
+                                message={message}
+                                // If newest message in the list, put ref on it
+                                endRef={i === props.chatMessageList.length - 1 ? scrollToBottomRef : null}
+                            />
+                        )
+                    })}
+                </Container>
+                <ChatInputBar setChatMessageList={props.setChatMessageList} currRoom={props.currRoom} />
+            </Box>
+
+            <Collapse in={roomInfoVisible} orientation='horizontal'>
+                <RoomInfo socketObject={props.socketObject} room={props.currRoom} />
+            </Collapse>
         </Box>
     )
 }
 
 interface ChatInputBarProps {
     setChatMessageList: React.Dispatch<React.SetStateAction<Message[]>>
-    currRoom: string | undefined
+    currRoom: RoomWithParticipants
 }
 
 export const ChatInputBar = (props: ChatInputBarProps) => {
@@ -77,7 +90,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
         if (trimmedText.length <= 0) return
 
         if (props.currRoom !== undefined) {
-            socket.emit('privateMessage', props.currRoom, trimmedText)
+            socket.emit('privateMessage', props.currRoom.roomId, trimmedText)
         } else console.log('No room selected. This should not be possible.')
 
         setCurrInputText('')
@@ -126,5 +139,30 @@ const SingleTextMessage = memo((props: SingleTextMessageProps) => {
         </Paper>
     )
 })
+
+const RoomBanner = (props: { setRoomInfoVisible: React.Dispatch<React.SetStateAction<boolean>> }) => {
+    return (
+        // {/* <Paper square elevation={0} variant='outlined' sx={{position: 'absolute', width: 'fit-content', right: '0px', backgroundColor: 'red' }}> */}
+        <Paper square elevation={0} variant='outlined'>
+            <Toolbar>
+                <Avatar src='' />
+                <Typography>room name</Typography>
+                <ButtonGroup>
+                    <IconButton>
+                        <SearchIcon />
+                    </IconButton>
+
+                    <IconButton
+                        onClick={() => {
+                            props.setRoomInfoVisible(prev => !prev)
+                        }}
+                    >
+                        <MoreVertRounded />
+                    </IconButton>
+                </ButtonGroup>
+            </Toolbar>
+        </Paper>
+    )
+}
 
 export default ChatDisplaySection
