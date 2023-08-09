@@ -2,7 +2,7 @@ import { AppBar, Avatar, Box, Button, ButtonGroup, Collapse, Drawer, Paper, Tool
 import { Container } from '@mui/system'
 import { memo, useContext, useEffect, useRef } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
-import { Message } from '../pages/Chat'
+import { imageBufferToURLOrEmptyString, Message } from '../pages/Chat'
 import SearchIcon from '@mui/icons-material/Search'
 import { ArrowRight, MoreVertRounded } from '@mui/icons-material'
 import { IconButton, InputAdornment, TextField } from '@mui/material'
@@ -44,7 +44,7 @@ const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                     background: 'linear-gradient(45deg, #e1eec3, #f05053)',
                 }}
             >
-                <RoomBanner setRoomInfoVisible={setRoomInfoVisible} />
+                <RoomBanner setRoomInfoVisible={setRoomInfoVisible} room={props.currRoom} />
 
                 <Container
                     sx={{
@@ -140,17 +140,25 @@ const SingleTextMessage = memo((props: SingleTextMessageProps) => {
     )
 })
 
-const RoomBanner = (props: { setRoomInfoVisible: React.Dispatch<React.SetStateAction<boolean>> }) => {
+const RoomBanner = (props: {
+    setRoomInfoVisible: React.Dispatch<React.SetStateAction<boolean>>
+    room: RoomWithParticipants
+}) => {
+    const [searchFieldVisible, setSearchFieldVisible] = useState(false)
+
     return (
         // {/* <Paper square elevation={0} variant='outlined' sx={{position: 'absolute', width: 'fit-content', right: '0px', backgroundColor: 'red' }}> */}
         <Paper square elevation={0} variant='outlined'>
             <Toolbar>
-                <Avatar src='' />
-                <Typography>room name</Typography>
+                <Avatar src={imageBufferToURLOrEmptyString(props.room.roomDisplayImage)} />
+                <Typography>{props.room.roomDisplayName}</Typography>
                 <ButtonGroup>
-                    <IconButton>
+                    <IconButton onClick={() => setSearchFieldVisible(p => !p)}>
                         <SearchIcon />
                     </IconButton>
+                    <Collapse in={searchFieldVisible} orientation='horizontal'>
+                        <TextField />
+                    </Collapse>
 
                     <IconButton
                         onClick={() => {
