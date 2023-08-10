@@ -7,6 +7,7 @@ import { initRoutes } from './routes.js'
 import { initSocketIO } from './socket.js'
 import { reqLogger } from './middleware/logs.js'
 import { corsWithOptions } from './config/corsOptions.js'
+import multer from 'multer'
 
 dotenv.config()
 
@@ -14,6 +15,7 @@ const app = express()
 const server = http.createServer(app)
 const PORT = process.env.PORT || process.env.DEV_PORT
 const io = new Server(server, { cors: { origin: process.env.ORIGIN_DEV_URL } })
+export const avatar = multer().single('avatar')
 
 // middleware //
 if (app.settings.env === 'production') app.use(reqLogger) // only run this code if app is running in production.
