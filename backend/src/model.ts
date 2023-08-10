@@ -8,7 +8,6 @@ export const createNewUser = async (username: string, passwordHash: string) => {
         const returnedData = await prisma.user.create({
             data: {
                 username,
-                // passwordHash,
                 userDisplayName: username,
             },
         })
@@ -110,13 +109,45 @@ export const getRoomDetailsWithParticipants = async (roomId: string) => {
     })
 }
 
+export const getRoomDetailsWithParticipantDetails = async (roomId: string) => {
+    const roomDetails = await prisma.room.findUnique({
+        where: {
+            roomId,
+        },
+        include: {
+            participants: {
+                select: {
+                    usernameRelation: {
+                        select: {
+                            userDisplayImage: true,
+                            userDisplayName: true,
+                        },
+                    },
+                    key: true,
+                    username: true,
+                },
+            },
+        },
+    })
+
+    if (roomDetails === null) return roomDetails
+
+    const participants = roomDetails.participants.map(p => ({
+        username: p.username,
+        userDisplayName: p.usernameRelation.userDisplayName,
+        userDisplayImage: p.usernameRelation.userDisplayImage,
+    }))
+
+    return { ...roomDetails, participants }
+}
+
 export const getRoomsContainingUser = async (username: string) => {
     return await prisma.room.findMany({
         where: { participants: { some: { username } } },
     })
 }
 
-export const getRoomsContainingUserWithRoomParticipants = async (username: string) => {
+export const getRoomsContainingUserWithRoomParticipantDetails = async (username: string) => {
     const rooms = await prisma.userRoomParticipation.findMany({
         where: { username },
         select: {
@@ -127,7 +158,13 @@ export const getRoomsContainingUserWithRoomParticipants = async (username: strin
                     roomDisplayImage: true,
                     participants: {
                         select: {
-                            username: true,
+                            usernameRelation: {
+                                select: {
+                                    username: true,
+                                    userDisplayName: true,
+                                    userDisplayImage: true,
+                                },
+                            },
                         },
                     },
                     isMaxCapacityTwo: true,
@@ -135,14 +172,24 @@ export const getRoomsContainingUserWithRoomParticipants = async (username: strin
             },
         },
     })
+
     return rooms.map(
-        ({ roomId, roomIdRelation: { participants, isMaxCapacityTwo, roomDisplayName, roomDisplayImage } }) => ({
-            roomId,
-            roomDisplayImage,
-            roomDisplayName,
-            isMaxCapacityTwo,
-            participants,
-        })
+        ({ roomId, roomIdRelation: { participants, isMaxCapacityTwo, roomDisplayName, roomDisplayImage } }) => {
+            const participantsWithDisplayDetails = participants.map(
+                ({ usernameRelation: { userDisplayImage, userDisplayName, username } }) => ({
+                    username: username,
+                    userDisplayImage,
+                    userDisplayName,
+                })
+            )
+            return {
+                roomId,
+                roomDisplayImage,
+                roomDisplayName,
+                isMaxCapacityTwo,
+                participants: participantsWithDisplayDetails,
+            }
+        }
     )
 }
 
@@ -167,7 +214,7 @@ export const addParticipantsToPrivateRoom = async (participant1: string, partici
 export const createPrivateRoomAndAddParticipants = async (participant1: string, participant2: string) => {
     const roomDetails = await createRoomForTwo()
     await addParticipantsToPrivateRoom(participant1, participant2, roomDetails.roomId)
-    return await getRoomDetailsWithParticipants(roomDetails.roomId)
+    return await getRoomDetailsWithParticipantDetails(roomDetails.roomId)
 }
 
 export const createRoomForMany = async (roomDisplayName: string) => {
@@ -188,7 +235,7 @@ export const addParticipantsToGroup = async (participants: string[], roomId: str
 export const createGroupAndAddParticipantsToGroup = async (participants: string[], groupDisplayName: string) => {
     const room = await createRoomForMany(groupDisplayName)
     await addParticipantsToGroup(participants, room.roomId)
-    return await getRoomDetailsWithParticipants(room.roomId)
+    return await getRoomDetailsWithParticipantDetails(room.roomId)
 }
 
 export const addMessageToDB = async (msgSender: string, roomId: string, textContent: string) => {
@@ -226,7 +273,7 @@ export const updateUserSettings = async (
         select: {
             userDisplayName: true,
             userDisplayImage: true,
-        }
+        },
     })
 }
 
@@ -236,6 +283,17 @@ export const getUserSettings = async (username: string) => {
         select: {
             userDisplayName: true,
             userDisplayImage: true,
+        },
+    })
+}
+
+export const updateRoomImage = async (roomId: string, newImg: Buffer) => {
+    return await prisma.room.update({
+        where: {
+            roomId,
+        },
+        data: {
+            roomDisplayImage: newImg,
         },
     })
 }
