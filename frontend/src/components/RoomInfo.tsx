@@ -1,12 +1,12 @@
-import { Avatar, TextField, Box, Icon, Typography, IconButton, Button } from '@mui/material'
+import { Avatar, TextField, Box, Icon, Typography, IconButton, Button, Drawer } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
 import { useState } from 'react'
 import { imageBufferToURLOrEmptyString } from '../pages/Chat'
+import { SearchSharp } from '@mui/icons-material'
 
 interface RoomInfoProps {
-    rooms: RoomWithParticipants[]
-    selectedRoomIndex: number | undefined
+    room: RoomWithParticipants
     socketObject: SocketWithCustomEvents
 }
 
@@ -15,26 +15,50 @@ export const RoomInfo = (props: RoomInfoProps) => {
 
     const [contactFieldHelperText, setContactFieldHelperText] = useState('')
 
-    if (props.selectedRoomIndex === undefined) return <>Select a room</>
+    const roomType = props.room.isMaxCapacityTwo === true ? 'private' : 'group'
 
-    const room = props.rooms[props.selectedRoomIndex]
+    const [roomAvatar, setRoomAvatar] = useState(imageBufferToURLOrEmptyString(props.room.roomDisplayImage))
 
-    const roomType = room.isMaxCapacityTwo === true ? 'private' : 'group'
+    const handleImageUpload = async (fileList: FileList | null) => {
+        if (fileList === null || fileList.length === 0) return
+        const URL = import.meta.env.PROD ? import.meta.env.VITE_SERVER_PROD_URL : import.meta.env.VITE_SERVER_DEV_URL
 
-    const roomAvatar = imageBufferToURLOrEmptyString(room.roomDisplayImage)
+        const image = fileList[0]
+        const imageFormData = new FormData()
+        imageFormData.append('avatar', image)
+        imageFormData.append('roomId', props.room.roomId)
+
+        const res = await fetch(`${URL}/updateGroupImage`, {
+            method: 'POST',
+            body: imageFormData,
+            credentials: 'include',
+            headers: {
+                Accept: 'multipart/form-data',
+            },
+        })
+        if (res.statusText.toLowerCase() === 'ok') {
+            const blob = await res.blob()
+            const file = new File([blob], 'avatar')
+            setRoomAvatar(imageBufferToURLOrEmptyString(file))
+        }
+    }
 
     return (
-        // TODO: Make this a drawer or slider to toggle it.
-        <Box
-            sx={{
-                border: 'solid blue 3px',
-                flexBasis: '25%',
-            }}
-        >
-            {/* Group Image */}
-            <Avatar src={roomAvatar} />
-            <Typography variant='h6'>{props.rooms[props.selectedRoomIndex].roomDisplayName}</Typography>
-            {props.rooms[props.selectedRoomIndex].participants.length} members
+        <Box sx={{ p: 3, width: '300px', backgroundColor: 'red', display: 'grid' }}>
+            <IconButton component='label' sx={{ justifySelf: 'center' }}>
+                <Avatar src={roomAvatar} sx={{}} />
+
+                <input
+                    type='file'
+                    accept='image/*'
+                    hidden
+                    onChange={e => {
+                        handleImageUpload(e.target.files)
+                    }}
+                />
+            </IconButton>
+            <Typography variant='h6'>{props.room.roomDisplayName}</Typography>
+            {props.room.participants.length} members
             {roomType === 'group' && (
                 <>
                     <IconButton>
@@ -46,13 +70,12 @@ export const RoomInfo = (props: RoomInfoProps) => {
                             if (contactFieldHelperText !== '') setContactFieldHelperText('')
                         }}
                         onKeyDown={e => {
-                            if (e.key === 'Enter' && props.selectedRoomIndex !== undefined)
+                            if (e.key === 'Enter')
                                 props.socketObject.emit(
                                     'addParticipantsToGroup',
                                     [contactFieldValue],
-                                    props.rooms[props.selectedRoomIndex].roomId,
+                                    props.room.roomId,
                                     response => {
-                                        console.log(response)
                                         setContactFieldHelperText(response)
                                     }
                                 )
@@ -63,10 +86,10 @@ export const RoomInfo = (props: RoomInfoProps) => {
                     />
                 </>
             )}
-            {props.rooms[props.selectedRoomIndex].participants.map(({ username }, i) => (
+            {props.room.participants.map(({ username }, i) => (
                 <div key={i}>{username}</div>
             ))}
-            {props.rooms[props.selectedRoomIndex].isMaxCapacityTwo === false ? (
+            {props.room.isMaxCapacityTwo === false ? (
                 <>
                     <Button onClick={() => {}}>Delete Group</Button>
                     <Button onClick={() => {}}>Leave Group</Button>
