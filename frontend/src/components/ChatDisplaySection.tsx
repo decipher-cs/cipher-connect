@@ -1,4 +1,4 @@
-import { AppBar, Avatar, Box, Button, ButtonGroup, Collapse, Drawer, Paper, Toolbar, Typography } from '@mui/material'
+import { Avatar, Box, Button, ButtonGroup, Collapse, Drawer, Paper, Toolbar, Typography } from '@mui/material'
 import { Container } from '@mui/system'
 import { memo, useContext, useEffect, useRef } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
@@ -130,12 +130,13 @@ const SingleTextMessage = memo((props: SingleTextMessageProps) => {
         <Paper
             sx={{
                 width: 'fit-content',
+                maxWidth: '90%',
                 p: 1.5,
                 placeSelf: props.message.senderUsername === username ? 'flex-end' : 'flex-start',
             }}
             ref={props.endRef}
         >
-            <Typography>{props.message.content}</Typography>
+            <Typography paragraph>{props.message.content}</Typography>
         </Paper>
     )
 })
@@ -150,7 +151,13 @@ const RoomBanner = (props: {
         // {/* <Paper square elevation={0} variant='outlined' sx={{position: 'absolute', width: 'fit-content', right: '0px', backgroundColor: 'red' }}> */}
         <Paper square elevation={0} variant='outlined'>
             <Toolbar>
-                <Avatar src={imageBufferToURLOrEmptyString(props.room.roomDisplayImage)} />
+                <IconButton
+                    onClick={() => {
+                        props.setRoomInfoVisible(prev => !prev)
+                    }}
+                >
+                    <Avatar src={imageBufferToURLOrEmptyString(props.room.roomDisplayImage)} />
+                </IconButton>
                 <Typography>{props.room.roomDisplayName}</Typography>
                 <ButtonGroup>
                     <IconButton onClick={() => setSearchFieldVisible(p => !p)}>
