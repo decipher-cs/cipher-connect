@@ -59,7 +59,7 @@ model roomConfig {
 model room {
   roomId           String  @id @default(cuid())
   roomDisplayName  String  @db.VarChar(33)
-  roomDisplayImage Bytes?  @db.Blob
+  roomDisplayImage Bytes?  @db.LongBlob()
   isMaxCapacityTwo Boolean @default(false)
 
   message        message[]
