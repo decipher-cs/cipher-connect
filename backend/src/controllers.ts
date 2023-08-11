@@ -147,10 +147,8 @@ export const updateGroupImage = async (req: Request, res: Response) => {
     const roomId: string = req.body.roomId
     try {
         const room = await updateRoomImage(roomId, file)
-        console.log(room.roomDisplayImage)
         res.send(room.roomDisplayImage)
     } catch (err) {
-        console.log(err)
         res.sendStatus(500)
     }
     return
