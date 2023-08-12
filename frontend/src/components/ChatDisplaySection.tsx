@@ -10,18 +10,18 @@ import React, { useState } from 'react'
 import { socket } from '../socket'
 import { RoomInfo } from './RoomInfo'
 import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
+import { MessageTile } from './MessageTile'
 
 export interface ChatDisplaySectionProps {
     chatMessageList: Message[]
     setChatMessageList: React.Dispatch<React.SetStateAction<Message[]>>
     currRoom: RoomWithParticipants
     socketObject: SocketWithCustomEvents
+    setRoomInfoVisible: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     const scrollToBottomRef = useRef<HTMLDivElement>(null)
-
-    const [roomInfoVisible, setRoomInfoVisible] = useState(true)
 
     useEffect(() => {
         if (scrollToBottomRef.current === null) return
@@ -29,51 +29,37 @@ const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     }, [props.chatMessageList])
 
     return (
-        <Box
-            sx={{
-                display: 'flex',
-                flexGrow: 1,
-                height: '100vh',
-            }}
-        >
+        <>
+            <RoomBanner setRoomInfoVisible={props.setRoomInfoVisible} room={props.currRoom} />
+
             <Box
                 sx={{
-                    flexGrow: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    background: 'linear-gradient(45deg, #e1eec3, #f05053)',
+                    // flexGrow: 1,
+                    // height: '100%',
+                    // display: 'flex',
+                    // flexDirection: 'column',
+                    // overflowY: 'scroll',
+                    // maxHeight: '100%',
+                    p: 2,
+                    // gap: 1.8,
                 }}
             >
-                <RoomBanner setRoomInfoVisible={setRoomInfoVisible} room={props.currRoom} />
-
-                <Container
-                    sx={{
-                        flexGrow: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        overflowY: 'scroll',
-                        p: 2,
-                        gap: 2,
-                    }}
-                >
-                    {props.chatMessageList.map((message, i) => {
-                        return (
-                            <SingleTextMessage
-                                key={i}
-                                message={message}
-                                // If newest message in the list, put ref on it
-                                endRef={i === props.chatMessageList.length - 1 ? scrollToBottomRef : null}
-                            />
-                        )
-                    })}
-                </Container>
-                <ChatInputBar setChatMessageList={props.setChatMessageList} currRoom={props.currRoom} />
+                {props.chatMessageList.map((message, i) => {
+                    if (i !== 0) return null
+                    return (
+                        <MessageTile />
+                        // <SingleTextMessage
+                        //     key={i}
+                        //     message={message}
+                        //     // If newest message in the list, put ref on it to auto-scroll to bottom
+                        //     endRef={i === props.chatMessageList.length - 1 ? scrollToBottomRef : null}
+                        // />
+                    )
+                })}
             </Box>
 
-            <Collapse in={roomInfoVisible} orientation='horizontal'>
-                <RoomInfo socketObject={props.socketObject} room={props.currRoom} />
-            </Collapse>
-        </Box>
+            <ChatInputBar setChatMessageList={props.setChatMessageList} currRoom={props.currRoom} />
+        </>
     )
 }
 
@@ -97,24 +83,25 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
     }
 
     return (
-        <>
-            <TextField
-                InputProps={{
-                    endAdornment: (
-                        <InputAdornment position='end'>
-                            <IconButton onClick={addMessgeToMessageList}>
-                                <ArrowRight />
-                            </IconButton>
-                        </InputAdornment>
-                    ),
-                }}
-                value={currInputText}
-                fullWidth
-                placeholder='Enter Message'
-                onChange={e => setCurrInputText(e.target.value)}
-                onKeyDown={e => (e.key === 'Enter' ? addMessgeToMessageList() : null)}
-            />
-        </>
+        <TextField
+            sx={{
+                backgroundColor: 'white',
+            }}
+            InputProps={{
+                endAdornment: (
+                    <InputAdornment position='end'>
+                        <IconButton onClick={addMessgeToMessageList}>
+                            <ArrowRight />
+                        </IconButton>
+                    </InputAdornment>
+                ),
+            }}
+            value={currInputText}
+            fullWidth
+            placeholder='Enter Message'
+            onChange={e => setCurrInputText(e.target.value)}
+            onKeyDown={e => (e.key === 'Enter' ? addMessgeToMessageList() : null)}
+        />
     )
 }
 
@@ -129,14 +116,15 @@ const SingleTextMessage = memo((props: SingleTextMessageProps) => {
     return (
         <Paper
             sx={{
-                width: 'fit-content',
-                maxWidth: '90%',
-                p: 1.5,
+                width: 'min-content',
+                // maxheight:
                 placeSelf: props.message.senderUsername === username ? 'flex-end' : 'flex-start',
             }}
             ref={props.endRef}
         >
-            <Typography paragraph>{props.message.content}</Typography>
+            <Typography paragraph textOverflow='ellipsis'>
+                {props.message.content}
+            </Typography>
         </Paper>
     )
 })
@@ -153,7 +141,7 @@ const RoomBanner = (props: {
             <Toolbar>
                 <IconButton
                     onClick={() => {
-                        props.setRoomInfoVisible(prev => !prev)
+                        // TODO: view the display image full screen
                     }}
                 >
                     <Avatar src={imageBufferToURLOrEmptyString(props.room.roomDisplayImage)} />

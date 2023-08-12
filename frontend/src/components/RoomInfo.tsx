@@ -1,13 +1,25 @@
-import { Avatar, TextField, Box, Icon, Typography, IconButton, Button, Drawer } from '@mui/material'
+import {
+    Avatar,
+    TextField,
+    Box,
+    Icon,
+    Typography,
+    IconButton,
+    Button,
+    Drawer,
+    InputAdornment,
+    Divider,
+} from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
-import { useState } from 'react'
+import { ForwardedRef, forwardRef, Ref, useState } from 'react'
 import { imageBufferToURLOrEmptyString } from '../pages/Chat'
-import { SearchSharp } from '@mui/icons-material'
+import { ArrowForwardRounded, SearchSharp } from '@mui/icons-material'
 
 interface RoomInfoProps {
     room: RoomWithParticipants
     socketObject: SocketWithCustomEvents
+    style?: any
 }
 
 export const RoomInfo = (props: RoomInfoProps) => {
@@ -18,6 +30,13 @@ export const RoomInfo = (props: RoomInfoProps) => {
     const roomType = props.room.isMaxCapacityTwo === true ? 'private' : 'group'
 
     const [roomAvatar, setRoomAvatar] = useState(imageBufferToURLOrEmptyString(props.room.roomDisplayImage))
+
+    const [roomName, setRoomName] = useState(props.room.roomDisplayName)
+
+    const [roomNameHelperText, setRoomNameHelperText] = useState('')
+
+    const handleRoomNameChange = () => {}
+    const handleRoomNameSubmit = () => {}
 
     const handleImageUpload = async (fileList: FileList | null) => {
         if (fileList === null || fileList.length === 0) return
@@ -44,9 +63,19 @@ export const RoomInfo = (props: RoomInfoProps) => {
     }
 
     return (
-        <Box sx={{ p: 3, width: '300px', backgroundColor: 'red', display: 'grid' }}>
+        <Box
+            sx={{
+                minWidth: 'max-content',
+                backgroundColor: 'yellow',
+                minHeight: '100%',
+                display: 'grid',
+                p: 3,
+                overflow: 'visible',
+                justifyItems: 'center'
+            }}
+        >
             <IconButton component='label' sx={{ justifySelf: 'center' }}>
-                <Avatar src={roomAvatar} sx={{}} />
+                <Avatar src={roomAvatar} sx={{ height: 124, width: 124 }} />
 
                 <input
                     type='file'
@@ -57,8 +86,28 @@ export const RoomInfo = (props: RoomInfoProps) => {
                     }}
                 />
             </IconButton>
-            <Typography variant='h6'>{props.room.roomDisplayName}</Typography>
-            {props.room.participants.length} members
+            <TextField
+                value={roomName}
+                variant='standard'
+                label='Room Name'
+                helperText={roomNameHelperText}
+                onChange={e => {
+                    setRoomName(e.target.value)
+                    if (e.target.value.trim() !== props.room.roomDisplayName) {
+                        setRoomNameHelperText('Submit to change room name')
+                    } else setRoomNameHelperText('')
+                }}
+                InputProps={{
+                    endAdornment: (
+                        <InputAdornment position='end'>
+                            <IconButton onClick={() => {}}>
+                                <ArrowForwardRounded />
+                            </IconButton>
+                        </InputAdornment>
+                    ),
+                }}
+            />
+            members ({props.room.participants.length})
             {roomType === 'group' && (
                 <>
                     <IconButton>
@@ -86,9 +135,11 @@ export const RoomInfo = (props: RoomInfoProps) => {
                     />
                 </>
             )}
+            <Divider />
             {props.room.participants.map(({ username }, i) => (
                 <div key={i}>{username}</div>
             ))}
+            <Divider />
             {props.room.isMaxCapacityTwo === false ? (
                 <>
                     <Button onClick={() => {}}>Delete Group</Button>
