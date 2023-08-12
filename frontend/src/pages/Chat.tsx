@@ -1,7 +1,6 @@
-import { Box, Button, Container, Dialog, TextField, Typography } from '@mui/material'
+import { Box, Button, Collapse, Container, Dialog, TextField, Typography } from '@mui/material'
 import { useContext, useEffect, useRef, useState } from 'react'
 import ChatDisplaySection from '../components/ChatDisplaySection'
-import ChatInputBar from '../components/ChatInputBar'
 import Sidebar from '../components/Sidebar'
 import { CredentialContext } from '../contexts/Credentials'
 import { socket } from '../socket'
@@ -11,6 +10,7 @@ import { MessageSidebar } from '../components/MessageSidebar'
 import { RoomInfo } from '../components/RoomInfo'
 import { RoomWithParticipants, Settings } from '../types/socket'
 import { ProfileSettingsDialog } from '../components/ProfileSettingsDialog'
+import { Buffers } from '@react-frontend-developer/buffers'
 
 export type Message = Pick<MessageFromDB, 'senderUsername' | 'content' | 'createdAt' | 'roomId'>
 
@@ -20,6 +20,13 @@ export const generateDummyMessage = (msg: string, sender?: string, roomId?: stri
     content: msg,
     createdAt: new Date(),
 })
+
+export const imageBufferToURLOrEmptyString = (imageBuffer: Buffers | null) => {
+    if (imageBuffer === null) return ''
+    const imgBuffer = imageBuffer as ArrayBuffer
+    const imageFile = new File([imgBuffer], 'avatar')
+    return URL.createObjectURL(imageFile)
+}
 
 export const Chat = () => {
     const [isLoading, setIsLoading] = useState(true)
@@ -32,7 +39,7 @@ export const Chat = () => {
 
     const [rooms, setRooms] = useState<RoomWithParticipants[]>([])
 
-    const roomsRef = useRef(rooms)
+    const [roomInfoVisible, setRoomInfoVisible] = useState(true)
 
     const [userSettings, setUserSettings] = useState<Settings>({
         userDisplayName: username,
@@ -73,13 +80,7 @@ export const Chat = () => {
             // socket.emit('roomSelected', room.roomId)
         })
 
-        socket.on('roomChanged', roomFromServer => {
-            console.log(roomsRef)
-            // const roomIndex = rooms.findIndex(r => r.roomId === roomFromServer.roomId)
-            // console.log(rooms)
-            // setSelectedRoomIndex(roomIndex !== -1 ? roomIndex : undefined)
-            // socket.emit('messagesRequested', rooms[roomIndex].roomId)
-        })
+        socket.on('roomChanged', roomFromServer => {})
 
         socket.on('messagesRequested', messages => {
             setChatMessageList(messages)
@@ -91,20 +92,6 @@ export const Chat = () => {
         }
     }, [])
 
-    useEffect(() => {
-        if (socket.connected === true)
-            socket.on('roomChanged', roomFromServer => {
-                const roomIndex = rooms.findIndex(r => r.roomId === roomFromServer.roomId)
-                setSelectedRoomIndex(roomIndex !== -1 ? roomIndex : undefined)
-                socket.emit('messagesRequested', rooms[roomIndex].roomId)
-            })
-        return () => {
-            socket.removeListener('roomChanged')
-        }
-    }, [rooms])
-
-    const fakeScrollDiv = useRef<HTMLDivElement | null>(null)
-
     if (isLoading) return <PulseLoader color='#36d7b7' />
 
     return (
@@ -113,33 +100,64 @@ export const Chat = () => {
                 sx={{
                     display: 'flex',
                     alignContent: 'center',
-                    minHeight: '100vh',
+                    height: '100vh',
                     overflow: 'hidden',
                 }}
             >
-                <Sidebar sx={{ flexBasis: '5%' }} socketObject={socket} userSettings={userSettings} />
-                <MessageSidebar rooms={rooms} socketObject={socket} setSelectedRoomIndex={setSelectedRoomIndex} />
-                <br />i is:{selectedRoomIndex}
-                <Button onClick={() => console.log('logging;:', rooms)}></Button>
-                <br />
-                <br />
-                {selectedRoomIndex === undefined ? (
-                    <div>Select a room/ user</div>
+                <Sidebar socketObject={socket} userSettings={userSettings} />
+
+                <MessageSidebar
+                    rooms={rooms}
+                    socketObject={socket}
+                    selectedRoomIndex={selectedRoomIndex}
+                    setSelectedRoomIndex={setSelectedRoomIndex}
+                />
+
+                {selectedRoomIndex === undefined || rooms[selectedRoomIndex] === undefined ? (
+                    <>
+                        <Box sx={{ display: 'grid', flex: 1, placeContent: 'center' }}>
+                            <Typography variant='h6' align='center'>
+                                Join A Room To See The Chat
+                                <br />
+                                ▰▱▰▱▰▱▰▱▰▱▰▱▰▱
+                            </Typography>
+                        </Box>
+                    </>
                 ) : (
                     <Box
                         sx={{
-                            border: 'solid blue 3px',
-                            flexBasis: '50%',
+                            display: 'grid',
+                            flexGrow: '1',
+                            gridAutoFlow: 'row',
+                            height: '100%',
+                            background: 'linear-gradient(45deg, #e1eec3, #f05053)',
                         }}
                     >
-                        <ChatDisplaySection chatMessageList={chatMessageList} fakeScrollDiv={fakeScrollDiv} />
-                        <ChatInputBar
+                        <ChatDisplaySection
+                            chatMessageList={chatMessageList}
                             setChatMessageList={setChatMessageList}
-                            currRoom={rooms[selectedRoomIndex]?.roomId}
+                            currRoom={rooms[selectedRoomIndex]}
+                            socketObject={socket}
+                            setRoomInfoVisible={setRoomInfoVisible}
                         />
                     </Box>
                 )}
-                <RoomInfo rooms={rooms} selectedRoomIndex={selectedRoomIndex} socketObject={socket} />
+                {selectedRoomIndex !== undefined && rooms[selectedRoomIndex] !== undefined ? (
+                    <Collapse in={roomInfoVisible} orientation='horizontal'>
+                        <Box
+                            sx={{
+                                // height: '100%',
+                                // placeSelf: 'flex-end',
+                                backgroundColor: 'green',
+                                display: 'grid',
+                                width: '300px',
+                                overflow: 'hidden',
+                            }}
+                        >
+                            <RoomInfo socketObject={socket} room={rooms[selectedRoomIndex]} />
+                        </Box>
+                    </Collapse>
+                ) : null}
             </Box>
         </>
     )
