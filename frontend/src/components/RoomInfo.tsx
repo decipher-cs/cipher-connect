@@ -65,13 +65,15 @@ export const RoomInfo = (props: RoomInfoProps) => {
     return (
         <Box
             sx={{
-                minWidth: 'max-content',
-                backgroundColor: 'yellow',
-                minHeight: '100%',
+                Width: 'max-content',
+                maxWidth: '550px',
+                height: '100%',
+
                 display: 'grid',
-                p: 3,
+                px: 3,
+                justifyItems: 'center',
+
                 overflow: 'visible',
-                justifyItems: 'center'
             }}
         >
             <IconButton component='label' sx={{ justifySelf: 'center' }}>

@@ -1,4 +1,4 @@
-import { Box, Button, Collapse, Container, Dialog, TextField, Typography } from '@mui/material'
+import { Box, Button, Collapse, Container, Dialog, Slide, TextField, Typography } from '@mui/material'
 import { useContext, useEffect, useRef, useState } from 'react'
 import ChatDisplaySection from '../components/ChatDisplaySection'
 import Sidebar from '../components/Sidebar'
@@ -99,9 +99,10 @@ export const Chat = () => {
             <Box
                 sx={{
                     display: 'flex',
-                    alignContent: 'center',
-                    height: '100vh',
-                    overflow: 'hidden',
+                    minHeight: '100svh',
+                    width: '100vw',
+                    alignContent: 'stretch',
+                    // overflow: 'hidden',
                 }}
             >
                 <Sidebar socketObject={socket} userSettings={userSettings} />
@@ -114,50 +115,45 @@ export const Chat = () => {
                 />
 
                 {selectedRoomIndex === undefined || rooms[selectedRoomIndex] === undefined ? (
-                    <>
-                        <Box sx={{ display: 'grid', flex: 1, placeContent: 'center' }}>
-                            <Typography variant='h6' align='center'>
-                                Join A Room To See The Chat
-                                <br />
-                                ▰▱▰▱▰▱▰▱▰▱▰▱▰▱
-                            </Typography>
-                        </Box>
-                    </>
-                ) : (
-                    <Box
-                        sx={{
-                            display: 'grid',
-                            flexGrow: '1',
-                            gridAutoFlow: 'row',
-                            height: '100%',
-                            background: 'linear-gradient(45deg, #e1eec3, #f05053)',
-                        }}
-                    >
-                        <ChatDisplaySection
-                            chatMessageList={chatMessageList}
-                            setChatMessageList={setChatMessageList}
-                            currRoom={rooms[selectedRoomIndex]}
-                            socketObject={socket}
-                            setRoomInfoVisible={setRoomInfoVisible}
-                        />
+                    <Box sx={{ display: 'grid', flex: 1, placeContent: 'center' }}>
+                        <Typography variant='h6' align='center'>
+                            Join A Room To See The Chat
+                            <br />
+                            ▰▱▰▱▰▱▰▱▰▱▰▱▰▱
+                        </Typography>
                     </Box>
-                )}
-                {selectedRoomIndex !== undefined && rooms[selectedRoomIndex] !== undefined ? (
-                    <Collapse in={roomInfoVisible} orientation='horizontal'>
+                ) : (
+                    <>
                         <Box
                             sx={{
-                                // height: '100%',
-                                // placeSelf: 'flex-end',
-                                backgroundColor: 'green',
+                                flexBasis: '100%',
+                                flexShrink: 1,
                                 display: 'grid',
-                                width: '300px',
-                                overflow: 'hidden',
+                                gridAutoFlow: 'row',
+                                background: 'linear-gradient(45deg, #e1eec3, #f05053)',
                             }}
                         >
-                            <RoomInfo socketObject={socket} room={rooms[selectedRoomIndex]} />
+                            <ChatDisplaySection
+                                chatMessageList={chatMessageList}
+                                setChatMessageList={setChatMessageList}
+                                currRoom={rooms[selectedRoomIndex]}
+                                socketObject={socket}
+                                setRoomInfoVisible={setRoomInfoVisible}
+                            />
                         </Box>
-                    </Collapse>
-                ) : null}
+                        <Box
+                            sx={{
+                                flexGrow: 1,
+                                flexShrink: 1,
+                                overflow: 'auto',
+                            }}
+                        >
+                            <Collapse in={roomInfoVisible} orientation='horizontal' sx={{ height: '100%' }}>
+                                <RoomInfo socketObject={socket} room={rooms[selectedRoomIndex]} />
+                            </Collapse>
+                        </Box>
+                    </>
+                )}
             </Box>
         </>
     )
