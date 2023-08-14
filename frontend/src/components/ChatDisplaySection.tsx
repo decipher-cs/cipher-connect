@@ -21,6 +21,7 @@ export interface ChatDisplaySectionProps {
 }
 
 const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
+    const { username } = useContext(CredentialContext)
     const scrollToBottomRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
@@ -36,24 +37,28 @@ const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                 sx={{
                     // flexGrow: 1,
                     // height: '100%',
-                    // display: 'flex',
-                    // flexDirection: 'column',
-                    // overflowY: 'scroll',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflowY: 'scroll',
+                    // alignItems: 'center'
                     // maxHeight: '100%',
-                    p: 2,
-                    // gap: 1.8,
+                    px: 2,
+                    gap: 1.8,
+                    pt: 12,
+                    // display: 'grid',
+                    // placeContent: 'center',
+                    // placeItems: 'center',
                 }}
             >
                 {props.chatMessageList.map((message, i) => {
-                    if (i !== 0) return null
                     return (
-                        <MessageTile />
-                        // <SingleTextMessage
-                        //     key={i}
-                        //     message={message}
-                        //     // If newest message in the list, put ref on it to auto-scroll to bottom
-                        //     endRef={i === props.chatMessageList.length - 1 ? scrollToBottomRef : null}
-                        // />
+                        <MessageTile
+                            key={i}
+                            alignment={message.senderUsername === username ? 'right' : 'left'}
+                            textContent={message.content}
+                            // If newest message in the list, put ref on it to auto-scroll to bottom
+                            autoScrollToBottomRef={i === props.chatMessageList.length - 1 ? scrollToBottomRef : null}
+                        />
                     )
                 })}
             </Box>
@@ -104,30 +109,6 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
         />
     )
 }
-
-interface SingleTextMessageProps {
-    message: Message
-    endRef: React.RefObject<HTMLDivElement> | null
-}
-
-const SingleTextMessage = memo((props: SingleTextMessageProps) => {
-    const { username } = useContext(CredentialContext)
-
-    return (
-        <Paper
-            sx={{
-                width: 'min-content',
-                // maxheight:
-                placeSelf: props.message.senderUsername === username ? 'flex-end' : 'flex-start',
-            }}
-            ref={props.endRef}
-        >
-            <Typography paragraph textOverflow='ellipsis'>
-                {props.message.content}
-            </Typography>
-        </Paper>
-    )
-})
 
 const RoomBanner = (props: {
     setRoomInfoVisible: React.Dispatch<React.SetStateAction<boolean>>
