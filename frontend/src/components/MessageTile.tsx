@@ -1,5 +1,4 @@
-import { Card, Paper, PaperProps, styled, TextField, Typography } from '@mui/material'
-import { Message } from '../pages/Chat'
+import { Paper, Typography } from '@mui/material'
 
 export const MessageTile = (props: {
     textContent: string
@@ -15,10 +14,11 @@ export const MessageTile = (props: {
                 alignSelf: props.alignment === 'left' ? 'flex-start' : 'flex-end',
                 width: 'fit-content',
                 maxWidth: '80%',
+                backgroundImage: 'linear-gradient(45deg,#3023AE 0%,#FF0099 100%)',
             }}
             ref={props.autoScrollToBottomRef}
         >
-            <Typography sx={{ overflowWrap: 'break-word' }}>{props.textContent}</Typography>
+            <Typography sx={{ overflowWrap: 'break-word', color: 'white' }}>{props.textContent}</Typography>
         </Paper>
     )
 }
