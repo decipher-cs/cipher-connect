@@ -65,15 +65,15 @@ export const RoomInfo = (props: RoomInfoProps) => {
     return (
         <Box
             sx={{
-                Width: 'max-content',
-                maxWidth: '550px',
+                width: 'max-content',
+                maxWidth: '400px',
                 height: '100%',
 
                 display: 'grid',
                 px: 3,
                 justifyItems: 'center',
 
-                overflow: 'visible',
+                overflow: 'scroll',
             }}
         >
             <IconButton component='label' sx={{ justifySelf: 'center' }}>
@@ -137,11 +137,13 @@ export const RoomInfo = (props: RoomInfoProps) => {
                     />
                 </>
             )}
-            <Divider />
-            {props.room.participants.map(({ username }, i) => (
-                <div key={i}>{username}</div>
-            ))}
-            <Divider />
+            <Box>
+                <Divider />
+                {props.room.participants.map(({ username }, i) => (
+                    <div key={i}>{username}</div>
+                ))}
+                <Divider />
+            </Box>
             {props.room.isMaxCapacityTwo === false ? (
                 <>
                     <Button onClick={() => {}}>Delete Group</Button>

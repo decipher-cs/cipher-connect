@@ -100,7 +100,7 @@ export const Chat = () => {
                 sx={{
                     display: 'flex',
                     minHeight: '100svh',
-                    width: '100vw',
+                    maxWidth: '100vw',
                     alignContent: 'stretch',
                     // overflow: 'hidden',
                 }}
@@ -126,11 +126,12 @@ export const Chat = () => {
                     <>
                         <Box
                             sx={{
+                                position: 'relative', // Need to set potition here in order for position: absolute to work on RoomBanner component
                                 flexBasis: '100%',
                                 flexShrink: 1,
                                 display: 'grid',
-                                gridAutoFlow: 'row',
                                 background: 'linear-gradient(45deg, #e1eec3, #f05053)',
+                                gridTemplateRows: '1fr auto',
                             }}
                         >
                             <ChatDisplaySection
@@ -143,8 +144,7 @@ export const Chat = () => {
                         </Box>
                         <Box
                             sx={{
-                                flexGrow: 1,
-                                flexShrink: 1,
+                                flexShrink: 0,
                                 overflow: 'auto',
                             }}
                         >
