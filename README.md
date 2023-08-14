@@ -72,6 +72,9 @@ Install my-project with yarn
  - [Design inspiration](https://dribbble.com/shots/18945888-Messenger-Mobile-Web-Application-Light-Mode/attachments/14116324?mode=media)
  - [prisma-erd-generator](npmjs.com/package/prisma-erd-generator)
  - [prisma-dbml-generator](https://notiz.dev/blog/prisma-dbml-generator#dbml-generator)
+ - [Wrap Balancer for balancing paragraphs](https://react-wrap-balancer.vercel.app/)
+ - [Glassmorph/ frosted glass effect](https://css.glass/)
+ - [MDN's radius generator](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_backgrounds_and_borders/Border-radius_generator)
 
 ## ToDo
 
