@@ -137,7 +137,22 @@ const RoomBanner = (props: {
 
     return (
         // {/* <Paper square elevation={0} variant='outlined' sx={{position: 'absolute', width: 'fit-content', right: '0px', backgroundColor: 'red' }}> */}
-        <Paper square elevation={0} variant='outlined'>
+        <Paper
+            square
+            elevation={0}
+            variant='outlined'
+            sx={{
+                position: 'absolute',
+                left: '0px',
+                right: '0px',
+
+                // From https://css.glass //
+                background: 'rgba(255, 255, 255, 0.19)',
+                boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
+                backdropFilter: 'blur(18.4px)',
+                WebkitBackdropFilter: 'blur(18.4px)',
+            }}
+        >
             <Toolbar>
                 <IconButton
                     onClick={() => {
