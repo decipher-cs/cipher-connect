@@ -1,5 +1,4 @@
 import { Avatar, Box, Button, ButtonGroup, Collapse, Drawer, Paper, Toolbar, Typography } from '@mui/material'
-import { Container } from '@mui/system'
 import { memo, useContext, useEffect, useRef } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
 import { imageBufferToURLOrEmptyString, Message } from '../pages/Chat'
@@ -22,6 +21,7 @@ export interface ChatDisplaySectionProps {
 
 const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     const { username } = useContext(CredentialContext)
+
     const scrollToBottomRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
@@ -35,19 +35,13 @@ const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
 
             <Box
                 sx={{
-                    // flexGrow: 1,
-                    // height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
                     overflowY: 'scroll',
-                    // alignItems: 'center'
-                    // maxHeight: '100%',
                     px: 2,
                     gap: 1.8,
                     pt: 12,
-                    // display: 'grid',
-                    // placeContent: 'center',
-                    // placeItems: 'center',
+                    pb: 2,
                 }}
             >
                 {props.chatMessageList.map((message, i) => {
@@ -118,49 +112,51 @@ const RoomBanner = (props: {
 
     return (
         // {/* <Paper square elevation={0} variant='outlined' sx={{position: 'absolute', width: 'fit-content', right: '0px', backgroundColor: 'red' }}> */}
-        <Paper
-            square
-            elevation={0}
-            variant='outlined'
+        <Box
+            // square
+            // elevation={0}
+            // variant='outlined'
             sx={{
                 position: 'absolute',
                 left: '0px',
                 right: '0px',
+                top: '0px',
 
                 // From https://css.glass //
-                background: 'rgba(255, 255, 255, 0.19)',
-                boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-                backdropFilter: 'blur(18.4px)',
-                WebkitBackdropFilter: 'blur(18.4px)',
+                background: 'rgba(255, 255, 255, 0.80)',
+                backdropFilter: 'blur(10px)',
+                '-webkit-backdrop-filter': 'blur(20px)',
+
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, auto) 1fr',
+                alignItems: 'center',
+                alignContent: 'center',
             }}
         >
-            <Toolbar>
+            <IconButton href={imageBufferToURLOrEmptyString(props.room.roomDisplayImage)} target='_blank'>
+                <Avatar src={imageBufferToURLOrEmptyString(props.room.roomDisplayImage)} />
+            </IconButton>
+
+            <Typography>{props.room.roomDisplayName}</Typography>
+
+            <ButtonGroup sx={{ justifySelf: 'flex-end', alignItems: 'center' }}>
+                <IconButton onClick={() => setSearchFieldVisible(p => !p)}>
+                    <SearchIcon />
+                </IconButton>
+
+                <Collapse in={searchFieldVisible} orientation='horizontal'>
+                    <TextField />
+                </Collapse>
+
                 <IconButton
                     onClick={() => {
-                        // TODO: view the display image full screen
+                        props.setRoomInfoVisible(prev => !prev)
                     }}
                 >
-                    <Avatar src={imageBufferToURLOrEmptyString(props.room.roomDisplayImage)} />
+                    <MoreVertRounded />
                 </IconButton>
-                <Typography>{props.room.roomDisplayName}</Typography>
-                <ButtonGroup>
-                    <IconButton onClick={() => setSearchFieldVisible(p => !p)}>
-                        <SearchIcon />
-                    </IconButton>
-                    <Collapse in={searchFieldVisible} orientation='horizontal'>
-                        <TextField />
-                    </Collapse>
-
-                    <IconButton
-                        onClick={() => {
-                            props.setRoomInfoVisible(prev => !prev)
-                        }}
-                    >
-                        <MoreVertRounded />
-                    </IconButton>
-                </ButtonGroup>
-            </Toolbar>
-        </Paper>
+            </ButtonGroup>
+        </Box>
     )
 }
 
