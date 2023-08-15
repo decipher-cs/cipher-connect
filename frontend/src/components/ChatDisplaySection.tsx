@@ -1,9 +1,17 @@
-import { Avatar, Box, Button, ButtonGroup, Collapse, Drawer, Paper, Toolbar, Typography } from '@mui/material'
+import { Avatar, Box, Button, ButtonGroup, Collapse, Divider, Drawer, Paper, Toolbar, Typography } from '@mui/material'
 import { memo, useContext, useEffect, useRef } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
 import { imageBufferToURLOrEmptyString, Message } from '../pages/Chat'
 import SearchIcon from '@mui/icons-material/Search'
-import { ArrowRight, MoreVertRounded } from '@mui/icons-material'
+import {
+    ArrowRight,
+    AttachFileRounded,
+    ChevronLeftRounded,
+    ChevronRightRounded,
+    MicRounded,
+    MoreVertRounded,
+    StartRounded,
+} from '@mui/icons-material'
 import { IconButton, InputAdornment, TextField } from '@mui/material'
 import React, { useState } from 'react'
 import { socket } from '../socket'
@@ -85,19 +93,38 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
         <TextField
             sx={{
                 backgroundColor: 'white',
+                borderRadius: '40px',
+                width: '80%',
+                justifySelf: 'center',
+                mb: 1,
+                '& .MuiInputBase-root': {
+                    borderRadius: '40px',
+                },
             }}
             InputProps={{
                 endAdornment: (
                     <InputAdornment position='end'>
                         <IconButton onClick={addMessgeToMessageList}>
+                            {/* /TODO: add ability to record audio/ */}
+                            <MicRounded />
+                        </IconButton>
+                        <IconButton onClick={addMessgeToMessageList}>
                             <ArrowRight />
+                        </IconButton>
+                    </InputAdornment>
+                ),
+                startAdornment: (
+                    <InputAdornment position='start'>
+                        <IconButton onClick={addMessgeToMessageList}>
+                            {/* /TODO: add ability to attach files like images and pdf/ */}
+                            <AttachFileRounded />
                         </IconButton>
                     </InputAdornment>
                 ),
             }}
             value={currInputText}
             fullWidth
-            placeholder='Enter Message'
+            placeholder='Type A Message...'
             onChange={e => setCurrInputText(e.target.value)}
             onKeyDown={e => (e.key === 'Enter' ? addMessgeToMessageList() : null)}
         />
@@ -148,12 +175,8 @@ const RoomBanner = (props: {
                     <TextField />
                 </Collapse>
 
-                <IconButton
-                    onClick={() => {
-                        props.setRoomInfoVisible(prev => !prev)
-                    }}
-                >
-                    <MoreVertRounded />
+                <IconButton onClick={() => props.setRoomInfoVisible(prev => !prev)}>
+                    <ChevronRightRounded />
                 </IconButton>
             </ButtonGroup>
         </Box>
