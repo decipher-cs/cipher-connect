@@ -18,6 +18,8 @@ import { socket } from '../socket'
 import { RoomInfo } from './RoomInfo'
 import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
 import { MessageTile } from './MessageTile'
+import { StyledTextField } from './StyledTextField'
+import { useAudioRecorder } from '../hooks/useAudioRecorder'
 
 export interface ChatDisplaySectionProps {
     chatMessageList: Message[]
@@ -78,6 +80,16 @@ interface ChatInputBarProps {
 export const ChatInputBar = (props: ChatInputBarProps) => {
     const [currInputText, setCurrInputText] = useState('')
 
+    const {
+        recordedAudioFile,
+        audioRecorder,
+        startRecording,
+        stopRecording,
+        pauseRecording,
+        resumeRecording,
+        getRecordingState,
+    } = useAudioRecorder()
+
     const addMessgeToMessageList = () => {
         const trimmedText = currInputText.slice().trim()
         if (trimmedText.length <= 0) return
@@ -90,44 +102,60 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
     }
 
     return (
-        <TextField
-            sx={{
-                backgroundColor: 'white',
-                borderRadius: '40px',
-                width: '80%',
-                justifySelf: 'center',
-                mb: 1,
-                '& .MuiInputBase-root': {
-                    borderRadius: '40px',
-                },
-            }}
-            InputProps={{
-                endAdornment: (
-                    <InputAdornment position='end'>
-                        <IconButton onClick={addMessgeToMessageList}>
-                            {/* /TODO: add ability to record audio/ */}
-                            <MicRounded />
-                        </IconButton>
-                        <IconButton onClick={addMessgeToMessageList}>
-                            <ArrowRight />
-                        </IconButton>
-                    </InputAdornment>
-                ),
-                startAdornment: (
-                    <InputAdornment position='start'>
-                        <IconButton onClick={addMessgeToMessageList}>
-                            {/* /TODO: add ability to attach files like images and pdf/ */}
-                            <AttachFileRounded />
-                        </IconButton>
-                    </InputAdornment>
-                ),
-            }}
-            value={currInputText}
-            fullWidth
-            placeholder='Type A Message...'
-            onChange={e => setCurrInputText(e.target.value)}
-            onKeyDown={e => (e.key === 'Enter' ? addMessgeToMessageList() : null)}
-        />
+        <>
+            {recordedAudioFile !== undefined ? (
+                <>
+                    <audio src={URL.createObjectURL(recordedAudioFile)} controls>
+                        audio
+                    </audio>
+                    <a download href={URL.createObjectURL(recordedAudioFile)}>
+                        download audio
+                    </a>
+                </>
+            ) : null}
+            <StyledTextField
+                sx={{
+                    backgroundColor: 'white',
+                    width: '80%',
+                    justifySelf: 'center',
+                    mb: 1,
+                }}
+                InputProps={{
+                    startAdornment: (
+                        <InputAdornment position='start'>
+                            <IconButton onClick={addMessgeToMessageList}>
+                                {/* /TODO: add ability to attach files like images and pdf/ */}
+                                <AttachFileRounded />
+                            </IconButton>
+                        </InputAdornment>
+                    ),
+                    endAdornment: (
+                        <InputAdornment position='end'>
+                            <IconButton
+                                onClick={() => {
+                                    if (audioRecorder === undefined) return
+                                    const recordingState = getRecordingState()
+                                    console.log('state is:', recordingState)
+                                    if (recordingState === 'recording') stopRecording()
+                                    else if (recordingState === 'inactive') startRecording()
+                                }}
+                            >
+                                {/* /TODO: add ability to record audio/ */}
+                                <MicRounded />
+                            </IconButton>
+                            <IconButton onClick={addMessgeToMessageList}>
+                                <ArrowRight />
+                            </IconButton>
+                        </InputAdornment>
+                    ),
+                }}
+                value={currInputText}
+                fullWidth
+                placeholder='Type A Message...'
+                onChange={e => setCurrInputText(e.target.value)}
+                onKeyDown={e => (e.key === 'Enter' ? addMessgeToMessageList() : null)}
+            />
+        </>
     )
 }
 
