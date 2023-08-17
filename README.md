@@ -89,6 +89,7 @@ Install my-project with yarn
 - [ ] Might wanna use a library like [promise-retry](https://www.npmjs.com/package/promise-retry) to re-run failed queries to DB.
 - [x] Add support for group chat.
 - [ ] Break text into multiple lines when a single word has too many characters and overflows.
+- [ ] Host your own fonts.
 
 ## License
 
