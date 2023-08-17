@@ -1,10 +1,13 @@
-import { pink, red } from '@mui/material/colors'
+import { blue, pink, red } from '@mui/material/colors'
 import { createTheme } from '@mui/material'
 
 export const lightMod = createTheme({
     palette: {
         primary: {
-            main: red[400],
+            main: blue[600],
         },
+    },
+    typography: {
+        fontFamily: ['Roboto'].join(','),
     },
 })
