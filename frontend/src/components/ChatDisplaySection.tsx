@@ -180,7 +180,7 @@ const RoomBanner = (props: {
                 // From https://css.glass //
                 background: 'rgba(255, 255, 255, 0.80)',
                 backdropFilter: 'blur(10px)',
-                '-webkit-backdrop-filter': 'blur(20px)',
+                webkitBackdropFilter: 'blur(20px)',
 
                 display: 'grid',
                 gridTemplateColumns: 'repeat(2, auto) 1fr',
@@ -200,7 +200,7 @@ const RoomBanner = (props: {
                 </IconButton>
 
                 <Collapse in={searchFieldVisible} orientation='horizontal'>
-                    <TextField />
+                    <StyledTextField size='small'/>
                 </Collapse>
 
                 <IconButton onClick={() => props.setRoomInfoVisible(prev => !prev)}>

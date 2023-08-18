@@ -75,16 +75,11 @@ export const RoomInfo = (props: RoomInfoProps) => {
     return (
         <Box
             sx={{
-                width: 'min(30vw, 450px)',
+                width: 'min(25vw, 450px)',
                 height: '100%',
 
                 display: 'grid',
-                // gap: 2,
                 px: 3,
-                // justifyContent: 'center',
-                // justifyItems: 'center',
-                // alignItems: 'center',
-                // alignContent: 'flex-start',
 
                 overflow: 'visible',
             }}
@@ -100,7 +95,7 @@ export const RoomInfo = (props: RoomInfoProps) => {
                 </IconButton>
             </Stack>
             <Tooltip title='Click to change image'>
-                <IconButton component='label' sx={{ justifySelf: 'center' }}>
+                <IconButton component='label' sx={{ justifySelf: 'center', alignSelf: 'center' }}>
                     <Avatar src={roomAvatar} sx={{ height: 124, width: 124 }} />
 
                     <input
@@ -113,33 +108,10 @@ export const RoomInfo = (props: RoomInfoProps) => {
                     />
                 </IconButton>
             </Tooltip>
-            {/* <Box onClick={() => setIsTextFieldEnabled(p => !p)} sx={{ width: 'max-content' }}> */}
-            {/*     {isTextFieldEnabled ? ( */}
-            {/*         <Typography>{roomName}</Typography> */}
-            {/*     ) : ( */}
-            {/*         <StyledTextField */}
-            {/*             size='small' */}
-            {/*             value={roomName} */}
-            {/*             helperText={roomNameHelperText} */}
-            {/*             onChange={e => { */}
-            {/*                 setRoomName(e.target.value) */}
-            {/*                 if (e.target.value.trim() !== props.room.roomDisplayName) { */}
-            {/*                     setRoomNameHelperText('Submit to change room name') */}
-            {/*                 } else setRoomNameHelperText('') */}
-            {/*             }} */}
-            {/*             // InputProps={{ */}
-            {/*             //     endAdornment: ( */}
-            {/*             //         <InputAdornment position='end'> */}
-            {/*             //             <IconButton onClick={() => {}}> */}
-            {/*             //                 <ArrowForwardRounded /> */}
-            {/*             //             </IconButton> */}
-            {/*             //         </InputAdornment> */}
-            {/*             //     ), */}
-            {/*             // }} */}
-            {/*         /> */}
-            {/*     )} */}
-            {/* </Box> */}
-            <EditableText text={roomName} setText={setRoomName} />
+            <Typography align='center' variant='h6'>
+                {props.room.roomDisplayName}
+            </Typography>
+            {/* <EditableText text={roomName} setText={setRoomName} /> */}
             <Box sx={{ height: 'fit-content', overflowY: 'auto' }}>
                 <Typography>Description:</Typography>
                 <Typography variant='body2' paragraph>
@@ -198,6 +170,7 @@ const CollapsibleInput = (props: { socketObject: SocketWithCustomEvents; room: R
             </IconButton>
             <Collapse in={!isCollapsed} sx={{ flexBasis: '100%' }}>
                 <StyledTextField
+                    size='small'
                     sx={{ width: '100%' }}
                     onChange={e => {
                         setContactFieldValue(e.target.value)

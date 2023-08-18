@@ -20,6 +20,7 @@ import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
 import { Buffers } from '@react-frontend-developer/buffers'
 import { imageBufferToURLOrEmptyString } from '../pages/Chat'
 import { BorderColorRounded } from '@mui/icons-material'
+import { StyledTextField } from './StyledTextField'
 
 interface MessageSidebarProps {
     rooms: RoomWithParticipants[]
@@ -44,8 +45,16 @@ export const MessageSidebar = (props: MessageSidebarProps) => {
     return (
         <Box
             sx={{
-                border: 'solid red 3px',
                 flexBasis: '20%',
+                flexShrink: 0,
+                flexGrow: 0,
+
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                alignContent: 'flex-start',
+                // justifyItems: 'stretch'
+                // justifyContent: 'stretch'
             }}
         >
             <Typography display={'inline'}>Messages</Typography>
@@ -55,10 +64,13 @@ export const MessageSidebar = (props: MessageSidebarProps) => {
                 onClick={() => {
                     setShowTextFields(prev => !prev)
                 }}
+                sx={{ ml: 'auto' }}
             />
-            {/* Hide textField or Make it collapse */}
+
             <Collapse in={showTextFields}>
-                <TextField
+                <Divider sx={{ my: 2 }} />
+                <StyledTextField
+                    size='small'
                     onChange={e => {
                         setContactFieldValue(e.target.value)
                         if (contactFieldHelperText !== '') setContactFieldHelperText('')
@@ -74,8 +86,13 @@ export const MessageSidebar = (props: MessageSidebarProps) => {
                     helperText={contactFieldHelperText}
                     placeholder='Add contact'
                 />
-                <Typography display={'inline'}>OR</Typography>
-                <TextField
+
+                <Typography align='center' variant='body2'>
+                    OR
+                </Typography>
+
+                <StyledTextField
+                    size='small'
                     onChange={e => {
                         setCreateGroupFieldValue(e.target.value)
                         if (createGroupFieldHelperText !== '') setCreateGroupFieldHelperText('')
@@ -91,8 +108,9 @@ export const MessageSidebar = (props: MessageSidebarProps) => {
                     helperText={createGroupFieldHelperText}
                     placeholder='Create group'
                 />
+                <Divider sx={{ my: 2 }} />
             </Collapse>
-            <List>
+            <List sx={{ flexGrow: 1, flexShrink: 0 }}>
                 {props.rooms.map((room, i) => {
                     return (
                         <div key={i}>
