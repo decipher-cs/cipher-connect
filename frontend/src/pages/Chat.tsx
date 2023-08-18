@@ -39,7 +39,7 @@ export const Chat = () => {
 
     const [rooms, setRooms] = useState<RoomWithParticipants[]>([])
 
-    const [roomInfoVisible, setRoomInfoVisible] = useState(true)
+    const [roomInfoVisible, setRoomInfoVisible] = useState(false)
 
     const [userSettings, setUserSettings] = useState<Settings>({
         userDisplayName: username,
@@ -99,7 +99,7 @@ export const Chat = () => {
             <Box
                 sx={{
                     display: 'flex',
-                    minHeight: '100svh',
+                    height: '100svh',
                     maxWidth: '100vw',
                     alignContent: 'stretch',
                     // overflow: 'hidden',
@@ -142,16 +142,18 @@ export const Chat = () => {
                                 setRoomInfoVisible={setRoomInfoVisible}
                             />
                         </Box>
-                        <Box
-                            sx={{
-                                flexShrink: 0,
-                                overflow: 'auto',
-                            }}
+                        <Collapse
+                            in={roomInfoVisible}
+                            orientation='horizontal'
+                            sx={{ height: '100%', flexShrink: 0 }}
+                            component={Box}
                         >
-                            <Collapse in={roomInfoVisible} orientation='horizontal' sx={{ height: '100%' }}>
-                                <RoomInfo socketObject={socket} room={rooms[selectedRoomIndex]} />
-                            </Collapse>
-                        </Box>
+                            <RoomInfo
+                                socketObject={socket}
+                                room={rooms[selectedRoomIndex]}
+                                setRoomInfoVisible={setRoomInfoVisible}
+                            />
+                        </Collapse>
                     </>
                 )}
             </Box>
