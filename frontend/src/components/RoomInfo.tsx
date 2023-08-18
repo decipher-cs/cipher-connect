@@ -17,12 +17,20 @@ import {
     ListItem,
     ListItemAvatar,
     ListItemText,
+    Collapse,
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
 import { ForwardedRef, forwardRef, Ref, useState } from 'react'
 import { imageBufferToURLOrEmptyString } from '../pages/Chat'
-import { ArrowForwardRounded, CancelRounded, InfoRounded, SearchSharp } from '@mui/icons-material'
+import {
+    ArrowForwardRounded,
+    CancelRounded,
+    InfoRounded,
+    NotificationsRounded,
+    PersonAddRounded,
+    SearchSharp,
+} from '@mui/icons-material'
 import { StyledTextField } from './StyledTextField'
 import { EditableText } from './EditableText'
 import { Balancer } from 'react-wrap-balancer'
@@ -34,22 +42,11 @@ interface RoomInfoProps {
 }
 
 export const RoomInfo = (props: RoomInfoProps) => {
-    const [contactFieldValue, setContactFieldValue] = useState('password')
-
-    const [contactFieldHelperText, setContactFieldHelperText] = useState('')
-
     const roomType = props.room.isMaxCapacityTwo === true ? 'private' : 'group'
 
     const [roomAvatar, setRoomAvatar] = useState(imageBufferToURLOrEmptyString(props.room.roomDisplayImage))
 
     const [roomName, setRoomName] = useState(props.room.roomDisplayName)
-
-    const [roomNameHelperText, setRoomNameHelperText] = useState('')
-
-    const [isTextFieldEnabled, setIsTextFieldEnabled] = useState(false)
-
-    const handleRoomNameChange = () => {}
-    const handleRoomNameSubmit = () => {}
 
     const handleImageUpload = async (fileList: FileList | null) => {
         if (fileList === null || fileList.length === 0) return
@@ -82,10 +79,12 @@ export const RoomInfo = (props: RoomInfoProps) => {
                 height: '100%',
 
                 display: 'grid',
+                // gap: 2,
                 px: 3,
-                justifyContent: 'center',
-                alignItems: 'center',
-                alignContent: 'flex-start',
+                // justifyContent: 'center',
+                // justifyItems: 'center',
+                // alignItems: 'center',
+                // alignContent: 'flex-start',
 
                 overflow: 'visible',
             }}
@@ -100,7 +99,6 @@ export const RoomInfo = (props: RoomInfoProps) => {
                     <CancelRounded />
                 </IconButton>
             </Stack>
-            <Divider />
             <Tooltip title='Click to change image'>
                 <IconButton component='label' sx={{ justifySelf: 'center' }}>
                     <Avatar src={roomAvatar} sx={{ height: 124, width: 124 }} />
@@ -142,7 +140,7 @@ export const RoomInfo = (props: RoomInfoProps) => {
             {/*     )} */}
             {/* </Box> */}
             <EditableText text={roomName} setText={setRoomName} />
-            <Box sx={{ maxHeight: '40%', overflowY: 'auto' }}>
+            <Box sx={{ height: 'fit-content', overflowY: 'auto' }}>
                 <Typography>Description:</Typography>
                 <Typography variant='body2' paragraph>
                     <Balancer>
@@ -152,69 +150,84 @@ export const RoomInfo = (props: RoomInfoProps) => {
                 </Typography>
             </Box>
             <Divider />
-            Notifications <Switch />
+            <Stack direction='row' alignItems='center'>
+                <NotificationsRounded />
+                Notifications
+                <Switch sx={{ ml: 'auto' }} />
+            </Stack>
             <Divider />
-            <Box>
-                Members ({props.room.participants.length})
-                {roomType === 'group' && (
-                    <>
-                        <IconButton>
-                            <AddIcon />
-                        </IconButton>
-                        <StyledTextField
-                            onChange={e => {
-                                setContactFieldValue(e.target.value)
-                                if (contactFieldHelperText !== '') setContactFieldHelperText('')
-                            }}
-                            onKeyDown={e => {
-                                if (e.key === 'Enter')
-                                    props.socketObject.emit(
-                                        'addParticipantsToGroup',
-                                        [contactFieldValue],
-                                        props.room.roomId,
-                                        response => {
-                                            setContactFieldHelperText(response)
-                                        }
-                                    )
-                            }}
-                            value={contactFieldValue}
-                            helperText={contactFieldHelperText}
-                            placeholder='Add contact'
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position='end'>
-                                        <IconButton onClick={() => {}}>
-                                            <ArrowForwardRounded />
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
-                    </>
-                )}
-            </Box>
-            <Box>
-                <Divider />
-                <List>
-                    {props.room.participants.map(({ username }, i) => (
-                        <ListItem key={i}>
-                            <ListItemAvatar>
-                                <Avatar src='' />
-                            </ListItemAvatar>
-                            <ListItemText>{username}</ListItemText>
-                        </ListItem>
-                    ))}
-                </List>
-            </Box>
+            <Stack direction='row' sx={{ alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                <Typography noWrap>Members ({props.room.participants.length})</Typography>
+                {roomType === 'group' ? <CollapsibleInput socketObject={props.socketObject} room={props.room} /> : null}
+            </Stack>
+            <List dense sx={{ maxHeight: '220px', overflow: 'auto' }}>
+                {props.room.participants.map(({ username }, i) => (
+                    <ListItem key={i}>
+                        <ListItemAvatar>
+                            <Avatar sizes='14px' sx={{ height: '24px', width: '24px' }} src='' />
+                        </ListItemAvatar>
+                        <ListItemText>{username}</ListItemText>
+                    </ListItem>
+                ))}
+            </List>
             {props.room.isMaxCapacityTwo === false ? (
-                <>
-                    <Divider />
-                    <ButtonGroup size='small' variant='text'>
-                        <Button onClick={() => {}}>Delete Group</Button>
-                        <Button onClick={() => {}}>Leave Group</Button>
-                    </ButtonGroup>
-                </>
+                <ButtonGroup size='small' variant='text'>
+                    <Button fullWidth onClick={() => {}}>
+                        Delete Group
+                    </Button>
+                    <Button fullWidth onClick={() => {}}>
+                        Leave Group
+                    </Button>
+                </ButtonGroup>
             ) : null}
         </Box>
+    )
+}
+
+const CollapsibleInput = (props: { socketObject: SocketWithCustomEvents; room: RoomWithParticipants }) => {
+    const [isCollapsed, setIsCollapsed] = useState(true)
+
+    const [contactFieldValue, setContactFieldValue] = useState('password')
+
+    const [contactFieldHelperText, setContactFieldHelperText] = useState('')
+
+    return (
+        <>
+            <IconButton onClick={() => setIsCollapsed(p => !p)}>
+                <PersonAddRounded />
+            </IconButton>
+            <Collapse in={!isCollapsed} sx={{ flexBasis: '100%' }}>
+                <StyledTextField
+                    sx={{ width: '100%' }}
+                    onChange={e => {
+                        setContactFieldValue(e.target.value)
+                        if (contactFieldHelperText !== '') setContactFieldHelperText('')
+                    }}
+                    onKeyDown={e => {
+                        if (e.key === 'Enter')
+                            props.socketObject.emit(
+                                'addParticipantsToGroup',
+                                [contactFieldValue],
+                                props.room.roomId,
+                                response => {
+                                    setContactFieldHelperText(response)
+                                }
+                            )
+                    }}
+                    value={contactFieldValue}
+                    helperText={contactFieldHelperText}
+                    placeholder='Add contact'
+                    InputProps={{
+                        endAdornment: (
+                            <InputAdornment position='end'>
+                                <IconButton onClick={() => {}}>
+                                    <ArrowForwardRounded />
+                                </IconButton>
+                            </InputAdornment>
+                        ),
+                    }}
+                />
+            </Collapse>
+        </>
     )
 }
