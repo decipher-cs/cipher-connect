@@ -1,20 +1,7 @@
-import {
-    Avatar,
-    Box,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogContentText,
-    DialogTitle,
-    List,
-    ListItem,
-    ListItemButton,
-    ListItemText,
-    TextField,
-} from '@mui/material'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItem, ListItemText } from '@mui/material'
 import React, { useState } from 'react'
 import { Settings, SocketWithCustomEvents } from '../types/socket'
+import { StyledTextField } from './StyledTextField'
 
 interface ProfileSettingsDialogProps {
     readonly dialogOpen: boolean
@@ -60,7 +47,8 @@ export const ProfileSettingsDialog = (props: ProfileSettingsDialogProps) => {
                         </ListItem>
                         <ListItem>
                             <ListItemText>Change Display Name</ListItemText>
-                            <TextField
+                            <StyledTextField
+                                sx={{ width: '40%' }}
                                 size='small'
                                 placeholder='Enter new name'
                                 value={displayName}
