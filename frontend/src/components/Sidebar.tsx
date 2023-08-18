@@ -39,8 +39,6 @@ const Sidebar = (props: SidebarProps) => {
                         <Avatar src={imgURL} />
                     </IconButton>
                 </Tooltip>
-
-                <Typography variant='subtitle1'>{props.userSettings.userDisplayName}</Typography>
             </Box>
 
             <ProfileSettingsDialog
@@ -119,6 +117,5 @@ const DarkModeToggleSwitch = styled(Switch)(({ theme }) => ({
         borderRadius: 20 / 2,
     },
 }))
-
 
 export default Sidebar

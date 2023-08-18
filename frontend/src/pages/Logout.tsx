@@ -6,7 +6,7 @@ export const Logout = () => {
     const { username, isLoggedIn, logUserOut } = useContext(CredentialContext)
 
     const URL = import.meta.env.PROD ? import.meta.env.VITE_SERVER_PROD_URL : import.meta.env.VITE_SERVER_DEV_URL
-    logUserOut()
+    // logUserOut()
 
     useEffect(() => {
         if (isLoggedIn === true) {
@@ -18,7 +18,8 @@ export const Logout = () => {
                     Accept: 'application/json',
                     'Content-Type': 'application/json',
                 },
-            }).then(data => console.log('data iw:', data))
+            })
+            logUserOut()
         }
     }, [])
 

@@ -1,5 +1,11 @@
 import { Socket } from 'socket.io-client'
-import { message as Message, room as Room, userRoomParticipation as UserRoomParticipation, user as User } from './prisma.client'
+
+import {
+    message as Message,
+    room as Room,
+    userRoomParticipation as UserRoomParticipation,
+    user as User,
+} from './prisma.client'
 
 export interface ServerToClientEvents {
     noArg: () => void
@@ -10,6 +16,7 @@ export interface ServerToClientEvents {
     roomChanged: (room: RoomWithParticipants) => void
     sendingMessages: () => void
     messagesRequested: (messages: Message[]) => void
+    userSettingsUpdated: (newSettings: Settings) => void
 }
 
 // for socket.on()
@@ -24,7 +31,14 @@ export interface ClientToServerEvents {
     userSettingsUpdated: (newSettings: Settings) => void
 }
 
-export type Settings = Pick<User, 'userDisplayName'> & { userDisplayImage: NonNullable<User['userDisplayImage']> }
+type Nullable<T> = { [U in keyof T]: null | T[U] }
+
+export type Settings = Nullable<Pick<User, 'userDisplayName'>> & { userDisplayImage: null | ArrayBuffer }
+
 export type SocketWithCustomEvents = Socket<ServerToClientEvents, ClientToServerEvents>
-export type Participants = Pick<UserRoomParticipation, 'username'>[]
-export type RoomWithParticipants = Room & { participants: Participants }
+
+export type Participants = Pick<UserRoomParticipation, 'username'> &
+    Pick<User, 'userDisplayName'> &
+    Pick<User, 'userDisplayImage'>
+
+export type RoomWithParticipants = Room & { participants: Participants[] }
