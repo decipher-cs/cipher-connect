@@ -33,7 +33,7 @@ export const ProfileSettingsDialog = (props: ProfileSettingsDialogProps) => {
                     <List disablePadding>
                         <ListItem>
                             <ListItemText>Change Display Image</ListItemText>
-                            <Button component='label' variant='contained'>
+                            <Button component='label' variant='outlined'>
                                 Upload File
                                 <input
                                     type='file'

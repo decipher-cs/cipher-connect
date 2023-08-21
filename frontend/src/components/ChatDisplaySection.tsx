@@ -1,4 +1,16 @@
-import { Avatar, Box, Button, ButtonGroup, Collapse, Divider, Drawer, Paper, Toolbar, Typography } from '@mui/material'
+import {
+    Avatar,
+    Box,
+    Button,
+    ButtonGroup,
+    Collapse,
+    Divider,
+    Drawer,
+    Paper,
+    ToggleButton,
+    Toolbar,
+    Typography,
+} from '@mui/material'
 import { memo, useContext, useEffect, useRef } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
 import { imageBufferToURLOrEmptyString, Message } from '../pages/Chat'
@@ -80,15 +92,7 @@ interface ChatInputBarProps {
 export const ChatInputBar = (props: ChatInputBarProps) => {
     const [currInputText, setCurrInputText] = useState('')
 
-    const {
-        recordedAudioFile,
-        audioRecorder,
-        startRecording,
-        stopRecording,
-        pauseRecording,
-        resumeRecording,
-        getRecordingState,
-    } = useAudioRecorder()
+    const audioRecorder = useAudioRecorder()
 
     const addMessgeToMessageList = () => {
         const trimmedText = currInputText.slice().trim()
@@ -103,14 +107,11 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
 
     return (
         <>
-            {recordedAudioFile !== undefined ? (
+            {audioRecorder.recordedAudioFile !== undefined ? (
                 <>
-                    <audio src={URL.createObjectURL(recordedAudioFile)} controls>
+                    <audio src={URL.createObjectURL(audioRecorder.recordedAudioFile)} controls>
                         audio
                     </audio>
-                    <a download href={URL.createObjectURL(recordedAudioFile)}>
-                        download audio
-                    </a>
                 </>
             ) : null}
             <StyledTextField
@@ -131,18 +132,27 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
                     ),
                     endAdornment: (
                         <InputAdornment position='end'>
-                            <IconButton
+                            <ToggleButton
                                 onClick={() => {
-                                    if (audioRecorder === undefined) return
-                                    const recordingState = getRecordingState()
-                                    console.log('state is:', recordingState)
-                                    if (recordingState === 'recording') stopRecording()
-                                    else if (recordingState === 'inactive') startRecording()
+                                    if (audioRecorder.permissionsGranted !== true) {
+                                        audioRecorder.getAudioRecodringPermissions()
+                                        return
+                                    }
+                                    console.log('state:', audioRecorder.state)
+                                    if (audioRecorder.state === 'inactive') {
+                                        audioRecorder.recorder?.start()
+                                    } else if (audioRecorder.state === 'recording') {
+                                        audioRecorder.recorder?.stop()
+                                    } else {
+                                        console.log('report to dev: uncaught audio')
+                                    }
                                 }}
+                                // selected={audioRecorder.state === 'recording'}
+                                value='audio recording'
+                                color='primary'
                             >
-                                {/* /TODO: add ability to record audio/ */}
                                 <MicRounded />
-                            </IconButton>
+                            </ToggleButton>
                             <IconButton onClick={addMessgeToMessageList}>
                                 <ArrowRight />
                             </IconButton>
@@ -200,7 +210,7 @@ const RoomBanner = (props: {
                 </IconButton>
 
                 <Collapse in={searchFieldVisible} orientation='horizontal'>
-                    <StyledTextField size='small'/>
+                    <StyledTextField size='small' />
                 </Collapse>
 
                 <IconButton onClick={() => props.setRoomInfoVisible(prev => !prev)}>
