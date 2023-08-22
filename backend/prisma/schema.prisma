@@ -83,9 +83,10 @@ model message {
   key            Int       @id @default(autoincrement())
   senderUsername String
   roomId         String
-  content        String    @db.LongText
+  content        String    @db.MediumText
   createdAt      DateTime  @default(now())
   editedAt       DateTime? @updatedAt
+  contentType    String    @map("content_type") @db.TinyText
 
   sender user @relation(fields: [senderUsername], references: [username])
   room   room @relation(fields: [roomId], references: [roomId])
