@@ -1,4 +1,4 @@
-import { Buffers as Buffer } from "@react-frontend-developer/buffers"
+import { Buffers as Buffer } from '@react-frontend-developer/buffers'
 
 /**
  * Model refreshToken
@@ -16,7 +16,7 @@ export type refreshToken = {
 export type user = {
     username: string
     userDisplayName: string
-    userDisplayImage: Buffer | null // It's actually of type Buffer but since Buffer is a nodeJS only type, I'm using Uint8Array as a stand in for now.
+    userDisplayImage: Buffer | null
     createTime: Date
 }
 
@@ -73,4 +73,5 @@ export type message = {
     content: string
     createdAt: Date
     editedAt: Date | null
+    contentType: string
 }
