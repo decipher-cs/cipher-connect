@@ -1,7 +1,6 @@
 import { Box, Button, Collapse, Container, Dialog, Slide, TextField, Typography } from '@mui/material'
 import { useContext, useEffect, useRef, useState } from 'react'
 import ChatDisplaySection from '../components/ChatDisplaySection'
-import Sidebar from '../components/Sidebar'
 import { CredentialContext } from '../contexts/Credentials'
 import { socket } from '../socket'
 import { PulseLoader } from 'react-spinners'
@@ -11,6 +10,7 @@ import { RoomInfo } from '../components/RoomInfo'
 import { RoomWithParticipants, Settings } from '../types/socket'
 import { ProfileSettingsDialog } from '../components/ProfileSettingsDialog'
 import { Buffers } from '@react-frontend-developer/buffers'
+import { Sidebar } from '../components/Sidebar'
 
 export type Message = Pick<MessageFromDB, 'senderUsername' | 'content' | 'createdAt' | 'roomId'>
 

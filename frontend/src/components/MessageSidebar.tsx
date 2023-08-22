@@ -45,31 +45,36 @@ export const MessageSidebar = (props: MessageSidebarProps) => {
     return (
         <Box
             sx={{
-                flexBasis: '20%',
                 flexShrink: 0,
                 flexGrow: 0,
 
-                display: 'flex',
-                flexWrap: 'wrap',
-                alignItems: 'center',
-                alignContent: 'flex-start',
+                display: 'grid',
+                // height: '100%',
+                // flexWrap: 'wrap',
+                // alignItems: 'center',
+                // alignContent: 'flex-start',
+
                 // justifyItems: 'stretch'
                 // justifyContent: 'stretch'
             }}
         >
-            <Typography display={'inline'}>Messages</Typography>
+            <Typography pl={2} display={'inline'} sx={{ gridArea: '1 / 1 / 1 / 1', alignSelf: 'center' }}>
+                Messages
+            </Typography>
+
             <Checkbox
                 icon={<BorderColorRounded />}
                 checkedIcon={<BorderColorRounded />}
                 onClick={() => {
                     setShowTextFields(prev => !prev)
                 }}
-                sx={{ ml: 'auto' }}
+                sx={{ justifySelf: 'flex-end', gridArea: '1 / 1 / 1 / 1', pr: 2 }}
             />
 
             <Collapse in={showTextFields}>
-                <Divider sx={{ my: 2 }} />
+                <Divider sx={{ mb: 2 }} />
                 <StyledTextField
+                    sx={{ px: 1 }}
                     size='small'
                     onChange={e => {
                         setContactFieldValue(e.target.value)
@@ -92,6 +97,7 @@ export const MessageSidebar = (props: MessageSidebarProps) => {
                 </Typography>
 
                 <StyledTextField
+                    sx={{ px: 1 }}
                     size='small'
                     onChange={e => {
                         setCreateGroupFieldValue(e.target.value)
@@ -108,9 +114,9 @@ export const MessageSidebar = (props: MessageSidebarProps) => {
                     helperText={createGroupFieldHelperText}
                     placeholder='Create group'
                 />
-                <Divider sx={{ my: 2 }} />
             </Collapse>
-            <List sx={{ flexGrow: 1, flexShrink: 0 }}>
+
+            <List sx={{ overflowY: 'auto' }}>
                 {props.rooms.map((room, i) => {
                     return (
                         <div key={i}>
