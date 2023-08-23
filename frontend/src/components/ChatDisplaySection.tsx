@@ -6,6 +6,9 @@ import {
     Collapse,
     Divider,
     Drawer,
+    Fade,
+    Menu,
+    MenuItem,
     Paper,
     ToggleButton,
     Toolbar,
@@ -20,9 +23,12 @@ import {
     AttachFileRounded,
     ChevronLeftRounded,
     ChevronRightRounded,
+    FilePresentRounded,
+    ImageRounded,
     MicRounded,
     MoreVertRounded,
     StartRounded,
+    VideoCameraBackRounded,
 } from '@mui/icons-material'
 import { IconButton, InputAdornment, TextField } from '@mui/material'
 import React, { useState } from 'react'
@@ -92,6 +98,8 @@ interface ChatInputBarProps {
 export const ChatInputBar = (props: ChatInputBarProps) => {
     const [currInputText, setCurrInputText] = useState('')
 
+    const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
+
     const audioRecorder = useAudioRecorder()
 
     const addMessgeToMessageList = () => {
@@ -103,6 +111,12 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
         } else console.log('No room selected. This should not be possible.')
 
         setCurrInputText('')
+    }
+
+    const sendMessageContents = () => {}
+    const sendAudioMessage = () => {}
+    const detectFileType = () => {
+        console.log('file is of type:')
     }
 
     return (
@@ -124,12 +138,18 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
                 InputProps={{
                     startAdornment: (
                         <InputAdornment position='start'>
-                            <IconButton onClick={addMessgeToMessageList}>
+                            <IconButton
+                                onClick={e => {
+                                    addMessgeToMessageList()
+                                    setMenuAnchor(e.currentTarget)
+                                }}
+                            >
                                 {/* /TODO: add ability to attach files like images and pdf/ */}
                                 <AttachFileRounded />
                             </IconButton>
                         </InputAdornment>
                     ),
+
                     endAdornment: (
                         <InputAdornment position='end'>
                             <ToggleButton
@@ -165,7 +185,38 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
                 onChange={e => setCurrInputText(e.target.value)}
                 onKeyDown={e => (e.key === 'Enter' ? addMessgeToMessageList() : null)}
             />
+            <AddAttachmentMenu anchorEl={menuAnchor} setAnchorEl={setMenuAnchor} />
         </>
+    )
+}
+
+const AddAttachmentMenu = (props: {
+    anchorEl: HTMLElement | null
+    setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>
+}) => {
+    const open = Boolean(props.anchorEl)
+
+    const handleClose = () => {
+        props.setAnchorEl(null)
+    }
+    return (
+        <Menu open={open} onClose={handleClose} TransitionComponent={Fade} anchorEl={props.anchorEl}>
+            <MenuItem onClick={handleClose}>
+                <IconButton>
+                    <VideoCameraBackRounded />
+                </IconButton>
+            </MenuItem>
+            <MenuItem onClick={handleClose}>
+                <IconButton>
+                    <ImageRounded />
+                </IconButton>
+            </MenuItem>
+            <MenuItem onClick={handleClose}>
+                <IconButton>
+                    <FilePresentRounded />
+                </IconButton>
+            </MenuItem>
+        </Menu>
     )
 }
 
