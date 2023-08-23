@@ -49,13 +49,7 @@ export const MessageSidebar = (props: MessageSidebarProps) => {
                 flexGrow: 0,
 
                 display: 'grid',
-                // height: '100%',
-                // flexWrap: 'wrap',
-                // alignItems: 'center',
-                // alignContent: 'flex-start',
-
-                // justifyItems: 'stretch'
-                // justifyContent: 'stretch'
+                alignContent: 'flex-start',
             }}
         >
             <Typography pl={2} display={'inline'} sx={{ gridArea: '1 / 1 / 1 / 1', alignSelf: 'center' }}>
