@@ -1,6 +1,6 @@
 // Model interactes with the database (mySQL) //
 
-import { PrismaClient, Prisma } from '@prisma/client'
+import { PrismaClient, Prisma, MessageContentType } from '@prisma/client'
 const prisma = new PrismaClient()
 
 export const createNewUser = async (username: string, passwordHash: string) => {
@@ -238,12 +238,13 @@ export const createGroupAndAddParticipantsToGroup = async (participants: string[
     return await getRoomDetailsWithParticipantDetails(room.roomId)
 }
 
-export const addMessageToDB = async (msgSender: string, roomId: string, textContent: string) => {
+export const addMessageToDB = async (msgSender: string, roomId: string, content: string, contentType: MessageContentType) => {
     return await prisma.message.create({
         data: {
             senderUsername: msgSender,
             roomId,
-            content: textContent,
+            content: content,
+            contentType,
         },
     })
 }
