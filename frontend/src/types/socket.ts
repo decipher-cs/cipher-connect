@@ -5,12 +5,13 @@ import {
     room as Room,
     userRoomParticipation as UserRoomParticipation,
     user as User,
+    MessageContentType,
 } from './prisma.client'
 
 export interface ServerToClientEvents {
     noArg: () => void
     withAck: (d: string, callback: (e: number) => void) => void
-    privateMessage: (targetRoomId: string, msg: string, senderUsername: string) => void
+    privateMessage: (targetRoomId: string, msg: string, senderUsername: string, messageType: MessageContentType) => void
     userRoomsUpdated: (rooms: RoomWithParticipants[]) => void
     userRoomUpdated: (room: RoomWithParticipants) => void
     roomChanged: (room: RoomWithParticipants) => void
@@ -21,7 +22,7 @@ export interface ServerToClientEvents {
 
 // for socket.on()
 export interface ClientToServerEvents {
-    privateMessage: (targetRoomId: string, msg: string) => void
+    privateMessage: (targetRoomId: string, msg: string, messageType: MessageContentType) => void
     addUsersToRoom: (usersToAdd: string[], roomName: string) => void
     createNewPrivateRoom: (participant: string, callback: (response: string) => void) => void
     createNewGroup: (participants: string[], displayName: string, callback: (response: string) => void) => void
