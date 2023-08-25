@@ -70,9 +70,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
                     endAdornment: (
                         <InputAdornment position='end'>
                             <ToggleButton
-                                onClick={() => {
-                                    audioRecorder.toggleRecorderStartStop()
-                                }}
+                                onClick={audioRecorder.toggleRecorderStartStop}
                                 selected={audioRecorder.recordingState === 'recording'}
                                 value='audio recording'
                                 color='primary'
