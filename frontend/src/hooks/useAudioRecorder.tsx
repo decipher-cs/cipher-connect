@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react'
 export const useAudioRecorder = () => {
     const [audioStream, setAudioStream] = useState<MediaStream>()
     const [recorder, setRecorder] = useState<MediaRecorder>()
-    const [recordedAudioFile, setRecordedAudioFile] = useState<Blob>()
     const [microphoneReady, setMicrophoneReady] = useState<Boolean>(false)
     const [recordingState, setRecordingState] = useState<RecordingState>()
 
@@ -13,10 +12,6 @@ export const useAudioRecorder = () => {
 
     const handleOnStop = (ev: Event) => {
         setRecordingState('inactive')
-    }
-
-    const handleOnDataAvailable = (ev: BlobEvent) => {
-        setRecordedAudioFile(ev.data)
     }
 
     const setupMicrophoe = async () => {
@@ -29,7 +24,6 @@ export const useAudioRecorder = () => {
             setAudioStream(stream)
             const audioRecorder = new MediaRecorder(stream)
             setRecorder(audioRecorder)
-            audioRecorder.ondataavailable = handleOnDataAvailable
             audioRecorder.onstart = handleOnStart
             audioRecorder.onstop = handleOnStop
             setMicrophoneReady(true)
@@ -58,8 +52,8 @@ export const useAudioRecorder = () => {
     }
 
     return {
-        recordedAudioFile,
         toggleRecorderStartStop,
         recordingState,
+        recorder,
     }
 }
