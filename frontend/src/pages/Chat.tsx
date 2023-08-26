@@ -1,26 +1,21 @@
 import { Box, Button, Collapse, Container, Dialog, Slide, TextField, Typography } from '@mui/material'
 import { useContext, useEffect, useRef, useState } from 'react'
-import ChatDisplaySection from '../components/ChatDisplaySection'
+import { ChatDisplaySection } from '../components/ChatDisplaySection'
 import { CredentialContext } from '../contexts/Credentials'
 import { socket } from '../socket'
 import { PulseLoader } from 'react-spinners'
-import { message as MessageFromDB, room as Room } from '../types/prisma.client'
+import { message as MessageFromDB, MessageContentType, room as Room } from '../types/prisma.client'
 import { MessageSidebar } from '../components/MessageSidebar'
 import { RoomInfo } from '../components/RoomInfo'
 import { RoomWithParticipants, Settings } from '../types/socket'
 import { ProfileSettingsDialog } from '../components/ProfileSettingsDialog'
 import { Buffers } from '@react-frontend-developer/buffers'
 import { Sidebar } from '../components/Sidebar'
+import { arrayBufferToObjectUrlConverter, messageTemplate } from '../utils'
 
-export type Message = Pick<MessageFromDB, 'senderUsername' | 'content' | 'createdAt' | 'roomId'>
+export type Message = Pick<MessageFromDB, 'senderUsername' | 'content' | 'createdAt' | 'roomId' | 'contentType'>
 
-export const generateDummyMessage = (msg: string, sender?: string, roomId?: string): Message => ({
-    senderUsername: sender === undefined ? 'undef sender' : sender,
-    roomId: roomId === undefined ? 'undef sender' : roomId,
-    content: msg,
-    createdAt: new Date(),
-})
-
+// TODO: use arrayBufferToObjectURLConverter function form utils.ts
 export const imageBufferToURLOrEmptyString = (imageBuffer: Buffers | null) => {
     if (imageBuffer === null) return ''
     const imgBuffer = imageBuffer as ArrayBuffer
@@ -54,12 +49,18 @@ export const Chat = () => {
 
         setIsLoading(false)
 
-        socket.on('privateMessage', (targetRoomId, messageContents, senderUsername) => {
-            const msg = generateDummyMessage(messageContents, senderUsername)
-            setChatMessageList(prev => prev.concat(msg))
-            // if (targetRoomId === undefined || targetRoomId !== rooms[selectedRoomIndex].roomId) {
-            //     // TODO send notification for a new message
-            // }
+        socket.on('message', (targetRoomId, messageContents, senderUsername, messageType) => {
+            console.log('messge')
+            if (messageType === 'text' && typeof messageContents === 'string') {
+                const message = messageTemplate(targetRoomId, messageContents, senderUsername, messageType)
+                setChatMessageList(prev => prev.concat(message))
+            } else if (messageContents instanceof ArrayBuffer && messageType !== 'text') {
+                const objectURL = arrayBufferToObjectUrlConverter(messageContents)
+                console.log(objectURL)
+                const message = messageTemplate(targetRoomId, objectURL, senderUsername, messageType)
+                setChatMessageList(prev => prev.concat(message))
+            } else throw 'Unknown message type'
+            // TODO send notification for a new message
         })
 
         socket.on('userSettingsUpdated', newSettings => {
