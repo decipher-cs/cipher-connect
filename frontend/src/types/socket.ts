@@ -1,3 +1,4 @@
+import { Buffers } from '@react-frontend-developer/buffers'
 import { Socket } from 'socket.io-client'
 
 import {
@@ -11,7 +12,12 @@ import {
 export interface ServerToClientEvents {
     noArg: () => void
     withAck: (d: string, callback: (e: number) => void) => void
-    privateMessage: (targetRoomId: string, msg: string, senderUsername: string, messageType: MessageContentType) => void
+    message: (
+        targetRoomId: string,
+        msg: string | ArrayBuffer,
+        senderUsername: string,
+        messageType: MessageContentType
+    ) => void
     userRoomsUpdated: (rooms: RoomWithParticipants[]) => void
     userRoomUpdated: (room: RoomWithParticipants) => void
     roomChanged: (room: RoomWithParticipants) => void
@@ -22,7 +28,7 @@ export interface ServerToClientEvents {
 
 // for socket.on()
 export interface ClientToServerEvents {
-    privateMessage: (targetRoomId: string, msg: string, messageType: MessageContentType) => void
+    message: (targetRoomId: string, msg: string | Buffers, messageType: MessageContentType) => void
     addUsersToRoom: (usersToAdd: string[], roomName: string) => void
     createNewPrivateRoom: (participant: string, callback: (response: string) => void) => void
     createNewGroup: (participants: string[], displayName: string, callback: (response: string) => void) => void

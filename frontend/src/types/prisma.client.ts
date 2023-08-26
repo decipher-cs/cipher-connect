@@ -73,5 +73,23 @@ export type message = {
     content: string
     createdAt: Date
     editedAt: Date | null
-    contentType: string
+    contentType: MessageContentType
 }
+
+/**
+ * Enums
+ */
+
+// Based on
+// https://github.com/microsoft/TypeScript/issues/3192#issuecomment-261720275
+
+export const MessageContentType = {
+    audio: 'audio',
+    video: 'video',
+    text: 'text',
+    image: 'image',
+}
+
+export type MessageContentType = 'audio' | 'video' | 'text' | 'image'
+
+// export type MessageContentType = (typeof MessageContentType)[keyof typeof MessageContentType]
