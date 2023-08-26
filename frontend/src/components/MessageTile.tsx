@@ -1,10 +1,25 @@
 import { Paper, Typography } from '@mui/material'
+import { MessageContentType } from '../types/prisma.client'
 
 export const MessageTile = (props: {
-    textContent: string
+    content: string
+    messageContentType: MessageContentType
     alignment: 'left' | 'right'
     autoScrollToBottomRef: React.RefObject<HTMLDivElement> | null
 }) => {
+    const Message = () => {
+        if (props.messageContentType === 'text') {
+            return <Typography sx={{ overflowWrap: 'break-word', color: 'white' }}>{props.content}</Typography>
+        } else if (props.messageContentType === 'audio') {
+            return <audio controls src={props.content} />
+        } else if (props.messageContentType === 'image') {
+            return <img src={props.content} loading='lazy' width='50%' />
+        } else if (props.messageContentType === 'video') {
+            return <video src={props.content} controls />
+        }
+        return <div />
+    }
+
     return (
         <Paper
             sx={{
@@ -18,7 +33,7 @@ export const MessageTile = (props: {
             }}
             ref={props.autoScrollToBottomRef}
         >
-            <Typography sx={{ overflowWrap: 'break-word', color: 'white' }}>{props.textContent}</Typography>
+            <Message />
         </Paper>
     )
 }
