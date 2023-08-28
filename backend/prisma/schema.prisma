@@ -87,7 +87,7 @@ enum MessageContentType {
 }
 
 model message {
-  key            Int                @id @default(autoincrement())
+  key            String             @id @unique @default(uuid())
   senderUsername String
   roomId         String
   content        String             @db.MediumText
