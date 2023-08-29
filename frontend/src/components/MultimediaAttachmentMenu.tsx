@@ -6,7 +6,7 @@ import { MessageContentType } from '../types/prisma.client'
 export const MultimediaAttachmentMenu = (props: {
     anchorEl: HTMLElement | null
     setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>
-    handleUpload: (fileList: FileList | null, type: MessageContentType) => void
+    handleUpload: (fileList: FileList | null, type: Exclude<MessageContentType, MessageContentType.text>) => void
 }) => {
     const open = Boolean(props.anchorEl)
 
@@ -32,7 +32,7 @@ export const MultimediaAttachmentMenu = (props: {
                         type='file'
                         accept='audio/*'
                         hidden
-                        onChange={e => props.handleUpload(e.target.files, 'audio')}
+                        onChange={e => props.handleUpload(e.target.files, MessageContentType.audio)}
                     />
                     <ListItemIcon>
                         <AudiotrackRounded />
@@ -46,7 +46,7 @@ export const MultimediaAttachmentMenu = (props: {
                         type='file'
                         accept='image/*'
                         hidden
-                        onChange={e => props.handleUpload(e.target.files, 'image')}
+                        onChange={e => props.handleUpload(e.target.files, MessageContentType.image)}
                     />
                     <ListItemIcon>
                         <ImageRounded />
@@ -58,9 +58,9 @@ export const MultimediaAttachmentMenu = (props: {
                     <input
                         multiple
                         type='file'
-                        accept='video/*'
+                        accept='video/mp4'
                         hidden
-                        onChange={e => props.handleUpload(e.target.files, 'video')}
+                        onChange={e => props.handleUpload(e.target.files, MessageContentType.video)}
                     />
                     <ListItemIcon>
                         <VideoCameraBackRounded />

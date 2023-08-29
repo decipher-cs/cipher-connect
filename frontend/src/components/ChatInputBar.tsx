@@ -1,12 +1,13 @@
 import { ArrowRight, AttachFileRounded, MicRounded } from '@mui/icons-material'
 import { IconButton, InputAdornment, ToggleButton } from '@mui/material'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { useAudioRecorder } from '../hooks/useAudioRecorder'
-import { Message } from '../pages/Chat'
-import { MessageContentType } from '../types/prisma.client'
+import { message as Message, MessageContentType } from '../types/prisma.client'
 import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
 import { MultimediaAttachmentMenu } from './MultimediaAttachmentMenu'
 import { StyledTextField } from './StyledTextField'
+import { CredentialContext } from '../contexts/Credentials'
+import { messageTemplate } from '../utils'
 
 interface ChatInputBarProps {
     setChatMessageList: React.Dispatch<React.SetStateAction<Message[]>>
@@ -15,6 +16,8 @@ interface ChatInputBarProps {
 }
 
 export const ChatInputBar = (props: ChatInputBarProps) => {
+    const { username } = useContext(CredentialContext)
+
     const [currInputText, setCurrInputText] = useState('')
 
     const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
@@ -23,36 +26,37 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
 
     const audioRecorder = useAudioRecorder()
 
-    const handleUpload = (fileList: FileList | null, type: MessageContentType) => {
+    const handleUpload = (fileList: FileList | null, type: Exclude<MessageContentType, MessageContentType.text>) => {
         if (fileList === null || fileList.length <= 0) return
         setMenuAnchor(null) // closes the open menu
         for (const file of fileList) {
             // TODO: preview file before uploading to server.
-            props.socketObject.emit('message', props.currRoom.roomId, file, type)
+            props.socketObject.emit('message', messageTemplate(props.currRoom.roomId, file, username, type))
         }
     }
 
     const emitTextMessage = () => {
         const trimmedText = currInputText.slice().trim()
         if (trimmedText.length <= 0) return
-        props.socketObject.emit('message', props.currRoom.roomId, trimmedText, 'text')
+        props.socketObject.emit(
+            'message',
+            messageTemplate(props.currRoom.roomId, trimmedText, username, MessageContentType.text)
+        )
         setCurrInputText('')
     }
 
     if (audioRecorder.recorder !== undefined) {
         audioRecorder.recorder.ondataavailable = ev => {
             setRecordedAudioFile(ev.data)
-            props.socketObject.emit('message', props.currRoom.roomId, ev.data, 'audio')
+            props.socketObject.emit(
+                'message',
+                messageTemplate(props.currRoom.roomId, ev.data, username, MessageContentType.audio)
+            )
         }
     }
 
     return (
         <>
-            {recordedAudioFile !== undefined ? (
-                <audio src={URL.createObjectURL(recordedAudioFile)} controls>
-                    audio
-                </audio>
-            ) : null}
             <StyledTextField
                 sx={{
                     backgroundColor: 'white',

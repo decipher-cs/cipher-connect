@@ -1,5 +1,4 @@
-import { Message } from './pages/Chat'
-import { MessageContentType, MessageWithContentAsBuffer } from './types/prisma.client'
+import { MessageContentType, MessageToServer } from './types/prisma.client'
 
 export const arrayBufferToObjectUrlConverter = (buffer: ArrayBuffer | null) => {
     if (buffer === null) return ''
@@ -9,13 +8,13 @@ export const arrayBufferToObjectUrlConverter = (buffer: ArrayBuffer | null) => {
 
 export const messageTemplate = (
     targetRoomId: string,
-    messageContents: MessageWithContentAsBuffer['content'],
+    messageContents: File | Blob | string,
     senderUsername: string,
     messageType: MessageContentType,
     key?: string,
     editedAt?: Date,
     createdAt?: Date
-): MessageWithContentAsBuffer => {
+): MessageToServer => {
     return {
         key: key ?? crypto.randomUUID(),
         editedAt: editedAt ?? null,

@@ -67,7 +67,7 @@ export type userRoomParticipation = {
  *
  */
 export type message = {
-    key: number
+    key: string
     senderUsername: string
     roomId: string
     content: string
@@ -83,13 +83,34 @@ export type message = {
 // Based on
 // https://github.com/microsoft/TypeScript/issues/3192#issuecomment-261720275
 
-export const MessageContentType = {
-    audio: 'audio',
-    video: 'video',
-    text: 'text',
-    image: 'image',
-}
-
-export type MessageContentType = 'audio' | 'video' | 'text' | 'image'
+// export const MessageContentType = {
+//     audio: 'audio',
+//     video: 'video',
+//     text: 'text',
+//     image: 'image',
+// }
 
 // export type MessageContentType = (typeof MessageContentType)[keyof typeof MessageContentType]
+
+// CUSTOM TYPES //
+
+// export type MessageWithContentAsBuffer = message | (message & { content: ArrayBuffer })
+// export type MessageWithContentAsBuffer = Omit<message, 'content'> & { content: ArrayBuffer | string }
+
+// export type MessageWithContentAsBlob = Omit<message, 'content'> & { content: Blob | string }
+
+// export type MessageContentType = 'audio' | 'video' | 'text' | 'image'
+export enum MessageContentType {
+    audio,
+    video,
+    text,
+    image,
+}
+
+export type Message = message
+
+export type MessageFromServer =
+    | (message & { contentType: MessageContentType.text; content: string })
+    | (message & { contentType: Exclude<MessageContentType, MessageContentType.text>; content: ArrayBuffer })
+
+export type MessageToServer = Omit<message, 'content'> & { content: File | Blob | string }

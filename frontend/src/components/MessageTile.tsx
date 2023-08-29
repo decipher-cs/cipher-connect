@@ -10,14 +10,15 @@ export const MessageTile = (props: {
 }) => {
     const [showDialog, setShowDialog] = useState(false)
 
-    const Message = () => {
-        if (props.messageContentType === 'text') {
+    if (props.content.length <= 0) return null
+
+    const MessageContent = () => {
+        if (props.messageContentType === MessageContentType.audio) return <audio controls src={props.content} />
+        if (props.messageContentType === MessageContentType.text)
             return <Typography sx={{ overflowWrap: 'break-word', color: 'white' }}>{props.content}</Typography>
-        } else if (props.messageContentType === 'audio') {
-            return <audio controls src={props.content} />
-        } else if (props.messageContentType === 'video') {
+        if (props.messageContentType === MessageContentType.video)
             return <video src={props.content} controls style={{ maxHeight: '30svh' }} />
-        } else if (props.messageContentType === 'image') {
+        if (props.messageContentType === MessageContentType.image) {
             return (
                 <>
                     <img
@@ -51,7 +52,7 @@ export const MessageTile = (props: {
             }}
             ref={props.autoScrollToBottomRef}
         >
-            <Message />
+            <MessageContent />
         </Paper>
     )
 }

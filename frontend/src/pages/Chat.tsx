@@ -1,19 +1,17 @@
 import { Box, Button, Collapse, Container, Dialog, Slide, TextField, Typography } from '@mui/material'
-import { useContext, useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useReducer, useRef, useState } from 'react'
 import { ChatDisplaySection } from '../components/ChatDisplaySection'
 import { CredentialContext } from '../contexts/Credentials'
 import { socket } from '../socket'
 import { PulseLoader } from 'react-spinners'
-import { message as MessageFromDB, MessageContentType, room as Room } from '../types/prisma.client'
+import { message as Message, MessageContentType, room as Room } from '../types/prisma.client'
 import { MessageSidebar } from '../components/MessageSidebar'
 import { RoomInfo } from '../components/RoomInfo'
 import { RoomWithParticipants, Settings } from '../types/socket'
 import { ProfileSettingsDialog } from '../components/ProfileSettingsDialog'
 import { Buffers } from '@react-frontend-developer/buffers'
 import { Sidebar } from '../components/Sidebar'
-import { arrayBufferToObjectUrlConverter, messageTemplate } from '../utils'
-
-export type Message = Pick<MessageFromDB, 'senderUsername' | 'content' | 'createdAt' | 'roomId' | 'contentType'>
+import { arrayBufferToObjectUrlConverter } from '../utils'
 
 // TODO: use arrayBufferToObjectURLConverter function form utils.ts
 export const imageBufferToURLOrEmptyString = (imageBuffer: Buffers | null) => {
@@ -49,16 +47,12 @@ export const Chat = () => {
 
         setIsLoading(false)
 
-        socket.on('message', (targetRoomId, messageContents, senderUsername, messageType) => {
-            console.log('messge')
-            if (messageType === 'text' && typeof messageContents === 'string') {
-                const message = messageTemplate(targetRoomId, messageContents, senderUsername, messageType)
-                setChatMessageList(prev => prev.concat(message))
-            } else if (messageContents instanceof ArrayBuffer && messageType !== 'text') {
-                const objectURL = arrayBufferToObjectUrlConverter(messageContents)
-                console.log(objectURL)
-                const message = messageTemplate(targetRoomId, objectURL, senderUsername, messageType)
-                setChatMessageList(prev => prev.concat(message))
+        socket.on('message', messageFromServer => {
+            if (messageFromServer.contentType === MessageContentType.text) {
+                setChatMessageList(prev => prev.concat(messageFromServer))
+            } else if (messageFromServer) {
+                const objectURL = arrayBufferToObjectUrlConverter(messageFromServer.content)
+                setChatMessageList(prev => prev.concat({ ...messageFromServer, content: objectURL }))
             } else throw 'Unknown message type'
             // TODO send notification for a new message
         })

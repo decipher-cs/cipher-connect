@@ -1,12 +1,13 @@
 import { Avatar, Box, ButtonGroup, Collapse, Typography } from '@mui/material'
 import { memo, useContext, useEffect, useRef } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
-import { imageBufferToURLOrEmptyString, Message } from '../pages/Chat'
+import { imageBufferToURLOrEmptyString } from '../pages/Chat'
 import React, { useState } from 'react'
 import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
 import { MessageTile } from './MessageTile'
 import { ChatInputBar } from './ChatInputBar'
 import { RoomBanner } from './RoomBanner'
+import { Message } from '../types/prisma.client'
 
 export interface ChatDisplaySectionProps {
     chatMessageList: Message[]
@@ -32,12 +33,14 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
 
             <Box
                 sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
+                    display: 'grid',
+                    alignContent: 'flex-start',
+                    gridTemplateColumns: '100%',
+
                     overflowY: 'scroll',
                     px: 2,
                     gap: 1.8,
-                    pt: 12,
+                    pt: 10,
                     pb: 2,
                 }}
             >
