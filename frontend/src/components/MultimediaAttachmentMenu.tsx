@@ -69,13 +69,7 @@ export const MultimediaAttachmentMenu = (props: {
                 </MenuItem>
 
                 {/* TODO: implement type 'application/*' */}
-                {/* <MenuItem> */}
-                {/*     <input type='file' accept='' hidden onChange={e => handleClose(e.target.files)} /> */}
-                {/*     <ListItemIcon> */}
-                {/*         <FilePresentRounded /> */}
-                {/*     </ListItemIcon> */}
-                {/*     <ListItemText>Add File</ListItemText> */}
-                {/* </MenuItem> */}
+                {/* <FilePresentRounded /> */}
             </MenuList>
         </Menu>
     )

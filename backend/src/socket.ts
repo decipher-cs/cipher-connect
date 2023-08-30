@@ -1,4 +1,6 @@
 import { Server } from 'socket.io'
+import { createWriteStream } from 'fs'
+import { readFile, readdir, writeFile } from 'fs/promises'
 import {
     addMessageToDB,
     createPrivateRoomAndAddParticipants,
@@ -10,7 +12,8 @@ import {
     getUserSettings,
     getRoomsContainingUserWithRoomParticipantDetails,
 } from './model.js'
-import { MessageContentType, message, room, user, userRoomParticipation } from '@prisma/client'
+import { MessageContentType, message as Message, room, user, userRoomParticipation } from '@prisma/client'
+import { buffer } from 'stream/consumers'
 
 export type Participants = Pick<userRoomParticipation, 'username'>[]
 
@@ -22,15 +25,26 @@ type Nullable<T> = { [U in keyof T]: null | T[U] }
 
 export type Settings = Nullable<Pick<user, 'userDisplayName'>> & { userDisplayImage: null | ArrayBuffer }
 
+export type MessageWithContentAsBufferOrString = Omit<Message, 'content'> & { content: Buffer | string }
+
+// export type MessageFromServer =
+//     | (Message & { contentType: 'text'; content: string })
+//     | (Message & { contentType: 'audio'; content: Array<any> })
+
+export type MessageFromServer = Omit<Message, 'content' | 'contentType'> &
+    ({ contentType: 'audio' | 'video' | 'image'; content: ArrayBuffer } | { contentType: 'text'; content: string })
+
+export type MessageToServer = Omit<Message, 'content'> & { content: ArrayBuffer | string }
+
 interface ServerToClientEvents {
     noArg: () => void
     basicEmit: (a: number, b: string, c: Buffer) => void
     withAck: (d: string, callback: (e: number) => void) => void
-    privateMessage: (targetRoomId: string, msg: string, senderUsername: string, messageType: MessageContentType) => void
+    message: (message: MessageFromServer) => void
     userRoomsUpdated: (rooms: RoomWithParticipants[]) => void
     userRoomUpdated: (room: RoomWithParticipants) => void
     roomChanged: (room: RoomWithParticipants) => void
-    messagesRequested: (messages: message[]) => void
+    messagesRequested: (messages: Message[]) => void
     userSettingsUpdated: (newSettings: Settings) => void
 }
 
@@ -39,7 +53,7 @@ interface InterServerEvents {}
 
 // for socket.on()
 interface ClientToServerEvents {
-    privateMessage: (targetRoomId: string, msg: string, messageType: MessageContentType) => void
+    message: (message: MessageToServer) => void
     addUsersToRoom: (usersToAdd: string[], roomName: string) => void
     createNewPrivateRoom: (participant: string, callback: (response: string) => void) => void
     createNewGroup: (participants: string[], displayName: string, callback: (response: string) => void) => void
@@ -85,17 +99,25 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
 
         socket.join(username)
 
-        socket.on('privateMessage', async (targetRoomId, messageContent, type) => {
-            // TODO 'private'Message also works for groups? Oversight on my part but if works then better to keep it.
-            io.to(targetRoomId).emit('privateMessage', targetRoomId, messageContent, username, type)
-            // Sync the broadcast and the insert call made to DB
-            try {
-                await addMessageToDB(username, targetRoomId, messageContent, type)
-            } catch (error) {
-                console.log('error uploading message to DB. Trying one more time.')
-                await addMessageToDB(username, targetRoomId, messageContent, type)
-            }
+        socket.on('message', async message => {
+            io.to(message.roomId).emit('message', message)
+            // write to FS if multimedia
+            // put text/ path to multimedia
+
+            // const fo = createWriteStream('foobar.jpg').write(message.content)
+            // writeFile(`upload/${crypto.randomUUID()}.${}`, message.content)
         })
+        // socket.on('message', async (targetRoomId, messageContent, type) => {
+        // io.to(targetRoomId).emit('message', targetRoomId, messageContent, username, type)
+
+        // Sync the broadcast and the insert call made to DB
+        // try {
+        //     await addMessageToDB(username, targetRoomId, messageContent, type)
+        // } catch (error) {
+        //     console.log('error uploading message to DB. Trying one more time.')
+        //     await addMessageToDB(username, targetRoomId, messageContent, type)
+        // }
+        // })
 
         socket.on('createNewPrivateRoom', async (participant, callback) => {
             const roomsContainingUser = await getRoomsContainingUserWithRoomParticipantDetails(username)

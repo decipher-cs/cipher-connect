@@ -14,7 +14,11 @@ dotenv.config()
 const app = express()
 const server = http.createServer(app)
 const PORT = process.env.PORT || process.env.DEV_PORT
-const io = new Server(server, { cors: { origin: process.env.ORIGIN_DEV_URL } })
+const io = new Server(server, {
+    cors: { origin: process.env.ORIGIN_DEV_URL },
+    maxHttpBufferSize: 1e8,
+    pingTimeout: 600000,
+})
 export const avatar = multer().single('avatar')
 
 // middleware //

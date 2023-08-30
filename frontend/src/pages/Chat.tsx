@@ -42,7 +42,7 @@ export const Chat = () => {
     useEffect(() => {
         if (socket.connected === false && isLoggedIn === true) {
             socket.auth = { username }
-            socket.connect() // TODO this should be removed in prod. In prod this should run after varifying credentials.
+            socket.connect()
         }
 
         setIsLoading(false)
