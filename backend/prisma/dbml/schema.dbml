@@ -1,0 +1,98 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table refresh_token {
+  tokenOwnerIdRelation user [not null]
+  tokenValue String [pk]
+  username String [not null]
+}
+
+Table user {
+  username String [pk]
+  userDisplayName String [unique, not null]
+  userDisplayImage Bytes
+  createTime DateTime [default: `now()`, not null]
+  refreshTokens refresh_token [not null]
+  message message [not null]
+  roomConfig room_config [not null]
+  participants user_room_participation [not null]
+  passwordHash password_hash
+}
+
+Table password_hash {
+  key Int [pk, increment]
+  username String [unique, not null]
+  hash String [not null]
+  usernameRelation user [not null]
+}
+
+Table room_config {
+  key Int [pk, increment]
+  username String [not null]
+  roomId String [not null]
+  isHidden Boolean [not null, default: false]
+  userRelation user [not null]
+  roomIdRelation room [not null]
+
+  indexes {
+    (username, roomId) [unique]
+  }
+}
+
+Table room {
+  roomId String [pk]
+  roomDisplayName String [not null]
+  roomDisplayImage Bytes
+  isMaxCapacityTwo Boolean [not null, default: false]
+  message message [not null]
+  userRoomConfig room_config [not null]
+  participants user_room_participation [not null]
+}
+
+Table user_room_participation {
+  key Int [pk, increment]
+  username String [not null]
+  roomId String [not null]
+  usernameRelation user [not null]
+  roomIdRelation room [not null]
+
+  indexes {
+    (username, roomId) [unique]
+  }
+}
+
+Table message {
+  key String [pk]
+  senderUsername String [not null]
+  roomId String [not null]
+  content String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  editedAt DateTime
+  contentType MessageContentType [not null]
+  sender user [not null]
+  room room [not null]
+}
+
+Enum MessageContentType {
+  audio
+  video
+  text
+  image
+}
+
+Ref: refresh_token.username > user.username
+
+Ref: password_hash.username - user.username
+
+Ref: room_config.username > user.username
+
+Ref: room_config.roomId > room.roomId
+
+Ref: user_room_participation.username > user.username
+
+Ref: user_room_participation.roomId > room.roomId
+
+Ref: message.senderUsername > user.username
+
+Ref: message.roomId > room.roomId
