@@ -74,6 +74,7 @@ export type message = {
     createdAt: Date
     editedAt: Date | null
     contentType: MessageContentType
+    MIMEType: string | null
 }
 
 // CUSTOM TYPES //
@@ -91,8 +92,21 @@ export enum MessageContentType {
 
 export type Message = message
 
-export type MessageFromServer =
-    | (message & { contentType: MessageContentType.text; content: string })
-    | (message & { contentType: Exclude<MessageContentType, MessageContentType.text>; content: ArrayBuffer })
+export type MessageToClient = Omit<message, 'contentType' | 'content'> &
+    (
+        | { contentType: MessageContentType.text; content: string }
+        | {
+              contentType: Exclude<MessageContentType, MessageContentType.text>
+              content: ArrayBuffer
+              fileExtension: string
+          }
+    )
 
-export type MessageToServer = Omit<message, 'content'> & { content: File | Blob | string }
+export type MessageToServer = Omit<message, 'contentType' | 'content'> &
+    (
+        | { contentType: MessageContentType.text; content: string }
+        | {
+              contentType: Exclude<MessageContentType, MessageContentType.text>
+              content: File | Blob
+          }
+    )
