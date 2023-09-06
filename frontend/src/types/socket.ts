@@ -6,14 +6,14 @@ import {
     room as Room,
     userRoomParticipation as UserRoomParticipation,
     user as User,
-    MessageFromServer,
+    MessageToClient,
     MessageToServer,
 } from './prisma.client'
 
 export interface ServerToClientEvents {
     noArg: () => void
     withAck: (d: string, callback: (e: number) => void) => void
-    message: (message: MessageFromServer) => void
+    message: (message: MessageToClient) => void
     userRoomsUpdated: (rooms: RoomWithParticipants[]) => void
     userRoomUpdated: (room: RoomWithParticipants) => void
     roomChanged: (room: RoomWithParticipants) => void
@@ -34,7 +34,7 @@ export interface ClientToServerEvents {
     userSettingsUpdated: (newSettings: Settings) => void
 }
 
-type Nullable<T> = { [U in keyof T]: null | T[U] }
+export type Nullable<T> = { [U in keyof T]: null | T[U] }
 
 export type Settings = Nullable<Pick<User, 'userDisplayName'>> & { userDisplayImage: null | ArrayBuffer }
 
