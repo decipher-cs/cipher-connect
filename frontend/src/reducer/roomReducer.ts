@@ -3,7 +3,7 @@ import { RoomWithParticipants } from '../types/socket'
 
 type StateType = {
     selectedRoom: null | number
-    joinedRooms: RoomWithParticipants
+    joinedRooms: RoomWithParticipants[]
 }
 
 export const enum roomActionType {
