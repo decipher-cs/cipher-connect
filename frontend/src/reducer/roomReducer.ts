@@ -1,4 +1,4 @@
-import { Message } from '../types/prisma.client'
+import { Message, Room } from '../types/prisma.client'
 import { RoomWithParticipants } from '../types/socket'
 
 type StateType = {
@@ -6,25 +6,46 @@ type StateType = {
     joinedRooms: RoomWithParticipants[]
 }
 
-export const enum roomActionType {
-    ADD = 'add',
+export enum RoomActionType {
+    ADD_ROOM = 'addRoom',
     HIDE = 'hide',
-    CHANGEROOM = 'changeRoom',
-}
-export type RoomActions = {
-    type: roomActionType
-    payload: number
+    ADD_PARTICIPANT = 'addParticipant',
+    CHANGE_ROOM = 'changeRoom',
 }
 
+export type RoomActions =
+    | {
+          type: RoomActionType.ADD_ROOM
+          room: RoomWithParticipants | RoomWithParticipants[]
+      }
+    | {
+          type: RoomActionType.CHANGE_ROOM
+          newRoomIndex: number
+      }
+    | {
+          type: RoomActionType.ADD_PARTICIPANT
+          roomId: string
+          participants: string[]
+      }
+
 export const roomReducer: React.Reducer<StateType, RoomActions> = (state, action) => {
-    const { type, payload } = action
+    const { type } = action
+
     const room: StateType = structuredClone(state)
+
     switch (type) {
-        case roomActionType.ADD:
+        case RoomActionType.ADD_ROOM:
+            if (Array.isArray(action.room)) {
+                action.room.forEach(r => room.joinedRooms.push(r))
+            } else room.joinedRooms.push(action.room)
             break
-        case roomActionType.HIDE:
+
+        case RoomActionType.ADD_PARTICIPANT:
+            // room.joinedRooms.find(r => r.roomId === action.roomId)
             break
-        case roomActionType.CHANGEROOM:
+
+        case RoomActionType.CHANGE_ROOM:
+            room.selectedRoom = action.newRoomIndex
             break
 
         default:
