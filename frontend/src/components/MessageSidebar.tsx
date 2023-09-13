@@ -1,46 +1,56 @@
-import {
-    Avatar,
-    Box,
-    Checkbox,
-    Collapse,
-    Divider,
-    IconButton,
-    List,
-    ListItem,
-    ListItemButton,
-    ListItemIcon,
-    ListItemText,
-    TextField,
-    Typography,
-} from '@mui/material'
-import { useContext, useState } from 'react'
-import { CredentialContext } from '../contexts/Credentials'
-import AddIcon from '@mui/icons-material/Add'
+import { Box, Checkbox, Collapse, Divider, FormControl, List, Typography } from '@mui/material'
+import { useState } from 'react'
 import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
-import { Buffers } from '@react-frontend-developer/buffers'
-import { imageBufferToURLOrEmptyString } from '../pages/Chat'
 import { BorderColorRounded } from '@mui/icons-material'
 import { StyledTextField } from './StyledTextField'
+import { Form, useFormik } from 'formik'
+import { RoomActions } from '../reducer/roomReducer'
+import { RoomListItem } from './RoomListItem'
 
 interface MessageSidebarProps {
-    rooms: RoomWithParticipants[]
     socketObject: SocketWithCustomEvents
-    setSelectedRoomIndex: React.Dispatch<React.SetStateAction<number | undefined>>
-    selectedRoomIndex: number | undefined
+    roomDispatcher: React.Dispatch<RoomActions>
+    rooms: RoomWithParticipants[]
+    selectedRoomIndex: number | null
+}
+
+// TODO: Incorporate yup for string validation
+const validateForm = (values: { user: string } | { groupDisplayName: string }) => {
+    const errors: { [key: string]: string } = {}
+
+    const input = Object.values(values)[0]
+    const key = Object.keys(values)[0]
+
+    if (input.length < 3) {
+        errors[key] = 'Minimum 3 characters needed'
+    } else if (input.length > 50) {
+        errors[key] = 'Maximum 50 characters allowed'
+    }
+
+    return errors
 }
 
 export const MessageSidebar = (props: MessageSidebarProps) => {
-    const { username } = useContext(CredentialContext)
+    const [showTextFields, setShowTextFields] = useState(true)
 
-    const [contactFieldValue, setContactFieldValue] = useState('')
-
-    const [contactFieldHelperText, setContactFieldHelperText] = useState('')
-
-    const [createGroupFieldValue, setCreateGroupFieldValue] = useState('')
-
-    const [createGroupFieldHelperText, setCreateGroupFieldHelperText] = useState('')
-
-    const [showTextFields, setShowTextFields] = useState(false)
+    const formikAddUser = useFormik({
+        initialValues: { user: '' },
+        validate: validateForm,
+        onSubmit: async ({ user }) => {
+            props.socketObject.emit('createNewPrivateRoom', user.trim(), response => {
+                response && formikAddUser.setFieldError('user', response)
+            })
+        },
+    })
+    const formikCreateGroup = useFormik({
+        initialValues: { groupDisplayName: '' },
+        validate: validateForm,
+        onSubmit: async ({ groupDisplayName }) => {
+            props.socketObject.emit('createNewGroup', [], groupDisplayName.trim(), response => {
+                response && formikCreateGroup.setFieldError('groupDisplayName', response)
+            })
+        },
+    })
 
     return (
         <Box
@@ -67,121 +77,50 @@ export const MessageSidebar = (props: MessageSidebarProps) => {
 
             <Collapse in={showTextFields}>
                 <Divider sx={{ mb: 2 }} />
-                <StyledTextField
-                    sx={{ px: 1 }}
-                    size='small'
-                    onChange={e => {
-                        setContactFieldValue(e.target.value)
-                        if (contactFieldHelperText !== '') setContactFieldHelperText('')
-                    }}
-                    onKeyDown={e => {
-                        if (e.key === 'Enter')
-                            props.socketObject.emit('createNewPrivateRoom', contactFieldValue, response => {
-                                console.log(response)
-                                setContactFieldHelperText(response)
-                            })
-                    }}
-                    value={contactFieldValue}
-                    helperText={contactFieldHelperText}
-                    placeholder='Add contact'
-                />
-
+                <form onSubmit={formikAddUser.handleSubmit}>
+                    <StyledTextField
+                        sx={{ px: 1 }}
+                        size='small'
+                        placeholder='Add User'
+                        helperText={formikAddUser.touched.user && formikAddUser.errors.user}
+                        error={formikAddUser.errors.user !== undefined && formikAddUser.touched.user}
+                        {...formikAddUser.getFieldProps('user')}
+                    />
+                </form>
                 <Typography align='center' variant='body2'>
                     OR
                 </Typography>
 
-                <StyledTextField
-                    sx={{ px: 1 }}
-                    size='small'
-                    onChange={e => {
-                        setCreateGroupFieldValue(e.target.value)
-                        if (createGroupFieldHelperText !== '') setCreateGroupFieldHelperText('')
-                    }}
-                    onKeyDown={e => {
-                        if (e.key === 'Enter')
-                            props.socketObject.emit('createNewGroup', [username], createGroupFieldValue, response => {
-                                console.log(response)
-                                setCreateGroupFieldValue(response)
-                            })
-                    }}
-                    value={createGroupFieldValue}
-                    helperText={createGroupFieldHelperText}
-                    placeholder='Create group'
-                />
+                <form onSubmit={formikCreateGroup.handleSubmit}>
+                    <StyledTextField
+                        sx={{ px: 1 }}
+                        size='small'
+                        helperText={
+                            formikCreateGroup.touched.groupDisplayName && formikCreateGroup.errors.groupDisplayName
+                        }
+                        placeholder='Create Group'
+                        error={
+                            formikCreateGroup.errors.groupDisplayName !== undefined &&
+                            formikCreateGroup.touched.groupDisplayName
+                        }
+                        {...formikCreateGroup.getFieldProps('groupDisplayName')}
+                    />
+                </form>
             </Collapse>
 
             <List sx={{ overflowY: 'auto' }}>
                 {props.rooms.map((room, i) => {
                     return (
-                        <div key={i}>
-                            {i === 0 ? null : <Divider component='li' />}
-                            <MessageListItem
-                                roomIndex={i}
-                                selectedRoomIndex={props.selectedRoomIndex}
-                                room={room}
-                                socketObject={props.socketObject}
-                                username={username}
-                                setSelectedRoomIndex={props.setSelectedRoomIndex}
-                            />
-                        </div>
+                        <RoomListItem
+                            key={i}
+                            currentRoomIndex={i}
+                            selectedRoomIndex={props.selectedRoomIndex}
+                            room={room}
+                            roomDispatcher={props.roomDispatcher}
+                        />
                     )
                 })}
             </List>
         </Box>
-    )
-}
-
-interface MessageListItemProps {
-    socketObject: SocketWithCustomEvents
-    room: RoomWithParticipants
-    username: string
-    setSelectedRoomIndex: React.Dispatch<React.SetStateAction<number | undefined>>
-    selectedRoomIndex: number | undefined
-    roomIndex: number
-}
-
-const MessageListItem = (props: MessageListItemProps) => {
-    let displayName = ''
-    let displayImage = ''
-    let participantUsername = ''
-    const roomType = props.room.isMaxCapacityTwo === true ? 'private' : 'group'
-
-    if (roomType === 'private') {
-        const participantDetails = props.room.participants.find(p => p.username !== props.username)
-
-        const displayImageBuffer = participantDetails?.userDisplayImage ?? null
-
-        displayName = participantDetails?.username ?? ''
-
-        participantUsername = participantDetails?.userDisplayName ?? ''
-
-        displayImage = imageBufferToURLOrEmptyString(displayImageBuffer)
-    } else if (roomType === 'group') {
-        displayName = props.room.roomDisplayName
-
-        displayImage = imageBufferToURLOrEmptyString(props.room.roomDisplayImage)
-    }
-
-    return (
-        <ListItemButton
-            onClick={() => {
-                props.socketObject.emit('roomSelected', props.room.roomId)
-                props.socketObject.emit('messagesRequested', props.room.roomId)
-                props.setSelectedRoomIndex(props.roomIndex)
-            }}
-            selected={props.selectedRoomIndex === props.roomIndex}
-        >
-            <ListItem disableGutters disablePadding>
-                <ListItemIcon>
-                    <Avatar src={displayImage} />
-                </ListItemIcon>
-
-                {roomType === 'private' ? (
-                    <ListItemText primary={<>{displayName}</>} secondary={<>{participantUsername}</>} />
-                ) : (
-                    <ListItemText primary={<>{displayName}</>} secondary={<>{'Group'}</>} />
-                )}
-            </ListItem>
-        </ListItemButton>
     )
 }
