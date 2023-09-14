@@ -1,12 +1,13 @@
 import { Message, Room } from '../types/prisma.client'
 import { RoomWithParticipants } from '../types/socket'
 
-type StateType = {
+type RoomsState = {
     selectedRoom: null | number
     joinedRooms: RoomWithParticipants[]
 }
 
 export enum RoomActionType {
+    INITIALIZE_ROOM = 'initializeRoom',
     ADD_ROOM = 'addRoom',
     HIDE = 'hide',
     ADD_PARTICIPANT = 'addParticipant',
@@ -15,25 +16,32 @@ export enum RoomActionType {
 
 export type RoomActions =
     | {
+          type: RoomActionType.INITIALIZE_ROOM
+          rooms: RoomWithParticipants[]
+      }
+    | {
           type: RoomActionType.ADD_ROOM
           room: RoomWithParticipants | RoomWithParticipants[]
       }
     | {
           type: RoomActionType.CHANGE_ROOM
-          newRoomIndex: number
+          newRoomIndex: RoomsState['selectedRoom']
       }
     | {
           type: RoomActionType.ADD_PARTICIPANT
-          roomId: string
-          participants: string[]
+          roomId: Room['roomId']
+          participants: RoomWithParticipants['participants']
       }
 
-export const roomReducer: React.Reducer<StateType, RoomActions> = (state, action) => {
+export const roomReducer: React.Reducer<RoomsState, RoomActions> = (state, action) => {
     const { type } = action
 
-    const room: StateType = structuredClone(state)
+    const room: RoomsState = structuredClone(state)
 
     switch (type) {
+        case RoomActionType.INITIALIZE_ROOM:
+            room.joinedRooms = action.rooms
+            break
         case RoomActionType.ADD_ROOM:
             if (Array.isArray(action.room)) {
                 action.room.forEach(r => room.joinedRooms.push(r))
@@ -45,6 +53,7 @@ export const roomReducer: React.Reducer<StateType, RoomActions> = (state, action
             break
 
         case RoomActionType.CHANGE_ROOM:
+            // if (action.newRoomIndex === null) room.selectedRoom = undefined!
             room.selectedRoom = action.newRoomIndex
             break
 
