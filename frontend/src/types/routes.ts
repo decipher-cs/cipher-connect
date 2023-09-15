@@ -9,4 +9,5 @@ export const Routes = {
     userRoomsAndParticipants: '/userRoomsAndParticipants',
     roomParticipants: '/roomParticipants',
     messages: '/Messages',
+    media: '/Media',
 } as const

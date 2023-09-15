@@ -1,5 +1,3 @@
-import { Buffers as Buffer } from '@react-frontend-developer/buffers'
-
 /**
  * Model refreshToken
  *
@@ -15,9 +13,18 @@ export type refreshToken = {
  */
 export type user = {
     username: string
-    userDisplayName: string
-    userDisplayImage: Buffer | null
     createTime: Date
+}
+
+/**
+ * Model userSettings
+ *
+ */
+export type userSettings = {
+    key: number
+    displayName: string
+    profilePicturePath: string | null
+    username: string
 }
 
 /**
@@ -48,7 +55,7 @@ export type roomConfig = {
 export type room = {
     roomId: string
     roomDisplayName: string
-    roomDisplayImage: Buffer | null
+    roomDisplayImagePath: string | null
     isMaxCapacityTwo: boolean
 }
 
@@ -84,12 +91,24 @@ export type message = {
  */
 
 export enum MessageContentType {
-    audio,
-    video,
-    text,
-    image,
-    file,
+    audio = 'audio',
+    video = 'video',
+    text = 'text',
+    image = 'image',
+    file = 'file',
 }
+
+export type User = user
+
+export type UserSettings = userSettings
+
+export type PasswordHash = passwordHash
+
+export type RoomConfig = roomConfig
+
+export type Room = room
+
+export type UserRoomParticipation = userRoomParticipation
 
 export type Message = message
 
@@ -103,12 +122,13 @@ export type MessageToClient = Omit<message, 'contentType' | 'content'> &
           }
     )
 
-export type MessageToServer = Omit<message, 'contentType' | 'content'> &
-    (
-        | { contentType: MessageContentType.text; content: string }
-        | {
-              contentType: Exclude<MessageContentType, MessageContentType.text>
-              content: File | Blob
-              extension: string
-          }
-    )
+export type MessageToServer = Message
+// Omit<message, 'contentType' | 'content'> &
+//     (
+//         | { contentType: MessageContentType.text; content: string }
+//         | {
+//               contentType: Exclude<MessageContentType, MessageContentType.text>
+//               content: File | Blob
+//               extension: string
+//           }
+//     )
