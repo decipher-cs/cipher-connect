@@ -1,37 +1,65 @@
 import { useEffect, useState } from 'react'
 
-export const useFetch = (URL: string, body: {}, method?: 'POST' | 'GET' | 'UPDATE') => {
-    const [data, setData] = useState()
+export const useFetch = <T>(route: string, triggerFetchManually?: boolean) => {
+    triggerFetchManually = triggerFetchManually === true
 
-    const [error, setError] = useState<string | null>(null)
+    const [data, setData] = useState<T>()
+
+    const [error, setError] = useState<any>(null)
+
+    const [fetchStatus, setFetchStatus] = useState<'loading' | 'finished' | 'not-started'>('not-started')
 
     const abortController = new AbortController()
 
-    useEffect(() => {
-        if (URL === undefined) return
+    const baseURL = import.meta.env.VITE_SERVER_URL
 
-        return () => {
-            abortController.abort()
-        }
-    }, [])
-
-    const startFetching = async () => {
+    const startFetching = async (config?: RequestInit) => {
         try {
-            const response = await fetch('', {
-                method: method ?? 'GET',
-                body: JSON.stringify(body),
+            setFetchStatus('loading')
+            const response = await fetch(baseURL + route, {
+                method: config?.method ?? 'GET',
                 signal: abortController.signal,
+                ...config,
             })
             if (response.ok === false) {
                 setError(response.statusText)
+                throw new Error(response.statusText)
             }
-            const data = await response.json()
+            const contentType = response.headers.get('Content-Type')
+
+            if (contentType === null) {
+                setError('Property "Content-Type" not set in the response.')
+                throw new Error('Property "Content-Type" not set in the response.')
+            }
+            let data
+
+            if (contentType.includes('application/json')) {
+                data = (await response.json()) as T
+            } else if (contentType.includes('application/octet-stream')) {
+                data = (await response.blob()) as T
+            } else if (contentType.includes('plain/text')) {
+                data = (await response.text()) as T
+            } else {
+                throw new Error('Unsupported "Content-Type" in response. See custrom hook useFetch.')
+            }
+            console.log(data)
             setData(data)
             return data
         } catch (error) {
-            setError('Connection Timed out')
+            setError(error)
+            throw error
+        } finally {
+            setFetchStatus('finished')
         }
     }
 
-    return { data, error, startFetching }
+    useEffect(() => {
+        if (triggerFetchManually === false) startFetching()
+
+        return () => {
+            if (import.meta.env.PROD) abortController.abort()
+        }
+    }, [])
+
+    return { data, error, startFetching, fetchStatus }
 }
