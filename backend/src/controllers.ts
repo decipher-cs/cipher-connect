@@ -1,9 +1,19 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import fs from 'fs/promises'
 import { NextFunction, Request, Response } from 'express'
-import { deleteRefreshToken, getRefreshToken, updateRoomImage } from './model.js'
-import { addRefreshToken, createNewUser, getUserHash } from './model.js'
+import {
+    deleteRefreshToken,
+    getAllMessagesFromRoom,
+    getAllRoomPariticpants,
+    getRefreshToken,
+    getUserRooms,
+    getUserRoomsAlongParticipants,
+    updateRoomImage,
+} from './model.js'
+import { addRefreshToken, createNewUser, getUserHash, getUserSettings } from './model.js'
 import { createAccessToken, createRefreshToken } from './middleware/jwtFunctions.js'
+import { Multer } from 'multer'
 
 interface LoginCredentials {
     username: string
@@ -143,13 +153,89 @@ export const updateGroupImage = async (req: Request, res: Response) => {
         res.sendStatus(400)
         return
     }
-    const file = req.file.buffer
-    const roomId: string = req.body.roomId
+    const file = req.file // 'avatar' file
+    // const file = req.file.buffer
+    const data: string = req.body // Any extra data
+    // const roomId: string = req.body.roomId
+    //TODO: varify
+    //
+    res.sendStatus(500)
+    return
     try {
-        const room = await updateRoomImage(roomId, file)
-        res.send(room.roomDisplayImage)
+        // const room = await updateRoomImage(roomId, file)
+        // res.send(room)
     } catch (err) {
         res.sendStatus(500)
     }
     return
+}
+
+export const storeMediaToFS = async (req: Request, res: Response) => {
+    if (req.file === undefined) {
+        res.sendStatus(400)
+        return
+    }
+    const { filename }: Express.Multer.File = req.file
+
+    res.json(filename)
+    return
+}
+
+export const returnMediaFromFS = async (req: Request, res: Response) => {
+    const { path } = req.params
+
+    if (path === undefined) {
+        res.sendStatus(400)
+        return
+    }
+
+    try {
+        const media = await fs.readFile('public/' + path)
+        res.send(media)
+    } catch (error) {
+        res.sendStatus(404)
+        return
+    }
+}
+
+export const returnUserSettings = async (req: Request, res: Response) => {
+    const { username }: LoginCredentials = req.body
+    if (username === undefined) {
+        res.status(400)
+        return
+    }
+    const settings = await getUserSettings(username)
+    res.send(settings)
+    return
+}
+
+export const returnUserRoomsAndParticipants = async (req: Request, res: Response) => {
+    const { username }: LoginCredentials = req.body
+    if (username === undefined) {
+        res.sendStatus(400)
+        return
+    }
+    const rooms = await getUserRoomsAlongParticipants(username)
+    res.send(rooms)
+    return
+}
+
+export const fetchAllRoomPariticpants = async (req: Request, res: Response) => {
+    const { roomId } = req.body
+    if (roomId === undefined) {
+        res.sendStatus(400)
+        return
+    }
+    const participants = await getAllRoomPariticpants(roomId)
+    if (participants === undefined) {
+        res.sendStatus(400)
+    } else res.send(participants)
+    return
+}
+
+export const fetchMessages = async (req: Request, res: Response) => {
+    const { roomID } = req.params
+    const messages = await getAllMessagesFromRoom(roomID)
+    if (messages === undefined) res.sendStatus(404)
+    else res.send(messages)
 }
