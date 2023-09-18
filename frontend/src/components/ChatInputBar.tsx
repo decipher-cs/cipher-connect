@@ -7,12 +7,18 @@ import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
 import { MultimediaAttachmentMenu } from './MultimediaAttachmentMenu'
 import { StyledTextField } from './StyledTextField'
 import { CredentialContext } from '../contexts/Credentials'
-import { messageTemplate } from '../utils'
+import { MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
+import { RoomActionType } from '../reducer/roomReducer'
+import axios from 'axios'
+import { Routes } from '../types/routes'
+import { useFetch } from '../hooks/useFetch'
+import filetypeinfo, { filetypeextension, filetypemime, filetypename } from 'magic-bytes.js'
+import pattern from 'magic-bytes.js/dist/pattern-tree.snapshot'
 
 interface ChatInputBarProps {
-    setChatMessageList: React.Dispatch<React.SetStateAction<Message[]>>
     currRoom: RoomWithParticipants
     socketObject: SocketWithCustomEvents
+    messageListDispatcher: React.Dispatch<MessageListAction>
 }
 
 export const ChatInputBar = (props: ChatInputBarProps) => {
@@ -26,32 +32,90 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
 
     const audioRecorder = useAudioRecorder()
 
-    const handleUpload = (fileList: FileList | null, type: Exclude<MessageContentType, MessageContentType.text>) => {
+    const deliverMessage = useFetch<string>(Routes.media, true)
+
+    type HandleMessageDeliveryArgs =
+        | {
+              content: string
+              contentType: MessageContentType.text
+          }
+        | {
+              content: File | Blob
+              MIME: string
+              contentType: Exclude<MessageContentType, MessageContentType.text>
+          }
+
+    const handleMessageDelivery = async (args: HandleMessageDeliveryArgs) => {
+        let { content, contentType } = args
+
+        if (typeof content !== 'string') {
+            const formData = new FormData()
+            formData.append('userUpload', content)
+            try {
+                content = await deliverMessage.startFetching({ method: 'POST', body: formData })
+            } catch (error) {
+                // TODO: notify user of error
+                throw new Error('something wrong')
+            }
+        }
+
+        const message: Message = {
+            key: crypto.randomUUID(),
+            roomId: props.currRoom.roomId,
+            editedAt: null,
+            senderUsername: username,
+            createdAt: new Date(),
+            contentType,
+            content: content,
+            MIME: 'MIME' in args ? args.MIME : null,
+        }
+
+        props.messageListDispatcher({ type: MessageListActionType.ADD, newMessage: message })
+
+        props.socketObject.emit('message', message)
+    }
+
+    const handleUpload = async (
+        fileList: FileList | null,
+        type: Exclude<MessageContentType, MessageContentType.text>
+    ) => {
         if (fileList === null || fileList.length <= 0) return
         setMenuAnchor(null) // closes the open menu
-        for (const file of fileList) {
+        for (let file of fileList) {
+            const u8Array = new Uint8Array(await file.arrayBuffer())
+
+            const { extension, mime } = filetypeinfo(u8Array)[0]
+
+            // TODO: throw error or notification
+            if (extension === undefined || mime === undefined) return
+            if (extension.length === 0 || mime.length === 0) return
+
+            file = new File([file], crypto.randomUUID() + extension, { type: mime })
+
             // TODO: preview file before uploading to server.
-            props.socketObject.emit('message', messageTemplate(props.currRoom.roomId, file, username, type))
+            handleMessageDelivery({
+                content: file,
+                contentType: MessageContentType[type],
+                MIME: mime,
+            })
         }
     }
 
     const emitTextMessage = () => {
         const trimmedText = currInputText.slice().trim()
         if (trimmedText.length <= 0) return
-        props.socketObject.emit(
-            'message',
-            messageTemplate(props.currRoom.roomId, trimmedText, username, MessageContentType.text)
-        )
+        handleMessageDelivery({ content: trimmedText, contentType: MessageContentType.text })
         setCurrInputText('')
     }
 
     if (audioRecorder.recorder !== undefined) {
         audioRecorder.recorder.ondataavailable = ev => {
+            const MIME = ev.data.type.split(';').at(0)
+            if (MIME === undefined) throw new Error('Unknown MIME type. error while recording audio.')
+
             setRecordedAudioFile(ev.data)
-            props.socketObject.emit(
-                'message',
-                messageTemplate(props.currRoom.roomId, ev.data, username, MessageContentType.audio)
-            )
+
+            handleMessageDelivery({ content: ev.data, contentType: MessageContentType.audio, MIME })
         }
     }
 
