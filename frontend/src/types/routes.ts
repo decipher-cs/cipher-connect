@@ -4,10 +4,11 @@ export const Routes = {
     renewtoken: '/renewtoken',
     logout: '/logout',
     varifyRefreshToken: '/varifyRefreshToken',
-    updateGroupImage: '/updateGroupImage',
+    updateAvatar: '/updateAvatar',
     userSettings: '/userSettings',
     userRoomsAndParticipants: '/userRoomsAndParticipants',
     roomParticipants: '/roomParticipants',
     messages: '/Messages',
     media: '/Media',
+    avatar: '/avatar',
 } as const
