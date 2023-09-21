@@ -20,10 +20,11 @@ model refreshToken {
 }
 
 model user {
-  username         String   @id @db.VarChar(16)
-  userDisplayName  String   @unique @map("display_name") @db.VarChar(16)
-  userDisplayImage Bytes?   @db.LongBlob()
-  createTime       DateTime @default(now()) @map("create_time") @db.Timestamp(0)
+  username   String   @id @unique @db.VarChar(16)
+  createTime DateTime @default(now()) @map("create_time") @db.Timestamp(0)
+
+  displayName String  @db.VarChar(16)
+  avatarPath  String? @db.MediumText
 
   refreshTokens refreshToken[]
   message       message[]
@@ -57,9 +58,12 @@ model roomConfig {
 }
 
 model room {
-  roomId           String  @id @default(cuid())
-  roomDisplayName  String  @db.VarChar(33)
-  roomDisplayImage Bytes?  @db.LongBlob()
+  roomId               String  @id @default(cuid())
+  roomDisplayName      String? @db.VarChar(16)
+  roomDisplayImagePath String? @db.MediumText
+
+  // Following determines if room is private for communication b/w 2 
+  // people or if room is a group for any no. of people
   isMaxCapacityTwo Boolean @default(false)
 
   message        message[]
@@ -84,6 +88,7 @@ enum MessageContentType {
   video
   text
   image
+  file
 }
 
 model message {
@@ -94,7 +99,7 @@ model message {
   createdAt      DateTime           @default(now())
   editedAt       DateTime?          @updatedAt
   contentType    MessageContentType @map("content_type")
-  MIMEType       String             @map("mime")
+  MIME           String?            @db.MediumText
 
   sender user @relation(fields: [senderUsername], references: [username])
   room   room @relation(fields: [roomId], references: [roomId])
