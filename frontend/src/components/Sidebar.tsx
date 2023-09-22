@@ -7,17 +7,22 @@ import {
     SettingsSuggestRounded,
 } from '@mui/icons-material'
 import { Avatar, Box, ButtonGroup, IconButton, Switch, SxProps, Tooltip } from '@mui/material'
-import { useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { imageBufferToURLOrEmptyString } from '../pages/Chat'
-import { Settings, SocketWithCustomEvents } from '../types/socket'
+import { GridLoader, MoonLoader } from 'react-spinners'
+import { CredentialContext } from '../contexts/Credentials'
+import { useFetch } from '../hooks/useFetch'
+import { User } from '../types/prisma.client'
+import { Routes } from '../types/routes'
+import { SocketWithCustomEvents } from '../types/socket'
 import { DarkModeToggleSwitch } from './DarkModeToggleSwitch'
 import { ProfileSettingsDialog } from './ProfileSettingsDialog'
 
 interface SidebarProps {
     sx?: SxProps | undefined
     socketObject: SocketWithCustomEvents
-    userSettings: Settings
+    // userSettings: Settings
+    // setUserSettings: React.Dispatch<React.SetStateAction<Settings>>
 }
 
 export const Sidebar = (props: SidebarProps) => {
@@ -25,14 +30,29 @@ export const Sidebar = (props: SidebarProps) => {
 
     const [dialogOpen, setDialogOpen] = useState(false)
 
-    let imgURL = imageBufferToURLOrEmptyString(props.userSettings.userDisplayImage)
+    const { username } = useContext(CredentialContext)
+
+    const [userProfile, setUserProfile] = useState<User>({
+        username,
+        avatarPath: null,
+        displayName: username,
+        createTime: new Date(),
+    })
+
+    useFetch<User>(Routes.get.user, false, username, undefined, data => {
+        setUserProfile(data)
+    })
+
+    if (!userProfile || !setUserProfile) return <MoonLoader />
+
+    const avatarURL = userProfile.avatarPath ? import.meta.env.VITE_AVATAR_STORAGE_URL + userProfile.avatarPath : ''
 
     return (
         <Box sx={{ ...props.sx, display: 'grid', justifyItems: 'center' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Tooltip title='Profile'>
                     <IconButton sx={{ justifySelf: 'center' }} onClick={() => setDialogOpen(true)}>
-                        <Avatar src={imgURL} />
+                        <Avatar src={avatarURL} />
                     </IconButton>
                 </Tooltip>
                 <Tooltip title='Source code'>
@@ -46,12 +66,15 @@ export const Sidebar = (props: SidebarProps) => {
                 </Tooltip>
             </Box>
 
-            <ProfileSettingsDialog
-                dialogOpen={dialogOpen}
-                setDialogOpen={setDialogOpen}
-                socketObject={props.socketObject}
-                userSettings={props.userSettings}
-            />
+            {setUserProfile !== undefined ? (
+                <ProfileSettingsDialog
+                    dialogOpen={dialogOpen}
+                    setDialogOpen={setDialogOpen}
+                    socketObject={props.socketObject}
+                    setUserProfile={setUserProfile}
+                    userProfile={userProfile}
+                />
+            ) : null}
 
             <ButtonGroup orientation='vertical' sx={{ alignSelf: 'center' }}>
                 <IconButton onClick={() => navigate('/chat')}>
