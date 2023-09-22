@@ -7,13 +7,16 @@ import {
     getAllMessagesFromRoom,
     getAllRoomPariticpants,
     getRefreshToken,
+    getUserFromDB,
     getUserRooms,
     getUserRoomsAlongParticipants,
+    getUsersFromDB,
+    updateRoom,
     updateRoomImage,
+    updateUser,
 } from './model.js'
-import { addRefreshToken, createNewUser, getUserHash, getUserSettings } from './model.js'
+import { addRefreshToken, createNewUser, getUserHash } from './model.js'
 import { createAccessToken, createRefreshToken } from './middleware/jwtFunctions.js'
-import { Multer } from 'multer'
 
 interface LoginCredentials {
     username: string
@@ -148,28 +151,6 @@ export const logoutUser = async (req: Request, res: Response) => {
     res.sendStatus(200)
 }
 
-export const updateGroupImage = async (req: Request, res: Response) => {
-    if (req.file === undefined || req.body.roomId === undefined) {
-        res.sendStatus(400)
-        return
-    }
-    const file = req.file // 'avatar' file
-    // const file = req.file.buffer
-    const data: string = req.body // Any extra data
-    // const roomId: string = req.body.roomId
-    //TODO: varify
-    //
-    res.sendStatus(500)
-    return
-    try {
-        // const room = await updateRoomImage(roomId, file)
-        // res.send(room)
-    } catch (err) {
-        res.sendStatus(500)
-    }
-    return
-}
-
 export const storeMediaToFS = async (req: Request, res: Response) => {
     if (req.file === undefined) {
         res.sendStatus(400)
@@ -180,42 +161,66 @@ export const storeMediaToFS = async (req: Request, res: Response) => {
     res.json(filename)
     return
 }
+export const storeAvatarToFS = async (req: Request, res: Response) => {
+    const { username, roomId } = req.body
 
-export const returnMediaFromFS = async (req: Request, res: Response) => {
-    const { path } = req.params
-
-    if (path === undefined) {
+    if (req.file === undefined) {
         res.sendStatus(400)
         return
     }
 
-    try {
-        const media = await fs.readFile('public/' + path)
-        res.send(media)
-    } catch (error) {
-        res.sendStatus(404)
-        return
-    }
-}
+    const { filename }: Express.Multer.File = req.file
 
-export const returnUserSettings = async (req: Request, res: Response) => {
-    const { username }: LoginCredentials = req.body
-    if (username === undefined) {
-        res.status(400)
+    if (username) updateUser(username, { avatarPath: filename })
+    else if (roomId) updateRoom(roomId, { roomDisplayImagePath: filename })
+    else {
+        res.sendStatus(400)
         return
     }
-    const settings = await getUserSettings(username)
-    res.send(settings)
+
+    res.json(filename)
     return
 }
 
-export const returnUserRoomsAndParticipants = async (req: Request, res: Response) => {
-    const { username }: LoginCredentials = req.body
+export const returnUser = async (req: Request, res: Response) => {
+    let { username } = req.params
+    try {
+        const user = await getUserFromDB(username)
+        res.send(user)
+    } catch (err) {
+        res.sendStatus(400)
+    }
+    return
+}
+export const returnUsers = async (req: Request, res: Response) => {
+    let { usernames } = req.query as { usernames: string[] | string }
+    console.log(usernames, typeof usernames)
+    try {
+        if (!usernames) throw new Error('Expected array')
+
+        if (typeof usernames === 'string') usernames = [usernames]
+
+        if (Array.isArray(usernames) === false) throw new Error('Expected array')
+
+        const users = await getUsersFromDB(usernames)
+
+        res.send(users)
+    } catch (err) {
+        res.sendStatus(400)
+    }
+    return
+}
+
+export const returnUserRooms = async (req: Request, res: Response) => {
+    const { username } = req.params
+
     if (username === undefined) {
         res.sendStatus(400)
         return
     }
+
     const rooms = await getUserRoomsAlongParticipants(username)
+
     res.send(rooms)
     return
 }
