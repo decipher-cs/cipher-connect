@@ -3,49 +3,37 @@ import { createWriteStream } from 'fs'
 import { readFile, readdir, writeFile } from 'fs/promises'
 import {
     addMessageToDB,
-    createPrivateRoomAndAddParticipants,
     getAllMessagesFromRoom,
     getUserFromDB,
-    createGroupAndAddParticipantsToGroup,
-    addParticipantsToGroup,
-    updateUserSettings,
-    getUserSettings,
-    getRoomsContainingUserWithRoomParticipantDetails,
+    getUserRooms,
+    privateRoomExists,
+    createRoomForTwo,
+    createGroup,
+    getUserRoomIDs,
+    getUsersFromDB,
+    updateUser,
 } from './model.js'
-import { MessageContentType, message as Message, room, user, userRoomParticipation } from '@prisma/client'
-import { buffer } from 'stream/consumers'
+import {
+    MessageContentType,
+    message as Message,
+    room as Room,
+    user as User,
+    userRoomParticipation as UserRoomParticipation,
+} from '@prisma/client'
 
-export type Participants = Pick<userRoomParticipation, 'username'>[]
-
-export type RoomWithOptionalImg = Omit<room, 'roomDisplayName'> & Partial<Pick<room, 'roomDisplayImage'>>
-
-export type RoomWithParticipants = RoomWithOptionalImg & { participants: Participants }
+export type RoomWithParticipants = Room & { participants: User[] }
 
 type Nullable<T> = { [U in keyof T]: null | T[U] }
-
-export type Settings = Nullable<Pick<user, 'userDisplayName'>> & { userDisplayImage: null | ArrayBuffer }
-
-export type MessageWithContentAsBufferOrString = Omit<Message, 'content'> & { content: Buffer | string }
-
-// export type MessageFromServer =
-//     | (Message & { contentType: 'text'; content: string })
-//     | (Message & { contentType: 'audio'; content: Array<any> })
-
-export type MessageFromServer = Omit<Message, 'content' | 'contentType'> &
-    ({ contentType: 'audio' | 'video' | 'image'; content: ArrayBuffer } | { contentType: 'text'; content: string })
-
-export type MessageToServer = Omit<Message, 'content'> & { content: ArrayBuffer | string }
 
 interface ServerToClientEvents {
     noArg: () => void
     basicEmit: (a: number, b: string, c: Buffer) => void
     withAck: (d: string, callback: (e: number) => void) => void
-    message: (message: MessageFromServer) => void
-    userRoomsUpdated: (rooms: RoomWithParticipants[]) => void
-    userRoomUpdated: (room: RoomWithParticipants) => void
-    roomChanged: (room: RoomWithParticipants) => void
-    messagesRequested: (messages: Message[]) => void
-    userSettingsUpdated: (newSettings: Settings) => void
+    message: (message: Message) => void
+
+    userProfileUpdated: (newSettings: User) => void
+
+    newRoomCreated: (roomDetails: RoomWithParticipants) => void
 }
 
 // for io.on()
@@ -53,14 +41,14 @@ interface InterServerEvents {}
 
 // for socket.on()
 interface ClientToServerEvents {
-    message: (message: MessageToServer) => void
+    message: (message: Message) => void
     addUsersToRoom: (usersToAdd: string[], roomName: string) => void
-    createNewPrivateRoom: (participant: string, callback: (response: string) => void) => void
-    createNewGroup: (participants: string[], displayName: string, callback: (response: string) => void) => void
+    createNewPrivateRoom: (participant: string, callback: (response: string | null) => void) => void
+    createNewGroup: (participants: string[], displayName: string, callback: (response: string | null) => void) => void
     roomSelected: (roomId: string) => void
     messagesRequested: (roomId: string) => void
     addParticipantsToGroup: (participants: string[], roomId: string, callback: (response: string) => void) => void
-    userSettingsUpdated: (newSettings: Settings) => void
+    userProfileUpdated: (newSettings: User) => void
 }
 
 interface SocketData {
@@ -85,65 +73,55 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
 
         const username = socket.data.username
 
-        const userRooms: Awaited<ReturnType<typeof getRoomsContainingUserWithRoomParticipantDetails>> = []
-
-        getRoomsContainingUserWithRoomParticipantDetails(username).then(rooms => {
-            if (rooms === undefined) return
-            userRooms.push(...rooms)
-            socket.emit('userRoomsUpdated', rooms)
-        })
-
-        getUserSettings(username).then(settings => {
-            socket.emit('userSettingsUpdated', settings)
-        })
-
         socket.join(username)
 
+        const joinedRooms: Room['roomId'][] = []
+        // Get all rooms user is participating in.
+        getUserRoomIDs(username).then(rooms =>
+            rooms.forEach(({ roomId }) => {
+                socket.join(roomId)
+                joinedRooms.push(roomId)
+            })
+        )
+
         socket.on('message', async message => {
-            io.to(message.roomId).emit('message', message)
-            // write to FS if multimedia
-            // put text/ path to multimedia
+            socket.broadcast.to(message.roomId).emit('message', message)
+            // TODO: notify everbody in the group about the new message by sending an emit('notify').
 
-            // const fo = createWriteStream('foobar.jpg').write(message.content)
-            // writeFile(`upload/${crypto.randomUUID()}.${}`, message.content)
+            try {
+                await addMessageToDB(message)
+            } catch (error) {
+                console.log('error uploading to server', error)
+            }
         })
-        // socket.on('message', async (targetRoomId, messageContent, type) => {
-        // io.to(targetRoomId).emit('message', targetRoomId, messageContent, username, type)
-
-        // Sync the broadcast and the insert call made to DB
-        // try {
-        //     await addMessageToDB(username, targetRoomId, messageContent, type)
-        // } catch (error) {
-        //     console.log('error uploading message to DB. Trying one more time.')
-        //     await addMessageToDB(username, targetRoomId, messageContent, type)
-        // }
-        // })
 
         socket.on('createNewPrivateRoom', async (participant, callback) => {
-            const roomsContainingUser = await getRoomsContainingUserWithRoomParticipantDetails(username)
-
-            // check if participants are already in a private room with current username. If they are not, then create a new room
-            const roomAlreadyExists = roomsContainingUser.some(room => {
-                return room.isMaxCapacityTwo && room.participants.some(p => p.username === participant)
-            })
-
-            if (roomAlreadyExists !== false) {
-                callback('Already In A Room With User')
-                return
-            }
-
             const participantExists = await getUserFromDB(participant)
             if (participantExists === null) {
                 callback('User does not exists')
                 return
             }
 
+            if ((await privateRoomExists(participant, username)) === true) {
+                callback('Already In A Room With User')
+                return
+            }
+
             try {
-                const room = await createPrivateRoomAndAddParticipants(username, participant)
+                const room = await createRoomForTwo(username, participant)
+
+                const users = await getUsersFromDB([username, participant])
+
                 if (room !== null) {
-                    userRooms.push(room)
-                    socket.emit('userRoomsUpdated', userRooms)
-                    callback('Success')
+                    io.to([participant, username]).emit('newRoomCreated', {
+                        ...room,
+                        participants: users,
+                    })
+                    socket.join(room.roomId)
+
+                    callback(null)
+                } else if (room === null) {
+                    callback('Unknown Server Error')
                 }
             } catch (err) {
                 console.log(err)
@@ -152,12 +130,21 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         })
 
         socket.on('createNewGroup', async (participantsArray, groupDisplayName, callback) => {
+            if (participantsArray.includes(username) === false) participantsArray.push(username)
             try {
-                const room = await createGroupAndAddParticipantsToGroup(participantsArray, groupDisplayName)
-                if (room !== null) {
-                    userRooms.push(room)
-                    socket.emit('userRoomsUpdated', userRooms)
-                    callback('Success')
+                const room = await createGroup(participantsArray, groupDisplayName)
+
+                const users = await getUsersFromDB(participantsArray)
+
+                if (room === null) {
+                    callback('Server Error')
+                } else if (room !== null) {
+                    io.to(participantsArray.toString()).emit('newRoomCreated', {
+                        ...room,
+                        participants: users,
+                    })
+                    socket.join(room.roomId)
+                    callback(null)
                 }
             } catch (error) {
                 console.log('error while creating group', error)
@@ -165,45 +152,29 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
             }
         })
 
-        socket.on('addParticipantsToGroup', async (participants, roomId) => {
-            if (userRooms.find(room => room.roomId === roomId)?.isMaxCapacityTwo === true) return
-            try {
-                const room = await addParticipantsToGroup(participants, roomId)
-                console.log(room)
-                if (room !== null) {
-                    socket.emit('userRoomUpdated', room)
-                    // also emit to the participants that they have been added to a new group
-                }
-            } catch (error) {
-                console.log('Encountered error while adding participants to group. ERR:', error)
-            }
-        })
-
-        socket.on('roomSelected', roomId => {
-            const room = userRooms.find(room => room.roomId === roomId)
-            if (room !== undefined) {
-                socket.emit('roomChanged', room)
-            }
-            socket.join(roomId)
-        })
-
-        socket.on('userSettingsUpdated', async newSettings => {
+        socket.on('userProfileUpdated', async user => {
             // If null (meaning value unchanged from last time) then send undefined
             // to model because undefined while updaing entry in DB is treated as no-change.
 
-            const displayName = newSettings.userDisplayName === null ? undefined : newSettings.userDisplayName
-            const displayImage =
-                newSettings.userDisplayImage === null ? undefined : Buffer.from(newSettings.userDisplayImage)
+            updateUser(username, user)
 
-            const settings = await updateUserSettings(username, displayName, displayImage)
-            socket.emit('userSettingsUpdated', settings)
+            // emit to room that the user is in.
+            socket.broadcast.in(joinedRooms).emit('userProfileUpdated', user)
         })
-
-        socket.on('messagesRequested', async roomId => {
-            if (userRooms.find(room => room.roomId === roomId) === undefined) return
-            const messages = await getAllMessagesFromRoom(roomId)
-            if (messages !== undefined) socket.emit('messagesRequested', messages)
-        })
+        // TODO: [temp comment]
+        // socket.on('addParticipantsToGroup', async (participants, roomId) => {
+        //     if (userRooms.find(room => room.roomId === roomId)?.isMaxCapacityTwo === true) return
+        //     try {
+        //         const room = await addParticipantsToGroup(participants, roomId)
+        //         console.log(room)
+        //         if (room !== null) {
+        //             socket.emit('userRoomUpdated', room)
+        //             // also emit to the participants that they have been added to a new group
+        //         }
+        //     } catch (error) {
+        //         console.log('Encountered error while adding participants to group. ERR:', error)
+        //     }
+        // })
 
         socket.on('disconnect', () => {})
     })
