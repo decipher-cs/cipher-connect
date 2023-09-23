@@ -1,20 +1,22 @@
-import { Avatar, Box, ButtonGroup, Collapse, Typography } from '@mui/material'
-import { memo, useContext, useEffect, useRef } from 'react'
+import { Box } from '@mui/material'
+import { useContext, useEffect, useRef } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
-import { imageBufferToURLOrEmptyString } from '../pages/Chat'
 import React, { useState } from 'react'
 import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
 import { MessageTile } from './MessageTile'
 import { ChatInputBar } from './ChatInputBar'
 import { RoomBanner } from './RoomBanner'
 import { Message } from '../types/prisma.client'
+import { MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
+import { Routes } from '../types/routes'
 
 export interface ChatDisplaySectionProps {
     chatMessageList: Message[]
-    setChatMessageList: React.Dispatch<React.SetStateAction<Message[]>>
     currRoom: RoomWithParticipants
-    socketObject: SocketWithCustomEvents
     setRoomInfoVisible: React.Dispatch<React.SetStateAction<boolean>>
+    socketObject: SocketWithCustomEvents
+    messageListDispatcher: React.Dispatch<MessageListAction>
+
 }
 
 export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
@@ -52,14 +54,15 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                             content={message.content}
                             // If newest message in the list, put ref on it to auto-scroll to bottom
                             autoScrollToBottomRef={i === props.chatMessageList.length - 1 ? scrollToBottomRef : null}
-                            messageContentType={message.contentType}
+                            contentType={message.contentType}
+                            MIME={message.MIME}
                         />
                     )
                 })}
             </Box>
 
             <ChatInputBar
-                setChatMessageList={props.setChatMessageList}
+                messageListDispatcher={props.messageListDispatcher}
                 currRoom={props.currRoom}
                 socketObject={props.socketObject}
             />

@@ -2,6 +2,7 @@ import { AudiotrackRounded, FilePresentRounded, ImageRounded, VideoCameraBackRou
 import { Button, Input, InputBase, ListItemIcon, ListItemText, Menu, MenuItem, MenuList } from '@mui/material'
 import React, { useState } from 'react'
 import { MessageContentType } from '../types/prisma.client'
+import { supportedExtensions } from '../types/supportedExtensions'
 
 export const MultimediaAttachmentMenu = (props: {
     anchorEl: HTMLElement | null
@@ -30,7 +31,7 @@ export const MultimediaAttachmentMenu = (props: {
                     <input
                         multiple
                         type='file'
-                        accept='audio/*'
+                        accept={supportedExtensions.audio.join(', ')}
                         hidden
                         onChange={e => props.handleUpload(e.target.files, MessageContentType.audio)}
                     />
@@ -44,7 +45,7 @@ export const MultimediaAttachmentMenu = (props: {
                     <input
                         multiple
                         type='file'
-                        accept='image/*'
+                        accept={supportedExtensions.image.join(', ')}
                         hidden
                         onChange={e => props.handleUpload(e.target.files, MessageContentType.image)}
                     />
@@ -58,7 +59,7 @@ export const MultimediaAttachmentMenu = (props: {
                     <input
                         multiple
                         type='file'
-                        accept='video/mp4'
+                        accept={supportedExtensions.video.join(', ')}
                         hidden
                         onChange={e => props.handleUpload(e.target.files, MessageContentType.video)}
                     />
@@ -68,8 +69,19 @@ export const MultimediaAttachmentMenu = (props: {
                     <ListItemText>Video</ListItemText>
                 </MenuItem>
 
-                {/* TODO: implement type 'application/*' */}
-                {/* <FilePresentRounded /> */}
+                <MenuItem component='label'>
+                    <input
+                        multiple
+                        type='file'
+                        accept={supportedExtensions.file.join(', ')}
+                        hidden
+                        onChange={e => props.handleUpload(e.target.files, MessageContentType.file)}
+                    />
+                    <ListItemIcon>
+                        <FilePresentRounded />
+                    </ListItemIcon>
+                    <ListItemText>File</ListItemText>
+                </MenuItem>
             </MenuList>
         </Menu>
     )

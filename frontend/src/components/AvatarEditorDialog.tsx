@@ -14,12 +14,18 @@ import {
     Stack,
     Typography,
 } from '@mui/material'
+import { useFetch } from '../hooks/useFetch'
+import { Routes } from '../types/routes'
+import { SocketWithCustomEvents } from '../types/socket'
 
 export const AvatarEditorDialog = (props: {
     open: boolean
     imgSrc: File | string
-    editorRef: React.RefObject<AvatarEditor>
     handleClose: () => void
+    handleSubmit: (file: File | null) => void
+
+    // avatarIdentifier: { roomId: string } | { username: string }
+    // socketObject: SocketWithCustomEvents
 }) => {
     const [config, setConfig] = useState({
         image: props.imgSrc,
@@ -49,6 +55,8 @@ export const AvatarEditorDialog = (props: {
         borderRadius: 999,
     })
 
+    const ref = useRef<AvatarEditor>(null)
+
     return (
         <Dialog fullScreen open={props.open}>
             <DialogTitle>Edit Avatar</DialogTitle>
@@ -70,9 +78,6 @@ export const AvatarEditorDialog = (props: {
                                 { value: 3, label: 3 },
                             ]}
                         />
-                        <br />
-                        <br />
-                        <br />
                         <Typography>Rotate</Typography>
                         <Slider
                             onChange={(_, rotate) => Array.isArray(rotate) || setConfig(p => ({ ...p, rotate }))}
@@ -88,14 +93,19 @@ export const AvatarEditorDialog = (props: {
                             ]}
                         />
                     </Stack>
-                    <AvatarEditor {...config} ref={props.editorRef} />
+                    {/* <AvatarEditor {...config} ref={props.editorRef} /> */}
+                    <AvatarEditor {...config} ref={ref} />
                 </Stack>
             </DialogContent>
             <DialogActions>
                 <Button onClick={props.handleClose}>Cancel</Button>
                 <Button
                     variant='contained'
-                    onClick={() => {
+                    onClick={async () => {
+                        ref.current?.getImage().toBlob(blob => {
+                            const file = blob && new File([blob], 'avatar', { type: blob.type })
+                            props.handleSubmit(file)
+                        })
                         props.handleClose()
                     }}
                 >

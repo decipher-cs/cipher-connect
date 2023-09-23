@@ -21,8 +21,7 @@ import {
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
-import { ForwardedRef, forwardRef, Ref, useState } from 'react'
-import { imageBufferToURLOrEmptyString } from '../pages/Chat'
+import { ForwardedRef, forwardRef, Ref, useRef, useState } from 'react'
 import {
     ArrowForwardRounded,
     CancelRounded,
@@ -34,59 +33,73 @@ import {
 import { StyledTextField } from './StyledTextField'
 import { EditableText } from './EditableText'
 import { Balancer } from 'react-wrap-balancer'
+import { AvatarEditorDialog } from './AvatarEditorDialog'
+import AvatarEditor from 'react-avatar-editor'
+import { useFetch } from '../hooks/useFetch'
+import { Routes } from '../types/routes'
+import { RoomActions, RoomActionType } from '../reducer/roomReducer'
 
 interface RoomInfoProps {
     room: RoomWithParticipants
     socketObject: SocketWithCustomEvents
     setRoomInfoVisible: React.Dispatch<React.SetStateAction<boolean>>
+    roomDispatcher: (value: RoomActions) => void
 }
 
 export const RoomInfo = (props: RoomInfoProps) => {
     const roomType = props.room.isMaxCapacityTwo === true ? 'private' : 'group'
 
-    const [roomAvatar, setRoomAvatar] = useState(imageBufferToURLOrEmptyString(props.room.roomDisplayImage))
+    const roomAvatar = props.room.roomDisplayImagePath
+        ? import.meta.env.VITE_AVATAR_STORAGE_URL + props.room.roomDisplayImagePath
+        : ''
 
-    const [roomName, setRoomName] = useState(props.room.roomDisplayName)
+    const [openAvatarEditor, setOpenAvatarEditor] = useState(false)
 
-    const handleImageUpload = async (fileList: FileList | null) => {
-        if (fileList === null || fileList.length === 0) return
-        const URL = import.meta.env.PROD ? import.meta.env.VITE_SERVER_PROD_URL : import.meta.env.VITE_SERVER_DEV_URL
+    const handleAvatarEditorToggle = () => setOpenAvatarEditor(p => !p)
 
-        const image = fileList[0]
-        const imageFormData = new FormData()
-        imageFormData.append('avatar', image)
-        imageFormData.append('roomId', props.room.roomId)
+    const [selectedImage, setSelectedImage] = useState<File | null>(null)
 
-        const res = await fetch(`${URL}/updateGroupImage`, {
-            method: 'POST',
-            body: imageFormData,
-            credentials: 'include',
-            headers: {
-                Accept: 'multipart/form-data',
-            },
+    const { startFetching: uploadAvater } = useFetch<string>(Routes.post.avatar, true)
+
+    const handleImageUpload = async (newAvatar: File) => {
+        if (!newAvatar) return
+
+        const roomId = props.room.roomId
+
+        const fd = new FormData()
+
+        fd.append('avatar', newAvatar)
+        fd.append('roomId', roomId)
+
+        const newPath = await uploadAvater({ body: fd, method: 'POST' })
+
+        props.roomDispatcher({
+            type: RoomActionType.ALTER_ROOM_PROPERTIES,
+            roomId,
+            newRoomProperties: { roomDisplayImagePath: newPath },
         })
-        if (res.statusText.toLowerCase() === 'ok') {
-            const blob = await res.blob()
-            const file = new File([blob], 'avatar')
-            setRoomAvatar(imageBufferToURLOrEmptyString(file))
-        }
+
+        props.socketObject.emit('roomUpdated', { roomDisplayImagePath: newPath })
     }
 
     return (
         <Box
             sx={{
                 width: 'min(25vw, 450px)',
-                height: '100%',
+                minHeight: '100%',
+
+                alignContent: 'flex-start',
 
                 display: 'grid',
                 px: 3,
-
-                overflow: 'visible',
+                gap: 1.3,
             }}
         >
             <Stack direction='row' sx={{ alignItems: 'center' }}>
                 <InfoRounded sx={{ justifySelf: 'flex-start' }} />
+
                 <Typography sx={{ justifySelf: 'flex-start' }}>Room Info</Typography>
+
                 <IconButton
                     onClick={() => props.setRoomInfoVisible(false)}
                     sx={{ justifySelf: 'flex-end', ml: 'auto' }}
@@ -94,23 +107,41 @@ export const RoomInfo = (props: RoomInfoProps) => {
                     <CancelRounded />
                 </IconButton>
             </Stack>
+
+            {selectedImage && (
+                <AvatarEditorDialog
+                    imgSrc={selectedImage}
+                    handleClose={handleAvatarEditorToggle}
+                    open={openAvatarEditor}
+                    handleSubmit={file => {
+                        setSelectedImage(null)
+                        file && handleImageUpload(file)
+                    }}
+                    // avatarIdentifier={{ roomId: props.room.roomId }}
+                    // socketObject={props.socketObject}
+                />
+            )}
             <Tooltip title='Click to change image'>
                 <IconButton component='label' sx={{ justifySelf: 'center', alignSelf: 'center' }}>
-                    <Avatar src={roomAvatar} sx={{ height: 124, width: 124 }} />
+                    <Avatar src={roomAvatar} sx={{ height: 86, width: 86 }} />
 
                     <input
                         type='file'
                         accept='image/*'
                         hidden
                         onChange={e => {
-                            handleImageUpload(e.target.files)
+                            if (!e.target.files || e.target.files.length <= 0) return
+                            handleAvatarEditorToggle()
+                            setSelectedImage(e.target.files[0])
                         }}
                     />
                 </IconButton>
             </Tooltip>
-            <Typography align='center' variant='h6'>
-                {props.room.roomDisplayName}
-            </Typography>
+            {props.room.isMaxCapacityTwo === false ? (
+                <Typography align='center' variant='h6'>
+                    {props.room.roomDisplayName}
+                </Typography>
+            ) : null}
             {/* <EditableText text={roomName} setText={setRoomName} /> */}
             <Box sx={{ height: 'fit-content', overflowY: 'auto' }}>
                 <Typography>Description:</Typography>

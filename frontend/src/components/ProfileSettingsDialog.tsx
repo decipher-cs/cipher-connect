@@ -57,24 +57,21 @@ export const ProfileSettingsDialog = (props: ProfileSettingsDialogProps) => {
 
     const { startFetching: uploadAvater } = useFetch<string>(Routes.post.avatar, true)
 
-    const [selectedImage, setSelectedImage] = useState<File>()
+    const [selectedImage, setSelectedImage] = useState<File | null>(null)
 
     const [openAvatarEditor, setOpenAvatarEditor] = useState(false)
 
     const handleAvatarEditorToggle = () => setOpenAvatarEditor(p => !p)
 
-    const handleImageUpload = async () => {
-        const file = selectedImage
-        if (!file) return
+    const handleImageUpload = async (newAvatar: File) => {
+        if (!newAvatar) return
 
         const fd = new FormData()
 
-        fd.append('avatar', file)
+        fd.append('avatar', newAvatar)
         fd.append('username', username)
 
         const newPath = await uploadAvater({ body: fd, method: 'POST' })
-
-        setSelectedImage(undefined)
 
         props.socketObject.emit('userProfileUpdated', { ...props.userProfile, avatarPath: newPath })
 
@@ -112,12 +109,15 @@ export const ProfileSettingsDialog = (props: ProfileSettingsDialogProps) => {
             <Dialog open={props.dialogOpen} onClose={handleClose} fullWidth>
                 <DialogTitle>Profile Settings</DialogTitle>
 
-                {selectedImage !== undefined ? (
+                {selectedImage ? (
                     <AvatarEditorDialog
                         imgSrc={selectedImage}
                         handleClose={handleAvatarEditorToggle}
                         open={openAvatarEditor}
-                        editorRef={ref}
+                        handleSubmit={file => {
+                            setSelectedImage(null)
+                            file && handleImageUpload(file)
+                        }}
                     />
                 ) : null}
 
@@ -137,8 +137,8 @@ export const ProfileSettingsDialog = (props: ProfileSettingsDialogProps) => {
                         <ListItem>
                             <ListItemText>Change Picture</ListItemText>
 
-                            <Button variant='outlined' component={'label'} startIcon={<FaceRounded />}>
-                                select
+                            <Button variant='outlined' component={'label'} startIcon={<CloudUploadRounded />}>
+                                Upload
                                 <input
                                     type='file'
                                     accept='image/*'
@@ -151,15 +151,6 @@ export const ProfileSettingsDialog = (props: ProfileSettingsDialogProps) => {
                                         }
                                     }}
                                 />
-                            </Button>
-                            <Button
-                                onClick={handleImageUpload}
-                                variant='outlined'
-                                sx={{ ml: 1 }}
-                                disabled={selectedImage === undefined}
-                                startIcon={<CloudUploadRounded />}
-                            >
-                                Upload
                             </Button>
                         </ListItem>
                         <ListItem>

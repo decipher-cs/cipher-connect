@@ -9,11 +9,13 @@ import { StyledTextField } from './StyledTextField'
 import { CredentialContext } from '../contexts/Credentials'
 import { MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
 import { RoomActionType } from '../reducer/roomReducer'
-import axios from 'axios'
 import { Routes } from '../types/routes'
 import { useFetch } from '../hooks/useFetch'
 import filetypeinfo, { filetypeextension, filetypemime, filetypename } from 'magic-bytes.js'
-import pattern from 'magic-bytes.js/dist/pattern-tree.snapshot'
+
+const mimeToFileType = (mime: string) => {
+    return mime.split('/')[0]
+}
 
 interface ChatInputBarProps {
     currRoom: RoomWithParticipants
@@ -32,7 +34,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
 
     const audioRecorder = useAudioRecorder()
 
-    const deliverMessage = useFetch<string>(Routes.media, true)
+    const deliverMessage = useFetch<string>(Routes.post.media, true)
 
     type HandleMessageDeliveryArgs =
         | {
@@ -89,6 +91,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
             // TODO: throw error or notification
             if (extension === undefined || mime === undefined) return
             if (extension.length === 0 || mime.length === 0) return
+            if (mimeToFileType(mime) !== mimeToFileType(file.type)) return
 
             file = new File([file], crypto.randomUUID() + extension, { type: mime })
 

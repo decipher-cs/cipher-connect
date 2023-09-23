@@ -6,12 +6,14 @@ import { StyledTextField } from './StyledTextField'
 import { Form, useFormik } from 'formik'
 import { RoomActions } from '../reducer/roomReducer'
 import { RoomListItem } from './RoomListItem'
+import { MessageListAction } from '../reducer/messageListReducer'
 
 interface MessageSidebarProps {
     socketObject: SocketWithCustomEvents
     roomDispatcher: React.Dispatch<RoomActions>
     rooms: RoomWithParticipants[]
     selectedRoomIndex: number | null
+    messageListDispatcher: React.Dispatch<MessageListAction>
 }
 
 // TODO: Incorporate yup for string validation
@@ -21,33 +23,42 @@ const validateForm = (values: { user: string } | { groupDisplayName: string }) =
     const input = Object.values(values)[0]
     const key = Object.keys(values)[0]
 
-    if (input.length < 3) {
-        errors[key] = 'Minimum 3 characters needed'
-    } else if (input.length > 50) {
-        errors[key] = 'Maximum 50 characters allowed'
+    const MAX_LEN = 16
+    const MIN_LEN = 3
+
+    if (input.length < MIN_LEN) {
+        errors[key] = `Minimum ${MIN_LEN} characters needed`
+    } else if (input.length > MAX_LEN) {
+        errors[key] = `Maximum ${MAX_LEN} characters allowed`
     }
 
     return errors
 }
 
 export const MessageSidebar = (props: MessageSidebarProps) => {
-    const [showTextFields, setShowTextFields] = useState(true)
+    const [showTextFields, setShowTextFields] = useState(false)
 
     const formikAddUser = useFormik({
         initialValues: { user: '' },
         validate: validateForm,
         onSubmit: async ({ user }) => {
             props.socketObject.emit('createNewPrivateRoom', user.trim(), response => {
-                response && formikAddUser.setFieldError('user', response)
+                if (response === null) {
+                    // TODO: reset form dirty so it doesn't show validation error after submitting
+                    formikAddUser.resetForm()
+                } else formikAddUser.setFieldError('user', response)
             })
+            formikAddUser.resetForm()
         },
     })
     const formikCreateGroup = useFormik({
         initialValues: { groupDisplayName: '' },
         validate: validateForm,
         onSubmit: async ({ groupDisplayName }) => {
-            props.socketObject.emit('createNewGroup', [], groupDisplayName.trim(), response => {
-                response && formikCreateGroup.setFieldError('groupDisplayName', response)
+            props.socketObject.emit('createNewGroup', [], groupDisplayName, response => {
+                response === null
+                    ? formikCreateGroup.resetForm()
+                    : formikCreateGroup.setFieldError('groupDisplayName', response)
             })
         },
     })
@@ -113,10 +124,16 @@ export const MessageSidebar = (props: MessageSidebarProps) => {
                     return (
                         <RoomListItem
                             key={i}
-                            currentRoomIndex={i}
+
+                            roomIndex={i}
+
                             selectedRoomIndex={props.selectedRoomIndex}
+
                             room={room}
+
                             roomDispatcher={props.roomDispatcher}
+
+                            messageListDispatcher={props.messageListDispatcher}
                         />
                     )
                 })}
