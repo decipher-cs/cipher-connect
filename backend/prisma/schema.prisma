@@ -13,15 +13,14 @@ datasource db {
 
 model RefreshToken {
   tokenOwnerIdRelation User   @relation(fields: [username], references: [username])
-  tokenValue           String @id @map("token_value")
-  username             String @map("username") @db.VarChar(16)
-
-  @@map("refresh_token")
+  tokenValue           String @id
+  username             String
 }
 
 model User {
-  username   String   @id @unique @db.VarChar(16)
-  createTime DateTime @default(now()) @map("create_time") @db.Timestamp(0)
+  key        String   @id @unique @default(cuid())
+  username   String   @unique @db.VarChar(16)
+  createTime DateTime @default(now()) @db.Timestamp(0)
 
   displayName String  @db.VarChar(16)
   avatarPath  String? @db.MediumText
@@ -37,11 +36,9 @@ model User {
 model PasswordHash {
   key      Int    @id @unique @default(autoincrement())
   username String @unique @db.VarChar(16)
-  hash     String @map("hash") @db.VarChar(60)
+  hash     String @db.VarChar(60)
 
   user User @relation(fields: [username], references: [username])
-
-  @@map("password_hash")
 }
 
 model RoomConfig {
@@ -57,7 +54,6 @@ model RoomConfig {
   userRoom UserRoom?
 
   @@id([username, roomId])
-  @@map("room_config")
 }
 
 enum RoomType {
@@ -88,7 +84,6 @@ model UserRoom {
   roomConfig RoomConfig @relation(fields: [username, roomId], references: [username, roomId], onDelete: Cascade)
 
   @@id([username, roomId])
-  @@map("user_room")
 }
 
 enum MessageContentType {
@@ -106,7 +101,7 @@ model Message {
   content        String             @db.MediumText
   createdAt      DateTime           @default(now())
   editedAt       DateTime?          @updatedAt
-  contentType    MessageContentType @map("content_type")
+  contentType    MessageContentType
   MIME           String?            @db.MediumText
 
   sender User @relation(fields: [senderUsername], references: [username])
