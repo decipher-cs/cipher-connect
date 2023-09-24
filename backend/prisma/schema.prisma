@@ -11,76 +11,84 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model refreshToken {
-  tokenOwnerIdRelation user   @relation(fields: [username], references: [username])
+model RefreshToken {
+  tokenOwnerIdRelation User   @relation(fields: [username], references: [username])
   tokenValue           String @id @map("token_value")
   username             String @map("username") @db.VarChar(16)
 
   @@map("refresh_token")
 }
 
-model user {
+model User {
   username   String   @id @unique @db.VarChar(16)
   createTime DateTime @default(now()) @map("create_time") @db.Timestamp(0)
 
   displayName String  @db.VarChar(16)
   avatarPath  String? @db.MediumText
 
-  refreshTokens refreshToken[]
-  message       message[]
-  roomConfig    roomConfig[]
-  participants  userRoomParticipation[]
-  passwordHash  passwordHash?
+  refreshTokens RefreshToken[]
+  message       Message[]
+  roomConfig    RoomConfig[]
+  userRoom      UserRoom[]
+  passwordHash  PasswordHash?
+  rooms         Room[]
 }
 
-model passwordHash {
+model PasswordHash {
   key      Int    @id @unique @default(autoincrement())
   username String @unique @db.VarChar(16)
   hash     String @map("hash") @db.VarChar(60)
 
-  usernameRelation user @relation(fields: [username], references: [username])
+  user User @relation(fields: [username], references: [username])
 
   @@map("password_hash")
 }
 
-model roomConfig {
-  key      Int    @id @unique @default(autoincrement())
-  username String @db.VarChar(16)
+model RoomConfig {
+  username String
   roomId   String
 
-  isHidden Boolean @default(false)
+  isHidden            Boolean @default(false)
+  hasUnreadMessages   Boolean @default(true)
+  isNotificationMuted Boolean @default(false)
 
-  userRelation   user @relation(fields: [username], references: [username])
-  roomIdRelation room @relation(fields: [roomId], references: [roomId])
+  user     User      @relation(fields: [username], references: [username], onDelete: Cascade)
+  room     Room      @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
+  userRoom UserRoom?
 
-  @@unique([username, roomId])
+  @@id([username, roomId])
   @@map("room_config")
 }
 
-model room {
+enum RoomType {
+  private
+  group
+}
+
+model Room {
   roomId               String  @id @default(cuid())
   roomDisplayName      String? @db.VarChar(16)
   roomDisplayImagePath String? @db.MediumText
 
-  // Following determines if room is private for communication b/w 2 
-  // people or if room is a group for any no. of people
-  isMaxCapacityTwo Boolean @default(false)
+  roomType RoomType
 
-  message        message[]
-  userRoomConfig roomConfig[]
-  participants   userRoomParticipation[]
+  message        Message[]
+  userRoomConfig RoomConfig[]
+  userRoom       UserRoom[]
+  user           User[]
 }
 
-model userRoomParticipation {
-  key      Int    @id @unique @default(autoincrement())
+model UserRoom {
   username String
   roomId   String
+  configId Int    @unique
 
-  usernameRelation user @relation(fields: [username], references: [username])
-  roomIdRelation   room @relation(fields: [roomId], references: [roomId])
+  user       User       @relation(fields: [username], references: [username], onDelete: Cascade)
+  room       Room       @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
+  roomConfig RoomConfig @relation(fields: [username, roomId], references: [username, roomId], onDelete: Cascade)
 
-  @@unique([username, roomId])
-  @@map("user_room_participation")
+  @@id([username, roomId])
+  @@map("user_room")
 }
 
 enum MessageContentType {
@@ -91,7 +99,7 @@ enum MessageContentType {
   file
 }
 
-model message {
+model Message {
   key            String             @id @unique @default(uuid())
   senderUsername String
   roomId         String
@@ -101,6 +109,6 @@ model message {
   contentType    MessageContentType @map("content_type")
   MIME           String?            @db.MediumText
 
-  sender user @relation(fields: [senderUsername], references: [username])
-  room   room @relation(fields: [roomId], references: [roomId])
+  sender User @relation(fields: [senderUsername], references: [username])
+  room   Room @relation(fields: [roomId], references: [roomId])
 }

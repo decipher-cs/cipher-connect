@@ -3,66 +3,72 @@
 //// ------------------------------------------------------
 
 Table refresh_token {
-  tokenOwnerIdRelation user [not null]
+  tokenOwnerIdRelation User [not null]
   tokenValue String [pk]
   username String [not null]
 }
 
-Table user {
+Table User {
   username String [pk]
-  userDisplayName String [unique, not null]
-  userDisplayImage Bytes
   createTime DateTime [default: `now()`, not null]
+  displayName String [not null]
+  avatarPath String
   refreshTokens refresh_token [not null]
-  message message [not null]
+  message Message [not null]
   roomConfig room_config [not null]
-  participants user_room_participation [not null]
+  userRoom user_room [not null]
   passwordHash password_hash
+  rooms Room [not null]
 }
 
 Table password_hash {
   key Int [pk, increment]
   username String [unique, not null]
   hash String [not null]
-  usernameRelation user [not null]
+  user User [not null]
 }
 
 Table room_config {
-  key Int [pk, increment]
   username String [not null]
   roomId String [not null]
   isHidden Boolean [not null, default: false]
-  userRelation user [not null]
-  roomIdRelation room [not null]
+  hasUnreadMessages Boolean [not null, default: true]
+  isNotificationMuted Boolean [not null, default: false]
+  user User [not null]
+  room Room [not null]
+  userRoom user_room
 
   indexes {
-    (username, roomId) [unique]
+    (username, roomId) [pk]
   }
 }
 
-Table room {
+Table Room {
   roomId String [pk]
-  roomDisplayName String [not null]
-  roomDisplayImage Bytes
+  roomDisplayName String
+  roomDisplayImagePath String
   isMaxCapacityTwo Boolean [not null, default: false]
-  message message [not null]
+  roomType RoomType [not null]
+  message Message [not null]
   userRoomConfig room_config [not null]
-  participants user_room_participation [not null]
+  userRoom user_room [not null]
+  user User [not null]
 }
 
-Table user_room_participation {
-  key Int [pk, increment]
+Table user_room {
   username String [not null]
   roomId String [not null]
-  usernameRelation user [not null]
-  roomIdRelation room [not null]
+  configId Int [unique, not null]
+  user User [not null]
+  room Room [not null]
+  roomConfig room_config [not null]
 
   indexes {
-    (username, roomId) [unique]
+    (username, roomId) [pk]
   }
 }
 
-Table message {
+Table Message {
   key String [pk]
   senderUsername String [not null]
   roomId String [not null]
@@ -70,8 +76,14 @@ Table message {
   createdAt DateTime [default: `now()`, not null]
   editedAt DateTime
   contentType MessageContentType [not null]
-  sender user [not null]
-  room room [not null]
+  MIME String
+  sender User [not null]
+  room Room [not null]
+}
+
+Enum RoomType {
+  private
+  group
 }
 
 Enum MessageContentType {
@@ -79,20 +91,23 @@ Enum MessageContentType {
   video
   text
   image
+  file
 }
 
-Ref: refresh_token.username > user.username
+Ref: refresh_token.username > User.username
 
-Ref: password_hash.username - user.username
+Ref: password_hash.username - User.username
 
-Ref: room_config.username > user.username
+Ref: room_config.username > User.username [delete: Cascade]
 
-Ref: room_config.roomId > room.roomId
+Ref: room_config.roomId > Room.roomId [delete: Cascade]
 
-Ref: user_room_participation.username > user.username
+Ref: user_room.username > User.username [delete: Cascade]
 
-Ref: user_room_participation.roomId > room.roomId
+Ref: user_room.roomId > Room.roomId [delete: Cascade]
 
-Ref: message.senderUsername > user.username
+Ref: user_room.(username, roomId) - room_config.(username, roomId) [delete: Cascade]
 
-Ref: message.roomId > room.roomId
+Ref: Message.senderUsername > User.username
+
+Ref: Message.roomId > Room.roomId
