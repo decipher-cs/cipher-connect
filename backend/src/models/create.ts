@@ -24,49 +24,31 @@ export const createNewUser = async (username: string, passwordHash: string) => {
     }
 }
 
-
 export const addRefreshToken = async (username: string, token: string) => {
     const refreshToken = await prisma.refreshToken.create({ data: { username, tokenValue: token } })
     return refreshToken
 }
-export const createRoomForTwo = async (participant1: string, participant2: string) => {
+export const createPrivateRoom = async (participant1: string, participant2: string) => {
     return await prisma.room.create({
         data: {
-            isMaxCapacityTwo: true,
-            participants: {
-                createMany: { skipDuplicates: true, data: [{ username: participant1 }, { username: participant2 }] },
-            },
+            roomType: 'private',
+            user: { connect: [{ username: participant1 }, { username: participant2 }] },
         },
     })
 }
-export const addParticipantsToPrivateRoom = async (participant1: string, participant2: string, roomId: string) => {
-    return prisma.userRoomParticipation.createMany({
-        data: [
-            { username: participant1, roomId },
-            { username: participant2, roomId },
-        ],
-    })
-}
-export const createRoomForMany = async (roomDisplayName: string) => {
+
+export const createGroup = async (usernames: User['username'][], roomDisplayName: string) => {
     return prisma.room.create({
         data: {
             roomDisplayName,
-            isMaxCapacityTwo: false,
-        },
-    })
-}
-export const createGroup = async (participants: string[], roomDisplayName: string) => {
-    const usernames = participants.map(username => ({ username }))
-    return await prisma.room.create({
-        data: {
-            isMaxCapacityTwo: false,
-            roomDisplayName,
-            participants: {
-                createMany: { skipDuplicates: true, data: usernames },
+            roomType: 'group',
+            user: {
+                connect: usernames.map(username => ({ username })),
             },
         },
     })
 }
+
 export const addMessageToDB = async (message: Message) => {
     return await prisma.message.create({ data: message })
 }
