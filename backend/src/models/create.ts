@@ -28,6 +28,16 @@ export const addRefreshToken = async (username: string, token: string) => {
     const refreshToken = await prisma.refreshToken.create({ data: { username, tokenValue: token } })
     return refreshToken
 }
+
+export const createUserRoom = async (username: string, roomId: string) => {
+    const userRoom = await prisma.userRoom.create({
+        data: {
+            roomId,
+            username,
+        },
+    })
+}
+
 export const createPrivateRoom = async (participant1: string, participant2: string) => {
     return await prisma.room.create({
         data: {
