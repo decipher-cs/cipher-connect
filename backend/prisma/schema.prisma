@@ -18,7 +18,7 @@ model RefreshToken {
 }
 
 model User {
-  key        String   @id @unique @default(cuid())
+  userId     String   @id @unique @default(cuid())
   username   String   @unique @db.VarChar(16)
   createTime DateTime @default(now()) @db.Timestamp(0)
 
@@ -34,7 +34,7 @@ model User {
 }
 
 model PasswordHash {
-  key      Int    @id @unique @default(autoincrement())
+  id       Int    @id @unique @default(autoincrement())
   username String @unique @db.VarChar(16)
   hash     String @db.VarChar(60)
 
@@ -51,6 +51,7 @@ model RoomConfig {
 
   user     User      @relation(fields: [username], references: [username], onDelete: Cascade)
   room     Room      @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
+  // userRoom UserRoom @relation(fields: [username, roomId], references: [username, roomId])
   userRoom UserRoom?
 
   @@id([username, roomId])
@@ -62,9 +63,9 @@ enum RoomType {
 }
 
 model Room {
-  roomId               String  @id @default(cuid())
-  roomDisplayName      String? @db.VarChar(16)
-  roomDisplayImagePath String? @db.MediumText
+  roomId          String  @id @default(cuid())
+  roomDisplayName String? @db.VarChar(16)
+  roomAvatar      String? @db.MediumText
 
   roomType RoomType
 
@@ -77,7 +78,10 @@ model Room {
 model UserRoom {
   username String
   roomId   String
-  configId Int    @unique
+
+  joinedAt          DateTime @default(now())
+  isAdmin           Boolean  @default(false)
+  hasUnreadMessages Boolean  @default(true)
 
   user       User       @relation(fields: [username], references: [username], onDelete: Cascade)
   room       Room       @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
@@ -95,15 +99,16 @@ enum MessageContentType {
 }
 
 model Message {
-  key            String             @id @unique @default(uuid())
-  senderUsername String
-  roomId         String
-  content        String             @db.MediumText
-  createdAt      DateTime           @default(now())
-  editedAt       DateTime?          @updatedAt
-  contentType    MessageContentType
-  MIME           String?            @db.MediumText
+  key          String             @id @unique @default(cuid())
+  senderUserId String
+  roomId       String
+  content      String             @db.MediumText
+  createdAt    DateTime           @default(now())
+  editedAt     DateTime?          @updatedAt
+  contentType  MessageContentType
+  // MIME           String?            @db.MediumText
 
-  sender User @relation(fields: [senderUsername], references: [username])
-  room   Room @relation(fields: [roomId], references: [roomId])
+  // sender User @relation(fields: [senderUsername], references: [username])
+  sender User @relation(fields: [senderUserId], references: [username], onDelete: Cascade)
+  room   Room @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
 }
