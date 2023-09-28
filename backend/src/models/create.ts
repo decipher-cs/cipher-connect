@@ -30,7 +30,7 @@ export const addRefreshToken = async (username: string, token: string) => {
 }
 
 export const createUserRoom = async (username: string, roomId: string) => {
-    const userRoom = await prisma.userRoom.create({
+    return await prisma.userRoom.create({
         data: {
             roomId,
             username,
@@ -43,6 +43,16 @@ export const createPrivateRoom = async (participant1: string, participant2: stri
         data: {
             roomType: 'private',
             user: { connect: [{ username: participant1 }, { username: participant2 }] },
+            userRoomConfig: {
+                createMany: {
+                    data: [{ username: participant1 }, { username: participant2 }],
+                },
+            },
+            userRoom: {
+                createMany: {
+                    data: [{ username: participant1 }, { username: participant2 }],
+                },
+            },
         },
     })
 }
@@ -54,6 +64,16 @@ export const createGroup = async (usernames: User['username'][], roomDisplayName
             roomType: 'group',
             user: {
                 connect: usernames.map(username => ({ username })),
+            },
+            userRoomConfig: {
+                createMany: {
+                    data: usernames.map(username => ({ username })),
+                },
+            },
+            userRoom: {
+                createMany: {
+                    data: usernames.map(username => ({ username })),
+                },
             },
         },
     })
