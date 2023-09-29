@@ -46,7 +46,7 @@ model RoomConfig {
   roomId   String
 
   isHidden            Boolean @default(false)
-  hasUnreadMessages   Boolean @default(true)
+  isBlocked           Boolean @default(false)
   isNotificationMuted Boolean @default(false)
 
   user     User      @relation(fields: [username], references: [username], onDelete: Cascade)
@@ -63,11 +63,12 @@ enum RoomType {
 }
 
 model Room {
-  roomId          String  @id @default(cuid())
-  roomDisplayName String? @db.VarChar(16)
-  roomAvatar      String? @db.MediumText
+  roomId String @id @default(cuid())
 
   roomType RoomType
+
+  roomDisplayName String? @db.VarChar(16)
+  roomAvatar      String? @db.MediumText
 
   message        Message[]
   userRoomConfig RoomConfig[]
@@ -99,16 +100,15 @@ enum MessageContentType {
 }
 
 model Message {
-  key          String             @id @unique @default(cuid())
-  senderUserId String
-  roomId       String
-  content      String             @db.MediumText
-  createdAt    DateTime           @default(now())
-  editedAt     DateTime?          @updatedAt
-  contentType  MessageContentType
+  key            String             @id @unique @default(cuid())
+  senderUsername String
+  roomId         String
+  content        String             @db.MediumText
+  createdAt      DateTime           @default(now())
+  editedAt       DateTime?          @updatedAt
+  contentType    MessageContentType
   // MIME           String?            @db.MediumText
 
-  // sender User @relation(fields: [senderUsername], references: [username])
-  sender User @relation(fields: [senderUserId], references: [username], onDelete: Cascade)
+  sender User @relation(fields: [senderUsername], references: [username], onDelete: Cascade)
   room   Room @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
 }
