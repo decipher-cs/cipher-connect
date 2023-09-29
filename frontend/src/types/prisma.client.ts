@@ -1,79 +1,74 @@
 /**
- * Model refreshToken
+ * Model RefreshToken
  *
  */
-export type refreshToken = {
+export type RefreshToken = {
     tokenValue: string
     username: string
 }
 
 /**
- * Model user
+ * Model User
  *
  */
-export type user = {
+export type User = {
+    userId: string
     username: string
     createTime: Date
-}
-
-/**
- * Model userSettings
- *
- */
-export type userSettings = {
-    key: number
     displayName: string
-    profilePicturePath: string | null
-    username: string
+    avatarPath: string | null
 }
 
 /**
- * Model passwordHash
+ * Model PasswordHash
  *
  */
-export type passwordHash = {
-    key: number
+export type PasswordHash = {
+    id: number
     username: string
     hash: string
 }
 
 /**
- * Model roomConfig
+ * Model RoomConfig
  *
  */
-export type roomConfig = {
-    key: number
+export type RoomConfig = {
     username: string
     roomId: string
     isHidden: boolean
+    hasUnreadMessages: boolean
+    isNotificationMuted: boolean
 }
 
 /**
- * Model room
+ * Model Room
  *
  */
-export type room = {
+export type Room = {
     roomId: string
-    roomDisplayName: string
-    roomDisplayImagePath: string | null
-    isMaxCapacityTwo: boolean
+    roomDisplayName: string | null
+    roomAvatar: string | null
+    roomType: RoomType
 }
 
 /**
- * Model userRoomParticipation
+ * Model UserRoom
  *
  */
-export type userRoomParticipation = {
-    key: number
+export type UserRoom = {
     username: string
     roomId: string
+    joinedAt: Date
+    isAdmin: boolean
+    hasUnreadMessages: boolean
 }
 
 /**
- * Model message
+ * Model Message
  *
  */
-export type message = {
+export type Message = {
     key: string
     senderUsername: string
     roomId: string
@@ -81,10 +76,7 @@ export type message = {
     createdAt: Date
     editedAt: Date | null
     contentType: MessageContentType
-    extension: string | null
 }
-
-// CUSTOM TYPES //
 
 /**
  * Enums
@@ -98,37 +90,15 @@ export enum MessageContentType {
     file = 'file',
 }
 
-export type User = user
+export enum RoomType {
+    private = 'private',
+    group = 'group',
+}
 
-export type UserSettings = userSettings
+export type UserWithoutID = Omit<User, 'userId'>
 
-export type PasswordHash = passwordHash
+export type RoomWithParticipants = Room & { participants: UserWithoutID[] }
 
-export type RoomConfig = roomConfig
+export type RoomWithParticipantsAndConfig = RoomWithParticipants & RoomConfig
 
-export type Room = room
-
-export type UserRoomParticipation = userRoomParticipation
-
-export type Message = message
-
-export type MessageToClient = Omit<message, 'contentType' | 'content'> &
-    (
-        | { contentType: MessageContentType.text; content: string }
-        | {
-              contentType: Exclude<MessageContentType, MessageContentType.text>
-              content: ArrayBuffer
-              extension: string
-          }
-    )
-
-export type MessageToServer = Message
-// Omit<message, 'contentType' | 'content'> &
-//     (
-//         | { contentType: MessageContentType.text; content: string }
-//         | {
-//               contentType: Exclude<MessageContentType, MessageContentType.text>
-//               content: File | Blob
-//               extension: string
-//           }
-//     )
+export type RoomDetails = RoomWithParticipantsAndConfig & UserRoom
