@@ -18,16 +18,22 @@ import {
     ListItemAvatar,
     ListItemText,
     Collapse,
+    Dialog,
+    DialogActions,
+    DialogTitle,
+    DialogContent,
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
-import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
-import { ForwardedRef, forwardRef, Ref, useRef, useState } from 'react'
+import { SocketWithCustomEvents } from '../types/socket'
+import { ForwardedRef, forwardRef, Ref, useContext, useRef, useState } from 'react'
 import {
     ArrowForwardRounded,
     CancelRounded,
+    DeleteRounded,
     InfoRounded,
     NotificationsRounded,
     PersonAddRounded,
+    RemoveRounded,
     SearchSharp,
 } from '@mui/icons-material'
 import { StyledTextField } from './StyledTextField'
@@ -37,21 +43,32 @@ import { AvatarEditorDialog } from './AvatarEditorDialog'
 import AvatarEditor from 'react-avatar-editor'
 import { useFetch } from '../hooks/useFetch'
 import { Routes } from '../types/routes'
-import { RoomActions, RoomActionType } from '../reducer/roomReducer'
+import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
+import { ConfirmationDialog } from './ConfirmationDialog'
+import { CredentialContext } from '../contexts/Credentials'
+import { useFormik } from 'formik'
 
 interface RoomInfoProps {
-    room: RoomWithParticipants
+    room: RoomsState['joinedRooms'][0]
     socketObject: SocketWithCustomEvents
     setRoomInfoVisible: React.Dispatch<React.SetStateAction<boolean>>
     roomDispatcher: (value: RoomActions) => void
 }
 
 export const RoomInfo = (props: RoomInfoProps) => {
-    const roomType = props.room.isMaxCapacityTwo === true ? 'private' : 'group'
+    const { username } = useContext(CredentialContext)
 
-    const roomAvatar = props.room.roomDisplayImagePath
-        ? import.meta.env.VITE_AVATAR_STORAGE_URL + props.room.roomDisplayImagePath
-        : ''
+    const [openLeaveGroupDialog, setOpenLeaveGroupDialog] = useState(false)
+
+    const toggleLeaveGroupDialog = () => setOpenLeaveGroupDialog(p => !p)
+
+    const [openDeleteGroupDialog, setOpenDeleteGroupDialog] = useState(false)
+
+    const toggleDeleteGroupDialog = () => setOpenDeleteGroupDialog(p => !p)
+
+    const roomType = props.room.roomType
+
+    const roomAvatar = props.room.roomAvatar ? import.meta.env.VITE_AVATAR_STORAGE_URL + props.room.roomAvatar : ''
 
     const [openAvatarEditor, setOpenAvatarEditor] = useState(false)
 
@@ -74,13 +91,31 @@ export const RoomInfo = (props: RoomInfoProps) => {
         const newPath = await uploadAvater({ body: fd, method: 'POST' })
 
         props.roomDispatcher({
-            type: RoomActionType.ALTER_ROOM_PROPERTIES,
+            type: RoomActionType.alterRoomProperties,
             roomId,
-            newRoomProperties: { roomDisplayImagePath: newPath },
+            newRoomProperties: { roomAvatar: newPath },
         })
 
-        props.socketObject.emit('roomUpdated', { roomDisplayImagePath: newPath })
+        props.socketObject.emit('roomUpdated', { roomAvatar: newPath })
     }
+
+    const { startFetching: leaveRoom } = useFetch(
+        Routes.delete.userRoom,
+        true,
+        `${username}/${props.room.roomId}`,
+        undefined,
+        () => {},
+        'delete'
+    )
+
+    const { startFetching: deleteRoom } = useFetch(
+        Routes.delete.room,
+        true,
+        `${props.room.roomId}`,
+        undefined,
+        () => {},
+        'delete'
+    )
 
     return (
         <Box
@@ -108,61 +143,70 @@ export const RoomInfo = (props: RoomInfoProps) => {
                 </IconButton>
             </Stack>
 
-            {selectedImage && (
-                <AvatarEditorDialog
-                    imgSrc={selectedImage}
-                    handleClose={handleAvatarEditorToggle}
-                    open={openAvatarEditor}
-                    handleSubmit={file => {
-                        setSelectedImage(null)
-                        file && handleImageUpload(file)
-                    }}
-                    // avatarIdentifier={{ roomId: props.room.roomId }}
-                    // socketObject={props.socketObject}
-                />
-            )}
-            <Tooltip title='Click to change image'>
-                <IconButton component='label' sx={{ justifySelf: 'center', alignSelf: 'center' }}>
-                    <Avatar src={roomAvatar} sx={{ height: 86, width: 86 }} />
+            {props.room.roomType === 'group' ? (
+                <>
+                    {selectedImage && (
+                        <AvatarEditorDialog
+                            imgSrc={selectedImage}
+                            handleClose={handleAvatarEditorToggle}
+                            open={openAvatarEditor}
+                            handleSubmit={file => {
+                                setSelectedImage(null)
+                                file && handleImageUpload(file)
+                            }}
+                        />
+                    )}
+                    <Tooltip title='Click to change image'>
+                        <IconButton component='label' sx={{ justifySelf: 'center', alignSelf: 'center' }}>
+                            <Avatar src={roomAvatar} sx={{ height: 86, width: 86 }} />
 
-                    <input
-                        type='file'
-                        accept='image/*'
-                        hidden
-                        onChange={e => {
-                            if (!e.target.files || e.target.files.length <= 0) return
-                            handleAvatarEditorToggle()
-                            setSelectedImage(e.target.files[0])
-                        }}
-                    />
-                </IconButton>
-            </Tooltip>
-            {props.room.isMaxCapacityTwo === false ? (
-                <Typography align='center' variant='h6'>
-                    {props.room.roomDisplayName}
-                </Typography>
+                            <input
+                                type='file'
+                                accept='image/*'
+                                hidden
+                                onChange={e => {
+                                    if (!e.target.files || e.target.files.length <= 0) return
+                                    handleAvatarEditorToggle()
+                                    setSelectedImage(e.target.files[0])
+                                }}
+                            />
+                        </IconButton>
+                    </Tooltip>
+
+                    <Typography align='center' variant='h6'>
+                        {props.room.roomDisplayName}
+                    </Typography>
+
+                    {/* <EditableText text={roomName} setText={setRoomName} /> */}
+                    <Box sx={{ height: 'fit-content', overflowY: 'auto' }}>
+                        <Typography>Description:</Typography>
+                        <Typography variant='body2' paragraph>
+                            <Balancer>
+                                Reprehenderit nostrud nostrud ipsum Lorem est aliquip amet voluptate vvoluptate dolor
+                                minim null aoluptate dolor minim nullavoluptate dolor minim null
+                            </Balancer>
+                        </Typography>
+                    </Box>
+                </>
             ) : null}
-            {/* <EditableText text={roomName} setText={setRoomName} /> */}
-            <Box sx={{ height: 'fit-content', overflowY: 'auto' }}>
-                <Typography>Description:</Typography>
-                <Typography variant='body2' paragraph>
-                    <Balancer>
-                        Reprehenderit nostrud nostrud ipsum Lorem est aliquip amet voluptate vvoluptate dolor minim null
-                        aoluptate dolor minim nullavoluptate dolor minim null
-                    </Balancer>
-                </Typography>
-            </Box>
+
             <Divider />
+
             <Stack direction='row' alignItems='center'>
                 <NotificationsRounded />
                 Notifications
                 <Switch sx={{ ml: 'auto' }} />
             </Stack>
+
             <Divider />
+
             <Stack direction='row' sx={{ alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
                 <Typography noWrap>Members ({props.room.participants.length})</Typography>
-                {roomType === 'group' ? <CollapsibleInput socketObject={props.socketObject} room={props.room} /> : null}
+                {roomType === 'group' ? (
+                    <AddGroupParticipantsDialog socketObject={props.socketObject} room={props.room} />
+                ) : null}
             </Stack>
+
             <List dense sx={{ maxHeight: '220px', overflow: 'auto' }}>
                 {props.room.participants.map(({ username }, i) => (
                     <ListItem key={i}>
@@ -173,65 +217,91 @@ export const RoomInfo = (props: RoomInfoProps) => {
                     </ListItem>
                 ))}
             </List>
-            {props.room.isMaxCapacityTwo === false ? (
-                <ButtonGroup size='small' variant='text'>
-                    <Button fullWidth onClick={() => {}}>
+
+            {props.room.roomType === 'group' ? (
+                <ButtonGroup size='small' variant='text' fullWidth>
+                    <Button onClick={toggleDeleteGroupDialog} disabled={props.room.isAdmin === false}>
                         Delete Group
                     </Button>
-                    <Button fullWidth onClick={() => {}}>
-                        Leave Group
-                    </Button>
+                    <Button onClick={toggleLeaveGroupDialog}>Leave Group</Button>
                 </ButtonGroup>
             ) : null}
+            <ConfirmationDialog
+                openDialog={openLeaveGroupDialog}
+                toggleConfirmationDialog={toggleLeaveGroupDialog}
+                onAccept={async () => {
+                    await leaveRoom()
+                    props.socketObject.emit('userLeftRoom', props.room.roomId)
+                }}
+            />
+            <ConfirmationDialog
+                openDialog={openDeleteGroupDialog}
+                toggleConfirmationDialog={toggleDeleteGroupDialog}
+                onAccept={async () => {
+                    await deleteRoom()
+                    // props.socketObject.emit()
+                }}
+            />
         </Box>
     )
 }
 
-const CollapsibleInput = (props: { socketObject: SocketWithCustomEvents; room: RoomWithParticipants }) => {
-    const [isCollapsed, setIsCollapsed] = useState(true)
+const AddGroupParticipantsDialog = (props: {
+    socketObject: SocketWithCustomEvents
+    room: RoomsState['joinedRooms'][0]
+}) => {
+    const [isOpen, setIsOpen] = useState(false)
 
-    const [contactFieldValue, setContactFieldValue] = useState('password')
+    const handleClose = () => setIsOpen(false)
 
-    const [contactFieldHelperText, setContactFieldHelperText] = useState('')
+    const { setFieldValue, getFieldProps, errors, values, isSubmitting } = useFormik({
+        initialValues: { usersToBeAdded: [''] },
+        onSubmit: ({ usersToBeAdded }: { usersToBeAdded: [''] }) => {
+            usersToBeAdded
+        },
+    })
+
+    const handleAddTextField = () => setFieldValue('usersToBeAdded', [...values.usersToBeAdded, ''])
+    const handleRemoveTextField = (index: number) =>
+        setFieldValue('usersToBeAdded', [...values.usersToBeAdded.filter((_, i) => i !== index)])
 
     return (
         <>
-            <IconButton onClick={() => setIsCollapsed(p => !p)}>
+            <IconButton onClick={() => setIsOpen(true)}>
                 <PersonAddRounded />
             </IconButton>
-            <Collapse in={!isCollapsed} sx={{ flexBasis: '100%' }}>
-                <StyledTextField
-                    size='small'
-                    sx={{ width: '100%' }}
-                    onChange={e => {
-                        setContactFieldValue(e.target.value)
-                        if (contactFieldHelperText !== '') setContactFieldHelperText('')
-                    }}
-                    onKeyDown={e => {
-                        if (e.key === 'Enter')
-                            props.socketObject.emit(
-                                'addParticipantsToGroup',
-                                [contactFieldValue],
-                                props.room.roomId,
-                                response => {
-                                    setContactFieldHelperText(response)
-                                }
-                            )
-                    }}
-                    value={contactFieldValue}
-                    helperText={contactFieldHelperText}
-                    placeholder='Add contact'
-                    InputProps={{
-                        endAdornment: (
-                            <InputAdornment position='end'>
-                                <IconButton onClick={() => {}}>
-                                    <ArrowForwardRounded />
-                                </IconButton>
-                            </InputAdornment>
-                        ),
-                    }}
-                />
-            </Collapse>
+            <Dialog open={isOpen} onClose={handleClose} fullWidth>
+                <DialogTitle>Add members to group</DialogTitle>
+
+                <Button onClick={handleAddTextField}>Add</Button>
+
+                <DialogContent>
+                    {values.usersToBeAdded.map((value, i) => (
+                        <>
+                            <StyledTextField
+                                size='small'
+                                sx={{ width: '100%' }}
+                                {...getFieldProps(`usersToBeAdded.${i}`)}
+                                placeholder='Add User'
+                                InputProps={{
+                                    endAdornment: (
+                                        <IconButton onClick={() => handleRemoveTextField(i)}>
+                                            <DeleteRounded />
+                                        </IconButton>
+                                    ),
+                                }}
+                            />
+                        </>
+                    ))}
+                </DialogContent>
+
+                <DialogActions>
+                    <ButtonGroup>
+                        <Button onClick={handleClose}>Cancel</Button>
+                        <Button disabled={isSubmitting}>Confirm</Button>
+                    </ButtonGroup>
+                </DialogActions>
+            </Dialog>
         </>
     )
 }
