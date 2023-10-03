@@ -6,13 +6,21 @@ import {
     renewAccessToken,
     // returnUserSettings,
     varifyRefreshToken,
-    fetchAllRoomPariticpants,
+    fetchRoomPariticpants,
     fetchMessages,
     storeMediaToFS,
     storeAvatarToFS,
-    returnUserRooms,
     returnUsers,
     returnUser,
+    test,
+    handleGettingRoomDetails,
+    handlePrivateRoomCreation,
+    handleGroupCreation,
+    handleGettingUniqueRoomDetails,
+    handleUserLeavesRoom,
+    handleUserDeletesRoom,
+    handleUserExistsCheck,
+    handleNewParticipants,
 } from './controllers.js'
 import { avatar, media } from './server.js'
 
@@ -20,16 +28,24 @@ import { avatar, media } from './server.js'
 const routes = {
     get: {
         messages: '/Messages',
-        roomParticipants: '/roomParticipants',
+        roomParticipants: '/room-participants',
         userRooms: '/user-rooms',
+        userRoom: '/user-room',
         users: '/users',
         user: '/user',
+        isUsernameValid: '/is-username-valid',
     },
     post: {
         avatar: '/avatar',
         media: '/Media',
+        privateRoom: '/private-room',
+        group: '/group',
+        participants: '/participants',
     },
-
+    delete: {
+        userRoom: '/user-room',
+        room: '/room',
+    },
     login: '/login',
     signup: '/signup',
     renewtoken: '/renewtoken',
@@ -44,15 +60,33 @@ export const initRoutes = (app: Express) => {
     app.all(routes.logout, logoutUser)
     app.all(routes.varifyRefreshToken, varifyRefreshToken)
 
-    app.get(routes.get.userRooms + '/:username', returnUserRooms)
+    app.get(routes.get.userRooms + '/:username', handleGettingRoomDetails)
+
+    app.get(routes.get.userRoom + '/:username/:roomId', handleGettingUniqueRoomDetails)
+
     app.get(routes.get.users, returnUsers)
+
     app.get(routes.get.user + '/:username', returnUser)
 
-    app.get(routes.get.roomParticipants, fetchAllRoomPariticpants)
+    app.get(routes.get.roomParticipants, fetchRoomPariticpants)
 
-    app.get(routes.get.messages + '/:roomID', fetchMessages)
+    app.get(routes.get.messages + '/:roomId', fetchMessages)
+
+    app.get(routes.get.isUsernameValid + '/:username', handleUserExistsCheck)
 
     app.post(routes.post.media, media, storeMediaToFS)
 
     app.post(routes.post.avatar, avatar, storeAvatarToFS)
+
+    app.post(routes.post.privateRoom, handlePrivateRoomCreation)
+
+    app.post(routes.post.group, handleGroupCreation)
+
+    app.post(routes.post.participants, handleNewParticipants)
+
+    app.delete(routes.delete.userRoom + '/:username/:roomId', handleUserLeavesRoom)
+
+    app.delete(routes.delete.room + '/:roomId', handleUserDeletesRoom)
+
+    app.all('/test', test)
 }
