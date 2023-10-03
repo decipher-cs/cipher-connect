@@ -39,7 +39,7 @@ export const createUserRoom = async (username: string, roomId: string) => {
 }
 
 export const createPrivateRoom = async (participant1: string, participant2: string) => {
-    return await prisma.room.create({
+    const room = await prisma.room.create({
         data: {
             roomType: 'private',
             user: { connect: [{ username: participant1 }, { username: participant2 }] },
@@ -54,11 +54,13 @@ export const createPrivateRoom = async (participant1: string, participant2: stri
                 },
             },
         },
+        select: { roomId: true },
     })
+    return room.roomId
 }
 
 export const createGroup = async (usernames: User['username'][], roomDisplayName: string) => {
-    return prisma.room.create({
+    const room = prisma.room.create({
         data: {
             roomDisplayName,
             roomType: 'group',
@@ -76,7 +78,9 @@ export const createGroup = async (usernames: User['username'][], roomDisplayName
                 },
             },
         },
+        select: { roomId: true },
     })
+    return (await room).roomId
 }
 
 export const addMessageToDB = async (message: Message) => {

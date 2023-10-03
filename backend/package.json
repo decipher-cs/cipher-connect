@@ -1,6 +1,6 @@
 {
     "name": "server-auth",
-    "version": "4.0.0",
+    "version": "5.0.0",
     "description": "backend for messaging app",
     "main": "./dist/server.js",
     "license": "GNU General Public License v3.0",
@@ -8,7 +8,11 @@
     "scripts": {
         "build": "tsc",
         "dev": "tsc-watch -p ./tsconfig.json --onSuccess \"node ./dist/server.js\"",
-        "start": "tsc && node ."
+        "start": "tsc && node .",
+        "push": "prisma db push",
+        "generate": "prisma generate",
+        "studio": "prisma studio",
+        "migrate": "prisma migrate"
     },
     "dependencies": {
         "@prisma/client": "^4.14.1",
@@ -16,6 +20,7 @@
         "bcrypt": "^5.1.0",
         "cookie-parser": "^1.4.6",
         "cors": "^2.8.5",
+        "file-type": "^18.5.0",
         "jsonwebtoken": "^9.0.0",
         "socket.io": "^4.6.1",
         "typescript": "^5.0.4"

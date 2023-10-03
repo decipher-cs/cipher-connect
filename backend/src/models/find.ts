@@ -1,4 +1,4 @@
-import { RoomConfig, User, UserRoom } from '@prisma/client'
+import { Room, RoomConfig, User, UserRoom } from '@prisma/client'
 import { prisma } from '../server.js'
 import { RoomDetails, UserWithoutID } from '../types.js'
 
@@ -15,9 +15,26 @@ export const getUser = async (username: string): Promise<UserWithoutID | null> =
     })
 }
 
-export const getUserById = async (userId: string): Promise<UserWithoutID | null> => {
-    return await prisma.user.findUnique({
+export const getUserById = async (userId: string) => {
+    const user = await prisma.user.findUnique({
         where: { userId },
+        select: {
+            userId: false,
+            username: true,
+            createTime: true,
+            displayName: true,
+            avatarPath: true,
+        },
+    })
+
+    return user
+}
+
+export const getUsersById = async (userIDs: string[]): Promise<UserWithoutID[] | null> => {
+    return await prisma.user.findMany({
+        where: {
+            userId: { in: userIDs },
+        },
         select: {
             userId: false,
             username: true,
@@ -28,20 +45,24 @@ export const getUserById = async (userId: string): Promise<UserWithoutID | null>
     })
 }
 
-export const getUsersById = async (userIDs: string[]): Promise<Omit<User, 'username'>[] | null> => {
-    return await prisma.user.findMany({
-        where: {
-            userId: { in: userIDs },
-        },
-    })
-}
-
-export const getUsers = async (usernames: string[]) => {
+export const getUsers = async (usernames: string[]): Promise<UserWithoutID[] | null> => {
     return await prisma.user.findMany({
         where: {
             username: { in: usernames },
         },
+        select: {
+            userId: false,
+            username: true,
+            createTime: true,
+            displayName: true,
+            avatarPath: true,
+        },
     })
+}
+
+export const checkIfUserExists = async (username: User['username']): Promise<any> => {
+    const user = await prisma.user.count({ where: { username } })
+    return user === 1
 }
 
 export const getRoomPariticpants = async (roomId: string) => {
@@ -63,7 +84,7 @@ export const getMessagesFromRoom = async (roomId: string) => {
 }
 
 export const checkIfPrivateRoomExists = async (userA: string, userB: string) => {
-    const rooms = await prisma.room.findMany({
+    return await prisma.room.findFirst({
         where: {
             AND: [
                 { roomType: 'private' },
@@ -72,7 +93,6 @@ export const checkIfPrivateRoomExists = async (userA: string, userB: string) => 
             ],
         },
     })
-    return rooms.length > 0
 }
 
 export const getRefreshToken = async (username: string) => {
@@ -114,21 +134,23 @@ export const getRoomIDsByUsername = async (username: string) => {
     return rooms?.rooms ?? null
 }
 
-export const justFetchTheDatabaseDarnIt = async (username: string) => {
-    const rooms = await prisma.userRoom.findMany({
-        where: { username },
-        include: {
-            room: { include: { user: true } },
-            user: true,
-            roomConfig: true,
-        },
+export const getRoomConfig = async (username: User['username'], roomId: Room['roomId']) => {
+    return await prisma.roomConfig.findUnique({
+        where: { username_roomId: { username, roomId } },
     })
-    return rooms
 }
 
-export const getRoomDetailsByUsername = async (username: User['username']): Promise<RoomDetails[]> => {
+export const getUserRoomConfig = async (username: User['username'], roomId: Room['roomId']) => {
+    return await prisma.userRoom.findUnique({
+        where: { username_roomId: { username, roomId } },
+    })
+}
+
+export const getRoomDetails = async (
+    id: { username: User['username'] } | { roomId: Room['roomId'] }
+): Promise<RoomDetails[]> => {
     const rooms = await prisma.userRoom.findMany({
-        where: { username },
+        where: id,
         include: {
             roomConfig: true,
             room: {
@@ -146,4 +168,26 @@ export const getRoomDetailsByUsername = async (username: User['username']): Prom
 
         return { ...rest, ...room, ...roomConfig, participants: user }
     })
+}
+
+export const getUniqueRoomDetails = async (
+    username: User['username'],
+    roomId: Room['roomId']
+): Promise<RoomDetails | null> => {
+    const room = await prisma.userRoom.findUnique({
+        where: { username_roomId: { username, roomId } },
+        include: {
+            roomConfig: true,
+            room: {
+                include: {
+                    user: true,
+                },
+            },
+        },
+    })
+    if (room === null) return null
+
+    const { room: roomAndUsers, roomConfig, ...userRoom } = room
+    const { user, ...roomWithoutUserAndConfig } = roomAndUsers
+    return { ...userRoom, ...roomWithoutUserAndConfig, ...roomConfig, participants: user }
 }
