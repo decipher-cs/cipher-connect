@@ -8,6 +8,7 @@ import { About } from './pages/About'
 import { Login } from './pages/Login'
 import { Logout } from './pages/Logout'
 import { lightMod } from './theme/customThemes/lightModTheme'
+import { Routes as ApiRoutes } from './types/routes'
 
 const TempUsernameDisplay = () => {
     const { username, handleCredentialChange, isLoggedIn } = useContext(CredentialContext)
@@ -18,11 +19,9 @@ const TempUsernameDisplay = () => {
         if (username === null) return
 
         const varifyUser = async () => {
-            const URL = import.meta.env.PROD
-                ? import.meta.env.VITE_SERVER_PROD_URL
-                : import.meta.env.VITE_SERVER_DEV_URL
+            const URL = import.meta.env.VITE_SERVER_URL + ApiRoutes.varifyRefreshToken
 
-            const response = await fetch(`${URL}/varifyRefreshToken`, {
+            const response = await fetch(URL, {
                 body: JSON.stringify({ username }),
                 method: 'POST',
                 credentials: 'include',
