@@ -21,6 +21,7 @@ export interface Credentials {
     isLoggedIn: boolean
 }
 
+//TODO: make this a reducer. maybe
 export const CredentialContextProvider = (props: React.PropsWithChildren) => {
     const [credential, setCredentials] = useState<Credentials>({
         username: '',
