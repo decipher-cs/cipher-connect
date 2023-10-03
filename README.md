@@ -65,7 +65,7 @@ Install my-project with yarn
 ![design source](./assets/design_source.jpg)
 
 ## Acknowledgements
-
+ - [Blog Explaining DBML Generator](https://notiz.dev/blog/prisma-dbml-generator)
  - [Awesome Readme Templates](https://awesomeopensource.com/project/elangosundar/awesome-README-templates)
  - [Awesome README](https://github.com/matiassingers/awesome-readme)
  - [How to write a Good readme](https://bulldogjob.com/news/449-how-to-write-a-good-readme-for-your-github-project)
@@ -90,6 +90,8 @@ Install my-project with yarn
 - [x] Add support for group chat.
 - [ ] Break text into multiple lines when a single word has too many characters and overflows.
 - [ ] Host your own fonts.
+- [ ] Fix .env variables to be platform agnostic.
+- [ ] Setup protected API routes.
 
 ## License
 
