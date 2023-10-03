@@ -2,6 +2,7 @@ import { Message } from '../types/prisma.client'
 
 type MessageArray = Message[]
 
+
 export enum MessageListActionType {
     INITIALIZE_MESSAGES = 'initializeMessages',
     ADD = 'add',
@@ -15,7 +16,7 @@ export type MessageListAction =
       }
     | {
           type: MessageListActionType.ADD
-          newMessage: Message | Message[]
+          newMessage: Message | Message[] // TODO: accespt URL objects and files
       }
     | {
           type: MessageListActionType.REMOVE

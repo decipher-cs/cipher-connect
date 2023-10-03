@@ -9,8 +9,10 @@ export type RoomsState = {
 export enum RoomActionType {
     initializeRoom = 'initializeRoom',
     addRoom = 'addRoom',
+    removeRoom = 'removeRoom',
     hide = 'hide',
     addParticipants = 'addParticipant',
+    removeParticipants = 'removeParticipant',
     changeRoom = 'changeRoom',
     alterRoomProperties = 'alterRoomProperties',
     changeNotificationStatus = 'changeNotificationStatus',
@@ -26,8 +28,17 @@ export type RoomActions =
           room: RoomsState['joinedRooms'][0] | RoomsState['joinedRooms']
       }
     | {
+          type: RoomActionType.removeRoom
+          roomId: RoomsState['joinedRooms'][0]['roomId']
+      }
+    | {
           type: RoomActionType.changeRoom
           newRoomIndex: RoomsState['selectedRoom']
+      }
+    | {
+          type: RoomActionType.removeParticipants
+          roomId: Room['roomId']
+          username: RoomsState['joinedRooms'][0]['participants'][0]['username']
       }
     | {
           type: RoomActionType.addParticipants
@@ -68,6 +79,20 @@ export const roomReducer: React.Reducer<RoomsState, RoomActions> = (state, actio
             } else room.joinedRooms.push(action.room)
             break
 
+        case RoomActionType.removeRoom:
+            room.joinedRooms = room.joinedRooms.filter(r => r.roomId !== action.roomId)
+            if (selectedRoom?.roomId === action.roomId) room.selectedRoom = null
+
+            break
+        case RoomActionType.removeParticipants:
+            room.joinedRooms.forEach(r => {
+                if (r.roomId === action.roomId) {
+                    console.log('before', r.participants)
+                    r.participants = r.participants.filter(user => user.username !== action.username)
+                    console.log('after', r.participants)
+                }
+            })
+            break
         case RoomActionType.addParticipants:
             // room.joinedRooms.find(r => r.roomId === action.roomId)
             break
