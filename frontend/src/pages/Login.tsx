@@ -4,6 +4,7 @@ import { TabPanel } from '../components/TabPanel'
 import { useFormik } from 'formik'
 import { CredentialContext } from '../contexts/Credentials'
 import { Navigate, useNavigate } from 'react-router-dom'
+import { StyledTextField } from '../components/StyledTextField'
 
 // Formik uses this regex criteria to validate the input string
 const validate = (values: { username: string; password: string }) => {
@@ -41,7 +42,7 @@ export const Login = () => {
         const username = values.username
         const password = values.password
 
-        const URL = import.meta.env.PROD ? import.meta.env.VITE_SERVER_PROD_URL : import.meta.env.VITE_SERVER_DEV_URL
+        const URL = import.meta.env.VITE_SERVER_URL
 
         const response = await fetch(`${URL}/${formType}`, {
             body: JSON.stringify({ username, password }),
@@ -53,7 +54,7 @@ export const Login = () => {
             },
         })
         const responseType = response.statusText
-        console.log(responseType)
+
         switch (responseType) {
             case 'OK':
                 handleCredentialChange({ username, isLoggedIn: true })
@@ -95,14 +96,14 @@ export const Login = () => {
                             handleSubmit={formik.handleSubmit}
                             handleFormReset={formik.handleReset}
                         >
-                            <TextField
+                            <StyledTextField
                                 label='username'
                                 fullWidth
                                 error={formik.errors.username !== undefined && formik.touched.username}
                                 helperText={formik.touched.username && formik.errors.username}
                                 {...formik.getFieldProps('username')}
                             />
-                            <TextField
+                            <StyledTextField
                                 label='password'
                                 fullWidth
                                 helperText={formik.touched.password && formik.errors.password}

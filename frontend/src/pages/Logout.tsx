@@ -5,7 +5,7 @@ import { CredentialContext } from '../contexts/Credentials'
 export const Logout = () => {
     const { username, isLoggedIn, logUserOut } = useContext(CredentialContext)
 
-    const URL = import.meta.env.PROD ? import.meta.env.VITE_SERVER_PROD_URL : import.meta.env.VITE_SERVER_DEV_URL
+    const URL = import.meta.env.VITE_SERVER_URL
     // logUserOut()
 
     useEffect(() => {

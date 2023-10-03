@@ -4,40 +4,30 @@ import { ChatDisplaySection } from '../components/ChatDisplaySection'
 import { CredentialContext } from '../contexts/Credentials'
 import { socket } from '../socket'
 import { PulseLoader } from 'react-spinners'
-import { message as Message, MessageContentType, room as Room } from '../types/prisma.client'
-import { MessageSidebar } from '../components/MessageSidebar'
 import { RoomInfo } from '../components/RoomInfo'
-import { RoomWithParticipants, Settings } from '../types/socket'
-import { ProfileSettingsDialog } from '../components/ProfileSettingsDialog'
-import { Buffers } from '@react-frontend-developer/buffers'
+import { RoomDetails, RoomWithParticipants } from '../types/prisma.client'
 import { Sidebar } from '../components/Sidebar'
-import { arrayBufferToObjectUrlConverter } from '../utils'
-
-// TODO: use arrayBufferToObjectURLConverter function form utils.ts
-export const imageBufferToURLOrEmptyString = (imageBuffer: Buffers | null) => {
-    if (imageBuffer === null) return ''
-    const imgBuffer = imageBuffer as ArrayBuffer
-    const imageFile = new File([imgBuffer], 'avatar')
-    return URL.createObjectURL(imageFile)
-}
+import { MessageListActionType, messageListReducer } from '../reducer/messageListReducer'
+import { RoomActionType, roomReducer } from '../reducer/roomReducer'
+import { useFetch } from '../hooks/useFetch'
+import { Routes } from '../types/routes'
+import { RoomListSidebar } from '../components/RoomListSidebar'
+import { StyledTextField } from '../components/StyledTextField'
 
 export const Chat = () => {
     const [isLoading, setIsLoading] = useState(true)
 
-    const [chatMessageList, setChatMessageList] = useState<Message[]>([])
+    const [messages, messageDispatcher] = useReducer(messageListReducer, [])
 
     const { username, isLoggedIn } = useContext(CredentialContext)
 
-    const [selectedRoomIndex, setSelectedRoomIndex] = useState<number>()
-
-    const [rooms, setRooms] = useState<RoomWithParticipants[]>([])
+    const [rooms, roomDispatcher] = useReducer(roomReducer, { selectedRoom: null, joinedRooms: [] })
 
     const [roomInfoVisible, setRoomInfoVisible] = useState(false)
 
-    const [userSettings, setUserSettings] = useState<Settings>({
-        userDisplayName: username,
-        userDisplayImage: null,
-    })
+    const { startFetching: initializeRooms } = useFetch<RoomDetails[]>(Routes.get.userRooms, true, username)
+
+    const { startFetching: fetchNewRoomDetails } = useFetch<RoomDetails>(Routes.get.userRoom, true)
 
     useEffect(() => {
         if (socket.connected === false && isLoggedIn === true) {
@@ -47,39 +37,47 @@ export const Chat = () => {
 
         setIsLoading(false)
 
+        initializeRooms().then(data => {
+            roomDispatcher({ type: RoomActionType.initializeRoom, rooms: data })
+        })
+
         socket.on('message', messageFromServer => {
-            if (messageFromServer.contentType === MessageContentType.text) {
-                setChatMessageList(prev => prev.concat(messageFromServer))
-            } else if (messageFromServer) {
-                const objectURL = arrayBufferToObjectUrlConverter(messageFromServer.content)
-                setChatMessageList(prev => prev.concat({ ...messageFromServer, content: objectURL }))
-            } else throw 'Unknown message type'
-            // TODO send notification for a new message
+            messageDispatcher({ type: MessageListActionType.ADD, newMessage: messageFromServer })
+            if (rooms.selectedRoom && rooms.joinedRooms[rooms.selectedRoom].roomId !== messageFromServer.roomId)
+                roomDispatcher({
+                    type: RoomActionType.changeNotificationStatus,
+                    roomId: messageFromServer.roomId,
+                    unreadMessages: true,
+                })
         })
 
-        socket.on('userSettingsUpdated', newSettings => {
-            setUserSettings(newSettings)
-        })
-
-        socket.on('userRoomsUpdated', updatedRooms => {
-            setRooms(updatedRooms)
-        })
-
-        socket.on('userRoomUpdated', room => {
-            setRooms(prevRooms => {
-                const newRooms: RoomWithParticipants[] = structuredClone(prevRooms)
-                const index = newRooms.findIndex(prevRoom => room.roomId === prevRoom.roomId)
-                newRooms[index] = room
-                return newRooms
+        socket.on('newRoomCreated', async roomId => {
+            const roomDetails = await fetchNewRoomDetails({ method: 'get' }, [username, roomId])
+            roomDispatcher({
+                type: RoomActionType.addRoom,
+                room: roomDetails,
             })
-            // socket.emit('roomSelected', room.roomId)
         })
 
-        socket.on('roomChanged', roomFromServer => {})
-
-        socket.on('messagesRequested', messages => {
-            setChatMessageList(messages)
+        socket.on('notification', roomId => {
+            if (rooms.selectedRoom && rooms.joinedRooms[rooms.selectedRoom].roomId !== roomId)
+                roomDispatcher({
+                    type: RoomActionType.changeNotificationStatus,
+                    roomId: roomId,
+                    unreadMessages: true,
+                })
         })
+
+        socket.on('userLeftRoom', (staleUsername, roomId) => {
+            console.log(username, staleUsername, roomId)
+            if (username === staleUsername) {
+                // TODO: maybe this should direclty be after the onClick leave room and not here. event staying close to action
+                roomDispatcher({ type: RoomActionType.removeRoom, roomId })
+            }
+            if (username) roomDispatcher({ type: RoomActionType.removeParticipants, roomId, username: staleUsername })
+        })
+
+        socket.on('userProfileUpdated', profile => {})
 
         return () => {
             socket.removeAllListeners()
@@ -100,16 +98,17 @@ export const Chat = () => {
                     // overflow: 'hidden',
                 }}
             >
-                <Sidebar socketObject={socket} userSettings={userSettings} />
+                <Sidebar socketObject={socket} /* userSettings={userSettings} setUserSettings={setUserSettings} */ />
 
-                <MessageSidebar
-                    rooms={rooms}
+                <RoomListSidebar
                     socketObject={socket}
-                    selectedRoomIndex={selectedRoomIndex}
-                    setSelectedRoomIndex={setSelectedRoomIndex}
+                    rooms={rooms.joinedRooms}
+                    selectedRoomIndex={rooms.selectedRoom}
+                    roomDispatcher={roomDispatcher}
+                    messageListDispatcher={messageDispatcher}
                 />
 
-                {selectedRoomIndex === undefined || rooms[selectedRoomIndex] === undefined ? (
+                {rooms.selectedRoom === null || rooms.joinedRooms[rooms.selectedRoom] === undefined ? (
                     <Box sx={{ display: 'grid', flex: 1, placeContent: 'center' }}>
                         <Typography variant='h6' align='center'>
                             Join A Room To See The Chat
@@ -130,23 +129,25 @@ export const Chat = () => {
                             }}
                         >
                             <ChatDisplaySection
-                                chatMessageList={chatMessageList}
-                                setChatMessageList={setChatMessageList}
-                                currRoom={rooms[selectedRoomIndex]}
+                                // setChatMessageList={setChatMessageList}
                                 socketObject={socket}
+                                currRoom={rooms.joinedRooms[rooms.selectedRoom]}
                                 setRoomInfoVisible={setRoomInfoVisible}
+                                chatMessageList={messages}
+                                messageListDispatcher={messageDispatcher}
                             />
                         </Box>
                         <Collapse
                             in={roomInfoVisible}
                             orientation='horizontal'
-                            sx={{ height: '100%', flexShrink: 0 }}
+                            sx={{ minHeight: '100%', flexShrink: 0, overflowY: 'scroll' }}
                             component={Box}
                         >
                             <RoomInfo
                                 socketObject={socket}
-                                room={rooms[selectedRoomIndex]}
+                                room={rooms.joinedRooms[rooms.selectedRoom]}
                                 setRoomInfoVisible={setRoomInfoVisible}
+                                roomDispatcher={roomDispatcher}
                             />
                         </Collapse>
                     </>
