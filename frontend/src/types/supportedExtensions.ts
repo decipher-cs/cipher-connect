@@ -3,4 +3,4 @@ export const supportedExtensions = {
     image: ['.png', '.jpg', '.jpeg'],
     file: ['.pdf'],
     video: ['.mp4'],
-}
+} as const

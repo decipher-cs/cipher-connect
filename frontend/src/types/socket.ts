@@ -8,20 +8,21 @@ export interface ServerToClientEvents {
     withAck: (d: string, callback: (e: number) => void) => void
     message: (message: Message) => void
 
-    newRoomCreated: (roomDetails: RoomDetails) => void
+    newRoomCreated: (roomId: Room['roomId']) => void
 
     userProfileUpdated: (newSettings: Partial<User>) => void
     notification: (roomId: Room['roomId']) => void
+    userLeftRoom: (username: User['username'], roomId: Room['roomId']) => void
 }
 
 // for socket.on()
 export interface ClientToServerEvents {
     message: (message: Message) => void
-    createNewPrivateRoom: (participant: string, callback: (response: string | null) => void) => void
-    createNewGroup: (participants: string[], displayName: string, callback: (response: string | null) => void) => void
     userProfileUpdated: (newSettings: Partial<User>) => void
     roomUpdated: (updatedDetails: Partial<Room>) => void
     notification: (roomId: Room['roomId']) => void
+    newRoomCreated: (participants: User['username'][], roomId: Room['roomId']) => void
+    userLeftRoom: (roomId: Room['roomId']) => void
     // addUsersToRoom: (usersToAdd: string[], roomName: string) => void
     // addParticipantsToGroup: (participants: string[], roomId: string, callback: (response: string) => void) => void
 }
