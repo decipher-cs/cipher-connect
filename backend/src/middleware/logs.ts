@@ -8,7 +8,7 @@ export const reqLogger = async (req: Request, res: Response, next: NextFunction)
         headers: { origin },
     } = req
     const currTimeInUTC = new Date().toUTCString()
-    const log = `${currTimeInUTC}\t${method}\t${origin}${url}\n`
+    const log = `\n${currTimeInUTC}\t${method}\t${origin}${url}`
 
     fs.appendFile('./logs/requestLogs.txt', log)
 

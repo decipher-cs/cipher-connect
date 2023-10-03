@@ -1,22 +1,23 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import fs from 'fs/promises'
-import { NextFunction, Request, Response } from 'express'
-import {
-    deleteRefreshToken,
-    getAllMessagesFromRoom,
-    getAllRoomPariticpants,
-    getRefreshToken,
-    getUserFromDB,
-    getUserRooms,
-    getUserRoomsAlongParticipants,
-    getUsersFromDB,
-    updateRoom,
-    updateRoomImage,
-    updateUser,
-} from './model.js'
-import { addRefreshToken, createNewUser, getUserHash } from './model.js'
+import { Request, Response } from 'express'
 import { createAccessToken, createRefreshToken } from './middleware/jwtFunctions.js'
+import {
+    checkIfUserExists,
+    getMessagesFromRoom,
+    getRefreshToken,
+    getRoomDetails,
+    getRoomPariticpants,
+    getUniqueRoomDetails,
+    getUser,
+    getUserHash,
+    getUsers,
+} from './models/find.js'
+import { addRefreshToken, createGroup, createNewUser, createPrivateRoom } from './models/create.js'
+import { deleteRefreshToken, deleteRoom, deleteUserRoom } from './models/delete.js'
+import { updateRoom, updateRoomParticipants, updateUser } from './models/update.js'
+import { User } from '@prisma/client'
+import { RoomDetails } from './types.js'
 
 interface LoginCredentials {
     username: string
@@ -171,9 +172,11 @@ export const storeAvatarToFS = async (req: Request, res: Response) => {
 
     const { filename }: Express.Multer.File = req.file
 
-    if (username) updateUser(username, { avatarPath: filename })
-    else if (roomId) updateRoom(roomId, { roomDisplayImagePath: filename })
-    else {
+    if (username) await updateUser(username, { avatarPath: filename })
+    else if (roomId) {
+        const room = await updateRoom(roomId, { roomAvatar: filename })
+        console.log(room)
+    } else {
         res.sendStatus(400)
         return
     }
@@ -184,8 +187,14 @@ export const storeAvatarToFS = async (req: Request, res: Response) => {
 
 export const returnUser = async (req: Request, res: Response) => {
     let { username } = req.params
+    if (username === undefined) {
+        res.sendStatus(400)
+        return
+    }
+
     try {
-        const user = await getUserFromDB(username)
+        const user = await getUser(username)
+        if (user === null) throw new Error('no user found with that username')
         res.send(user)
     } catch (err) {
         res.sendStatus(400)
@@ -202,7 +211,7 @@ export const returnUsers = async (req: Request, res: Response) => {
 
         if (Array.isArray(usernames) === false) throw new Error('Expected array')
 
-        const users = await getUsersFromDB(usernames)
+        const users = await getUsers(usernames)
 
         res.send(users)
     } catch (err) {
@@ -211,7 +220,34 @@ export const returnUsers = async (req: Request, res: Response) => {
     return
 }
 
-export const returnUserRooms = async (req: Request, res: Response) => {
+export const fetchMessages = async (req: Request, res: Response) => {
+    const { roomId } = req.params
+    console.log(roomId)
+    if (roomId === undefined) {
+        res.sendStatus(400)
+        return
+    }
+    const messages = await getMessagesFromRoom(roomId)
+    if (messages === undefined) {
+        res.sendStatus(400)
+    } else res.send(messages)
+    return
+}
+
+export const fetchRoomPariticpants = async (req: Request, res: Response) => {
+    const { roomId } = req.body
+    if (roomId === undefined) {
+        res.sendStatus(400)
+        return
+    }
+    const participants = await getRoomPariticpants(roomId)
+    if (participants === undefined) {
+        res.sendStatus(400)
+    } else res.send(participants)
+    return
+}
+
+export const handleGettingRoomDetails = async (req: Request, res: Response) => {
     const { username } = req.params
 
     if (username === undefined) {
@@ -219,28 +255,112 @@ export const returnUserRooms = async (req: Request, res: Response) => {
         return
     }
 
-    const rooms = await getUserRoomsAlongParticipants(username)
+    const rooms = await getRoomDetails({ username })
 
     res.send(rooms)
-    return
 }
+export const handleGettingUniqueRoomDetails = async (req: Request, res: Response) => {
+    const { username, roomId } = req.params
+    console.log(req.params)
 
-export const fetchAllRoomPariticpants = async (req: Request, res: Response) => {
-    const { roomId } = req.body
-    if (roomId === undefined) {
+    if (username === undefined) {
         res.sendStatus(400)
         return
     }
-    const participants = await getAllRoomPariticpants(roomId)
-    if (participants === undefined) {
+
+    try {
+        const room = await getUniqueRoomDetails(username, roomId)
+        res.send(room)
+    } catch (err) {
         res.sendStatus(400)
-    } else res.send(participants)
+    }
     return
 }
 
-export const fetchMessages = async (req: Request, res: Response) => {
-    const { roomID } = req.params
-    const messages = await getAllMessagesFromRoom(roomID)
-    if (messages === undefined) res.sendStatus(404)
-    else res.send(messages)
+export const handlePrivateRoomCreation = async (req: Request, res: Response) => {
+    const { participants }: { participants: [string, string] } = req.body
+    console.log(participants)
+
+    if (participants.length !== 2) {
+        res.sendStatus(400)
+        return
+    }
+
+    try {
+        const roomId = await createPrivateRoom(...participants)
+        // const roomDetails: RoomDetails[] = await getRoomDetails(roomId)
+        res.send(roomId)
+    } catch (err) {
+        res.sendStatus(400)
+    }
 }
+
+export const handleGroupCreation = async (req: Request, res: Response) => {
+    const { participants, roomDisplayName }: { participants: [string, string]; roomDisplayName: string } = req.body
+
+    if (participants.length < 2) {
+        res.sendStatus(400)
+        return
+    }
+
+    try {
+        const roomId = await createGroup(participants, roomDisplayName)
+        // const roomDetails: RoomDetails[] = await getRoomDetails(roomId)
+        res.send(roomId)
+    } catch (err) {
+        res.sendStatus(400)
+    }
+}
+
+export const handleUserDeletesRoom = async (req: Request, res: Response) => {
+    const { roomId } = req.params
+    console.log(roomId)
+    if (!roomId) {
+        res.sendStatus(400)
+        return
+    }
+    try {
+        const removedUserRoom = await deleteRoom(roomId)
+        console.log(removedUserRoom)
+    } catch (err) {}
+    res.sendStatus(200)
+}
+
+export const handleUserLeavesRoom = async (req: Request, res: Response) => {
+    const { username, roomId } = req.params
+    console.log(username, roomId)
+    if (!username || !roomId) {
+        res.sendStatus(400)
+        return
+    }
+    try {
+        const removedUserRoom = await deleteUserRoom(username, roomId)
+        console.log(removedUserRoom)
+    } catch (err) {}
+    res.sendStatus(200)
+}
+
+export const handleUserExistsCheck = async (req: Request, res: Response) => {
+    const { username } = req.params
+    const userExists = await checkIfUserExists(username)
+    res.send(userExists)
+}
+export const handleNewParticipants = async (req: Request, res: Response) => {
+    type Body = { roomId: string; participants: string[] }
+
+    const { roomId, participants }: Body = req.body
+
+    console.log(roomId, participants)
+
+    // await updateRoomParticipants()
+    res.sendStatus(200)
+}
+export const test = async (req: Request, res: Response) => {}
+
+// REQUIRMENTS
+// user creates a new room
+// members of new room get alerted.
+// room gets added for every member in that room
+
+// user click enter to creates a unique room
+// client hits endpoint to create room
