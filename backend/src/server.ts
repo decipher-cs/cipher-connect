@@ -8,6 +8,7 @@ import { initSocketIO } from './socket.js'
 import { reqLogger } from './middleware/logs.js'
 import { corsWithOptions } from './config/corsOptions.js'
 import multer from 'multer'
+import { PrismaClient } from '@prisma/client'
 
 dotenv.config()
 
@@ -19,14 +20,16 @@ const io = new Server(server, {
     maxHttpBufferSize: 1e8,
     pingTimeout: 600000,
 })
+export const prisma = new PrismaClient()
 
 export const media = multer({ dest: 'public/media' }).single('userUpload')
-export const avatar = multer({ dest: 'public/avatars' }).single('avatar')
+export const avatar = multer({ dest: 'public/avatar' }).single('avatar')
 
 // middleware //
 if (app.settings.env === 'production') app.use(reqLogger) // only run this code if app is running in production.
 
 app.use(express.static('public/'))
+// app.use(express.static('public/avatars'))
 app.use(corsWithOptions())
 app.use(cookieParser())
 app.use(express.json()) // for parsing application/json
