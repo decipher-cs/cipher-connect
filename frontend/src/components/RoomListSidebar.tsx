@@ -9,7 +9,7 @@ import { RoomListItem } from './RoomListItem'
 import { MessageListAction } from '../reducer/messageListReducer'
 import { SocketWithCustomEvents } from '../types/socket'
 import { useFetch } from '../hooks/useFetch'
-import { CreateRoom } from './CreateRoom'
+import { CreateRoomDialog } from './CreateRoomDialog'
 
 interface RoomListSidebar {
     socketObject: SocketWithCustomEvents
@@ -46,7 +46,7 @@ export const RoomListSidebar = (props: RoomListSidebar) => {
                 <AddToPhotosRounded />
             </IconButton>
 
-            <CreateRoom
+            <CreateRoomDialog
                 socketObject={props.socketObject}
                 openDialog={showCreateRoomDialog}
                 roomDispatcher={props.roomDispatcher}

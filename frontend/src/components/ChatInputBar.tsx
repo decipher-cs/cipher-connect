@@ -2,13 +2,13 @@ import { ArrowRight, AttachFileRounded, MicRounded } from '@mui/icons-material'
 import { IconButton, InputAdornment, ToggleButton } from '@mui/material'
 import { useContext, useState } from 'react'
 import { useAudioRecorder } from '../hooks/useAudioRecorder'
-import { message as Message, MessageContentType } from '../types/prisma.client'
-import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
+import { Message, MessageContentType } from '../types/prisma.client'
+import { SocketWithCustomEvents } from '../types/socket'
 import { MultimediaAttachmentMenu } from './MultimediaAttachmentMenu'
 import { StyledTextField } from './StyledTextField'
 import { CredentialContext } from '../contexts/Credentials'
 import { MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
-import { RoomActionType } from '../reducer/roomReducer'
+import { RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { Routes } from '../types/routes'
 import { useFetch } from '../hooks/useFetch'
 import filetypeinfo, { filetypeextension, filetypemime, filetypename } from 'magic-bytes.js'
@@ -18,7 +18,7 @@ const mimeToFileType = (mime: string) => {
 }
 
 interface ChatInputBarProps {
-    currRoom: RoomWithParticipants
+    currRoom: RoomsState['joinedRooms'][0]
     socketObject: SocketWithCustomEvents
     messageListDispatcher: React.Dispatch<MessageListAction>
 }
@@ -43,7 +43,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
           }
         | {
               content: File | Blob
-              MIME: string
+              // MIME: string
               contentType: Exclude<MessageContentType, MessageContentType.text>
           }
 
@@ -69,7 +69,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
             createdAt: new Date(),
             contentType,
             content: content,
-            MIME: 'MIME' in args ? args.MIME : null,
+            // MIME: 'MIME' in args ? args.MIME : null,
         }
 
         props.messageListDispatcher({ type: MessageListActionType.ADD, newMessage: message })
@@ -99,7 +99,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
             handleMessageDelivery({
                 content: file,
                 contentType: MessageContentType[type],
-                MIME: mime,
+                // MIME: mime,
             })
         }
     }
@@ -118,7 +118,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
 
             setRecordedAudioFile(ev.data)
 
-            handleMessageDelivery({ content: ev.data, contentType: MessageContentType.audio, MIME })
+            handleMessageDelivery({ content: ev.data, contentType: MessageContentType.audio /*  MIME  */ })
         }
     }
 

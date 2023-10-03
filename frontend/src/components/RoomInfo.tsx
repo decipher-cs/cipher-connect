@@ -35,6 +35,7 @@ import {
     PersonAddRounded,
     RemoveRounded,
     SearchSharp,
+    SettingsRemoteSharp,
 } from '@mui/icons-material'
 import { StyledTextField } from './StyledTextField'
 import { EditableText } from './EditableText'
@@ -250,14 +251,35 @@ const AddGroupParticipantsDialog = (props: {
     socketObject: SocketWithCustomEvents
     room: RoomsState['joinedRooms'][0]
 }) => {
+    const { username } = useContext(CredentialContext)
+
     const [isOpen, setIsOpen] = useState(false)
 
     const handleClose = () => setIsOpen(false)
 
-    const { setFieldValue, getFieldProps, errors, values, isSubmitting } = useFormik({
+    const { startFetching: varifyUsername } = useFetch<boolean>(Routes.get.isUsernameValid, true)
+
+    const { setFieldValue, getFieldProps, errors, values, isSubmitting, submitForm } = useFormik({
         initialValues: { usersToBeAdded: [''] },
         onSubmit: ({ usersToBeAdded }: { usersToBeAdded: [''] }) => {
-            usersToBeAdded
+            return new Promise((res, rej) => {
+                setTimeout(() => {
+                    res('done')
+                }, 1000)
+            })
+        },
+        validate: async ({ usersToBeAdded }: { usersToBeAdded: [''] }) => {
+            const errors = await Promise.all(
+                usersToBeAdded.map(async username => {
+                    if (username.length < 3) return 'Min length is 3 characters'
+                    if (username.length > 16) return 'Max length is 16 characters, i think...'
+
+                    const valid = await varifyUsername(undefined, [username])
+
+                    return valid === true ? undefined : 'Invalid Username'
+                })
+            )
+            return { usersToBeAdded: errors }
         },
     })
 
@@ -283,6 +305,8 @@ const AddGroupParticipantsDialog = (props: {
                                 sx={{ width: '100%' }}
                                 {...getFieldProps(`usersToBeAdded.${i}`)}
                                 placeholder='Add User'
+                                error={errors.usersToBeAdded !== undefined && errors.usersToBeAdded[i] !== undefined}
+                                helperText={errors.usersToBeAdded && errors.usersToBeAdded[i]}
                                 InputProps={{
                                     endAdornment: (
                                         <IconButton onClick={() => handleRemoveTextField(i)}>
@@ -298,7 +322,19 @@ const AddGroupParticipantsDialog = (props: {
                 <DialogActions>
                     <ButtonGroup>
                         <Button onClick={handleClose}>Cancel</Button>
-                        <Button disabled={isSubmitting}>Confirm</Button>
+                        <Button
+                            disabled={isSubmitting}
+                            onClick={async () => {
+                                try {
+                                    await submitForm()
+                                    handleClose()
+                                } catch (error) {
+                                    throw error
+                                }
+                            }}
+                        >
+                            Confirm
+                        </Button>
                     </ButtonGroup>
                 </DialogActions>
             </Dialog>

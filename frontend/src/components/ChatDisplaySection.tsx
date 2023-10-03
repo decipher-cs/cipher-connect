@@ -2,21 +2,22 @@ import { Box } from '@mui/material'
 import { useContext, useEffect, useRef } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
 import React, { useState } from 'react'
-import { RoomWithParticipants, SocketWithCustomEvents } from '../types/socket'
+import { RoomWithParticipants } from '../types/prisma.client'
 import { MessageTile } from './MessageTile'
 import { ChatInputBar } from './ChatInputBar'
 import { RoomBanner } from './RoomBanner'
 import { Message } from '../types/prisma.client'
 import { MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
 import { Routes } from '../types/routes'
+import { SocketWithCustomEvents } from '../types/socket'
+import { RoomsState } from '../reducer/roomReducer'
 
 export interface ChatDisplaySectionProps {
     chatMessageList: Message[]
-    currRoom: RoomWithParticipants
+    currRoom: RoomsState['joinedRooms'][0]
     setRoomInfoVisible: React.Dispatch<React.SetStateAction<boolean>>
     socketObject: SocketWithCustomEvents
     messageListDispatcher: React.Dispatch<MessageListAction>
-
 }
 
 export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
@@ -55,7 +56,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                             // If newest message in the list, put ref on it to auto-scroll to bottom
                             autoScrollToBottomRef={i === props.chatMessageList.length - 1 ? scrollToBottomRef : null}
                             contentType={message.contentType}
-                            MIME={message.MIME}
+                            // MIME={message.MIME}
                         />
                     )
                 })}

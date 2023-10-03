@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom'
 import { GridLoader, MoonLoader } from 'react-spinners'
 import { CredentialContext } from '../contexts/Credentials'
 import { useFetch } from '../hooks/useFetch'
-import { User } from '../types/prisma.client'
+import { User, UserWithoutID } from '../types/prisma.client'
 import { Routes } from '../types/routes'
 import { SocketWithCustomEvents } from '../types/socket'
 import { DarkModeToggleSwitch } from './DarkModeToggleSwitch'
@@ -32,14 +32,14 @@ export const Sidebar = (props: SidebarProps) => {
 
     const { username } = useContext(CredentialContext)
 
-    const [userProfile, setUserProfile] = useState<User>({
+    const [userProfile, setUserProfile] = useState<UserWithoutID>({
         username,
-        avatarPath: null,
-        displayName: username,
         createTime: new Date(),
+        displayName: username,
+        avatarPath: null,
     })
 
-    useFetch<User>(Routes.get.user, false, username, undefined, data => {
+    useFetch<UserWithoutID>(Routes.get.user, false, username, undefined, data => {
         setUserProfile(data)
     })
 

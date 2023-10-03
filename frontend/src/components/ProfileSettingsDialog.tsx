@@ -22,7 +22,7 @@ import { FormikConfig, useFormik } from 'formik'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
 import { useFetch } from '../hooks/useFetch'
-import { User } from '../types/prisma.client'
+import { User, UserWithoutID } from '../types/prisma.client'
 import { Routes } from '../types/routes'
 import { SocketWithCustomEvents } from '../types/socket'
 import { StyledTextField } from './StyledTextField'
@@ -35,8 +35,8 @@ interface ProfileSettingsDialogProps {
     readonly dialogOpen: boolean
     readonly socketObject: SocketWithCustomEvents
     setDialogOpen: React.Dispatch<React.SetStateAction<boolean>>
-    setUserProfile: React.Dispatch<React.SetStateAction<User>>
-    userProfile: User
+    setUserProfile: React.Dispatch<React.SetStateAction<UserWithoutID>>
+    userProfile: UserWithoutID
 }
 
 const validate = (values: { displayName: string }) => {

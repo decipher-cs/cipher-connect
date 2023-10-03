@@ -11,7 +11,7 @@ export const MessageTile = (
     props: {
         alignment: 'left' | 'right'
         autoScrollToBottomRef: React.RefObject<HTMLDivElement> | null
-    } & Pick<Message, 'MIME' | 'contentType' | 'content'>
+    } & Pick<Message, 'contentType' | 'content'>
 ) => {
     const [showDialog, setShowDialog] = useState(false)
 
@@ -53,20 +53,21 @@ export const MessageTile = (
                 {/* TODO: new component for previeing // <Preview/> */}
                 {/* <Dialog fullscreen open={showDialog} onClick={() => setShowDialog(false)}> */}
                 {/* </Dialog> */}
-                <Content content={props.content} contentType={props.contentType} MIME={props.MIME} />
+                <Content content={props.content} contentType={props.contentType} /* MIME={props.MIME} */ />
             </Paper>
         )
     }
 }
 
-const Content = ({ content, contentType, MIME }: Pick<Message, 'MIME' | 'contentType' | 'content'>) => {
+const Content = ({ content, contentType }: Pick<Message, 'contentType' | 'content'>) => {
     // TODO: set a  Loader/ skeletor/ spinner
 
     // content is the full path to the file on the server storage. Ex: folderName/randomFileBytes, media/aj3qfeq2rf3a32f3th5
 
     // TODO: put a placeholder/ broken for missing content
 
-    if (!MIME || !content) return <SmsFailedRounded />
+    // if (!MIME || !content) return <SmsFailedRounded />
+    if (!content) return <SmsFailedRounded />
 
     // TODO: append file extension and MIME on explicit download. Put a download button.
     // const file = new File([fetchMedia.data], crypto.randomUUID() + extension, { type: MIME })

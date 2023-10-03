@@ -1,54 +1,63 @@
 import { Avatar, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
 import MarkUnreadChatAltIcon from '@mui/icons-material/MarkUnreadChatAlt'
-import React, { useContext, useState } from 'react'
+import React, { memo, useContext, useState } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
 import { useFetch } from '../hooks/useFetch'
 import { MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
-import { RoomActions, RoomActionType } from '../reducer/roomReducer'
+import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { Message } from '../types/prisma.client'
 import { Routes } from '../types/routes'
-import { RoomWithParticipants } from '../types/socket'
+import { RoomWithParticipants } from '../types/prisma.client'
 
 interface RoomListItemProps {
-    room: RoomWithParticipants
+    room: RoomsState['joinedRooms'][0]
     roomDispatcher: React.Dispatch<RoomActions>
-    selectedRoomIndex: number | null
+    selectedRoomIndex: RoomsState['selectedRoom']
     roomIndex: number
     messageListDispatcher: React.Dispatch<MessageListAction>
 }
 
-export const RoomListItem = (props: RoomListItemProps) => {
+export const RoomListItem = memo((props: RoomListItemProps) => {
     const { username } = useContext(CredentialContext)
 
     const { startFetching: initializeMessages } = useFetch<Message[]>(Routes.get.messages, true, props.room.roomId)
 
-    const roomType = props.room.isMaxCapacityTwo === true ? 'private' : 'group'
-
     const [displayName, setDiplayName] = useState(() => {
-        return roomType === 'private' && props.room.roomDisplayImagePath === null
+        return props.room.roomType === 'private' && props.room.roomAvatar === null
             ? props.room.participants.filter(p => p.username !== username)[0]?.username
             : props.room.roomDisplayName
     })
 
     const displayImage =
-        roomType === 'group'
-            ? import.meta.env.VITE_AVATAR_STORAGE_URL + props.room.roomDisplayImagePath
+        props.room.roomType === 'group'
+            ? import.meta.env.VITE_AVATAR_STORAGE_URL + props.room.roomAvatar
             : import.meta.env.VITE_AVATAR_STORAGE_URL +
               props.room.participants.find(p => p.username === displayName)?.avatarPath
 
-    console.log(roomType, displayName, displayImage)
     return (
         <ListItemButton
             divider
             onClick={async () => {
-                if (props.roomIndex === props.selectedRoomIndex) return
-                props.roomDispatcher({ type: RoomActionType.CHANGE_ROOM, newRoomIndex: props.roomIndex })
-                const messages = await initializeMessages()
+                try {
+                    if (props.roomIndex === props.selectedRoomIndex) return
 
-                props.messageListDispatcher({
-                    type: MessageListActionType.INITIALIZE_MESSAGES,
-                    newMessages: messages,
-                })
+                    props.roomDispatcher({ type: RoomActionType.changeRoom, newRoomIndex: props.roomIndex })
+
+                    const messages = await initializeMessages()
+
+                    props.messageListDispatcher({
+                        type: MessageListActionType.INITIALIZE_MESSAGES,
+                        newMessages: messages,
+                    })
+
+                    props.roomDispatcher({
+                        type: RoomActionType.changeNotificationStatus,
+                        roomId: props.room.roomId,
+                        unreadMessages: false,
+                    })
+                } catch (error) {
+                    throw new Error('Error during room selection')
+                }
             }}
             selected={props.selectedRoomIndex === props.roomIndex}
         >
@@ -58,10 +67,10 @@ export const RoomListItem = (props: RoomListItemProps) => {
                 </ListItemIcon>
 
                 {/*TODO: Manage text overflow using primartyTextProps*/}
-                <ListItemText primary={displayName} secondary={roomType} />
+                <ListItemText primary={displayName} secondary={props.room.roomType} />
             </ListItem>
 
-            <MarkUnreadChatAltIcon />
+            {props.room.hasUnreadMessages === true ? <MarkUnreadChatAltIcon /> : null}
         </ListItemButton>
     )
-}
+})

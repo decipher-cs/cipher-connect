@@ -1,35 +1,31 @@
 import { ChevronRightRounded } from '@mui/icons-material'
 import { Avatar, Box, ButtonGroup, Collapse, IconButton, Typography } from '@mui/material'
 import { useContext, useState } from 'react'
-import { RoomWithParticipants } from '../types/socket'
+import { RoomWithParticipants } from '../types/prisma.client'
 import { StyledTextField } from './StyledTextField'
 import SearchIcon from '@mui/icons-material/Search'
 import { CredentialContext } from '../contexts/Credentials'
+import { RoomsState } from '../reducer/roomReducer'
 
 export const RoomBanner = (props: {
     setRoomInfoVisible: React.Dispatch<React.SetStateAction<boolean>>
-    room: RoomWithParticipants
+    room: RoomsState['joinedRooms'][0]
 }) => {
     const { username } = useContext(CredentialContext)
 
     const [searchFieldVisible, setSearchFieldVisible] = useState(false)
 
-    const displayName =
-        props.room.isMaxCapacityTwo === true
-            ? props.room.participants.find(p => p.username !== username)?.displayName
-            : props.room.roomDisplayName
+    const privateRoomCompanion =
+        props.room.roomType === 'private' ? props.room.participants.find(p => p.username !== username) : null
 
-    const otherMemberUsername =
-        props.room.isMaxCapacityTwo === true
-            ? props.room.participants.find(p => p.username !== username)?.username
-            : null
+    const displayName =
+        props.room.roomType === 'private' ? privateRoomCompanion?.displayName : props.room.roomDisplayName
 
     const imgSrc =
-        props.room.isMaxCapacityTwo === true
-            ? props.room.participants.find(p => p.username !== username)?.avatarPath
-            : import.meta.env.VITE_AVATAR_STORAGE_URL + props.room.roomDisplayImagePath
+        props.room.roomType === 'private'
+            ? privateRoomCompanion?.avatarPath
+            : import.meta.env.VITE_AVATAR_STORAGE_URL + props.room.roomAvatar
 
-    console.log(imgSrc)
     return (
         <Box
             sx={{
