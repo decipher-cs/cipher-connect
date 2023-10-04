@@ -29,7 +29,6 @@ export const avatar = multer({ dest: 'public/avatar' }).single('avatar')
 if (app.settings.env === 'production') app.use(reqLogger) // only run this code if app is running in production.
 
 app.use(express.static('public/'))
-// app.use(express.static('public/avatars'))
 app.use(corsWithOptions())
 app.use(cookieParser())
 app.use(express.json()) // for parsing application/json
