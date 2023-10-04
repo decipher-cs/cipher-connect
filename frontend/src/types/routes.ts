@@ -13,6 +13,7 @@ export const Routes = {
         media: '/Media',
         privateRoom: '/private-room',
         group: '/group',
+        participants: '/participants',
     },
     delete: {
         userRoom: '/user-room',
