@@ -15,11 +15,7 @@ dotenv.config()
 const PORT = process.env.PORT || process.env.DEV_PORT
 const app = express()
 const server = http.createServer(app)
-const io = new Server(server, {
-    cors: { origin: process.env.ORIGIN_DEV_URL },
-    maxHttpBufferSize: 1e8,
-    pingTimeout: 600000,
-})
+const io = new Server(server, { cors: { origin: process.env.CLIENT_URL } })
 export const prisma = new PrismaClient()
 
 export const media = multer({ dest: 'public/media' }).single('userUpload')
