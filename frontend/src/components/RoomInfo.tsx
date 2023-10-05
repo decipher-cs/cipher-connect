@@ -22,6 +22,7 @@ import {
     DialogActions,
     DialogTitle,
     DialogContent,
+    CircularProgress,
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import { SocketWithCustomEvents } from '../types/socket'
@@ -30,6 +31,7 @@ import {
     ArrowForwardRounded,
     CancelRounded,
     DeleteRounded,
+    DoneAllRounded,
     InfoRounded,
     NotificationsRounded,
     PersonAddRounded,
@@ -47,7 +49,7 @@ import { Routes } from '../types/routes'
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { ConfirmationDialog } from './ConfirmationDialog'
 import { CredentialContext } from '../contexts/Credentials'
-import { useFormik } from 'formik'
+import { useFormik, FormikErrors } from 'formik'
 
 interface RoomInfoProps {
     room: RoomsState['joinedRooms'][0]
@@ -259,29 +261,50 @@ const AddGroupParticipantsDialog = (props: {
 
     const { startFetching: varifyUsername } = useFetch<boolean>(Routes.get.isUsernameValid, true)
 
-    const { setFieldValue, getFieldProps, errors, values, isSubmitting, submitForm } = useFormik({
-        initialValues: { usersToBeAdded: [''] },
-        onSubmit: ({ usersToBeAdded }: { usersToBeAdded: [''] }) => {
-            return new Promise((res, rej) => {
-                setTimeout(() => {
-                    res('done')
-                }, 1000)
+    const { startFetching: addParticipants } = useFetch<boolean>(Routes.post.participants, true)
+
+    const handleSubmit = async ({ usersToBeAdded }: { usersToBeAdded: string[] }) => {
+        const res = await addParticipants({
+            body: JSON.stringify({ roomId: props.room.roomId, participants: usersToBeAdded }),
+            method: 'post',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+        })
+
+        console.log(res)
+    }
+
+    const handleValidation = async ({ usersToBeAdded }: { usersToBeAdded: string[] }) => {
+        const errors = await Promise.all(
+            usersToBeAdded.map(async username => {
+                if (username.length < 3) return 'Min length is 3 characters'
+                if (username.length > 16) return 'Max length is 16 characters, i think...'
+
+                const valid = await varifyUsername(undefined, [username])
+
+                return valid === true ? undefined : 'Invalid Username'
             })
-        },
-        validate: async ({ usersToBeAdded }: { usersToBeAdded: [''] }) => {
-            const errors = await Promise.all(
-                usersToBeAdded.map(async username => {
-                    if (username.length < 3) return 'Min length is 3 characters'
-                    if (username.length > 16) return 'Max length is 16 characters, i think...'
+        )
+        for (const err of errors) {
+            if (err !== undefined) return { usersToBeAdded: errors }
+        }
+        return undefined
+    }
 
-                    const valid = await varifyUsername(undefined, [username])
-
-                    return valid === true ? undefined : 'Invalid Username'
-                })
-            )
-            return { usersToBeAdded: errors }
-        },
-    })
+    const { setFieldValue, getFieldProps, errors, isValidating, dirty, touched, values, isSubmitting, submitForm } =
+        useFormik({
+            initialValues: { usersToBeAdded: [''] },
+            onSubmit: handleSubmit,
+            // validate: async ({ usersToBeAdded }: { usersToBeAdded: string[] }) => {
+            //     return new Promise(res => {
+            //         res()
+            //         // res({ usersToBeAdded: [undefined, undefined] })
+            //     })
+            // },
+            validate: handleValidation,
+        })
 
     const handleAddTextField = () => setFieldValue('usersToBeAdded', [...values.usersToBeAdded, ''])
     const handleRemoveTextField = (index: number) =>
@@ -299,23 +322,25 @@ const AddGroupParticipantsDialog = (props: {
 
                 <DialogContent>
                     {values.usersToBeAdded.map((value, i) => (
-                        <>
-                            <StyledTextField
-                                size='small'
-                                sx={{ width: '100%' }}
-                                {...getFieldProps(`usersToBeAdded.${i}`)}
-                                placeholder='Add User'
-                                error={errors.usersToBeAdded !== undefined && errors.usersToBeAdded[i] !== undefined}
-                                helperText={errors.usersToBeAdded && errors.usersToBeAdded[i]}
-                                InputProps={{
-                                    endAdornment: (
+                        <StyledTextField
+                            key={i}
+                            size='small'
+                            sx={{ width: '100%' }}
+                            {...getFieldProps(`usersToBeAdded.${i}`)}
+                            placeholder='Add User'
+                            error={errors.usersToBeAdded !== undefined && errors.usersToBeAdded[i] !== undefined}
+                            helperText={errors.usersToBeAdded && errors.usersToBeAdded[i]}
+                            InputProps={{
+                                endAdornment: (
+                                    <>
+                                        {isValidating ? <CircularProgress size={'1rem'} /> : <DoneAllRounded />}
                                         <IconButton onClick={() => handleRemoveTextField(i)}>
                                             <DeleteRounded />
                                         </IconButton>
-                                    ),
-                                }}
-                            />
-                        </>
+                                    </>
+                                ),
+                            }}
+                        />
                     ))}
                 </DialogContent>
 
@@ -327,7 +352,7 @@ const AddGroupParticipantsDialog = (props: {
                             onClick={async () => {
                                 try {
                                     await submitForm()
-                                    handleClose()
+                                    // handleClose()
                                 } catch (error) {
                                     throw error
                                 }
