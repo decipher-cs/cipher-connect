@@ -94,7 +94,7 @@ export const CreateRoomDialog = ({ openDialog, socketObject, handleClose, roomDi
     }
     return (
         <>
-            <Dialog open={openDialog} scroll='paper'>
+            <Dialog open={openDialog} scroll='paper' onClose={handleClose}>
                 <DialogTitle>Create a new room</DialogTitle>
                 <Formik initialValues={roomInitialValues} onSubmit={handleFormSubmit}>
                     {({ isSubmitting, getFieldProps, setFieldValue, values, resetForm }) => (

@@ -73,6 +73,12 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
             io.in(roomId).emit('userLeftRoom', username, roomId)
         })
 
+        socket.on('userJoinedRoom', async (roomId, participants) => {
+            const users = await getUsers(participants)
+            if (users) io.in(roomId).emit('userJoinedRoom', roomId, users)
+            io.to(participants).emit('newRoomCreated', roomId)
+        })
+
         socket.on('disconnect', () => {})
     })
 }

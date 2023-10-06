@@ -1,7 +1,7 @@
 import { Buffers } from '@react-frontend-developer/buffers'
 import { Socket } from 'socket.io-client'
 
-import { Message, Room, User, RoomConfig, UserRoom, RoomType, RoomDetails } from './prisma.client'
+import { Message, Room, User, RoomConfig, UserRoom, RoomType, RoomDetails, UserWithoutID } from './prisma.client'
 
 export interface ServerToClientEvents {
     noArg: () => void
@@ -13,6 +13,8 @@ export interface ServerToClientEvents {
     userProfileUpdated: (newSettings: Partial<User>) => void
     notification: (roomId: Room['roomId']) => void
     userLeftRoom: (username: User['username'], roomId: Room['roomId']) => void
+
+    userJoinedRoom: (roomId: Room['roomId'], participants: UserWithoutID[]) => void
 }
 
 // for socket.on()
@@ -23,6 +25,7 @@ export interface ClientToServerEvents {
     notification: (roomId: Room['roomId']) => void
     newRoomCreated: (participants: User['username'][], roomId: Room['roomId']) => void
     userLeftRoom: (roomId: Room['roomId']) => void
+    userJoinedRoom: (roomId: Room['roomId'], participants: User['username'][]) => void
     // addUsersToRoom: (usersToAdd: string[], roomName: string) => void
     // addParticipantsToGroup: (participants: string[], roomId: string, callback: (response: string) => void) => void
 }

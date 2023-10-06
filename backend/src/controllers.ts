@@ -202,14 +202,11 @@ export const returnUser = async (req: Request, res: Response) => {
     return
 }
 export const returnUsers = async (req: Request, res: Response) => {
-    let { usernames } = req.query as { usernames: string[] | string }
+    const { usernames } = req.query as { usernames: string[] }
     console.log(usernames, typeof usernames)
+
     try {
-        if (!usernames) throw new Error('Expected array')
-
-        if (typeof usernames === 'string') usernames = [usernames]
-
-        if (Array.isArray(usernames) === false) throw new Error('Expected array')
+        if (!usernames || Array.isArray(usernames) === false) throw new Error('Expected array')
 
         const users = await getUsers(usernames)
 
@@ -350,10 +347,13 @@ export const handleNewParticipants = async (req: Request, res: Response) => {
 
     const { roomId, participants }: Body = req.body
 
-    console.log(roomId, participants)
-
-    // await updateRoomParticipants()
-    res.sendStatus(200)
+    try {
+        await updateRoomParticipants(roomId, participants)
+        res.sendStatus(200)
+    } catch (err) {
+        res.sendStatus(400)
+    }
+    return
 }
 export const test = async (req: Request, res: Response) => {}
 

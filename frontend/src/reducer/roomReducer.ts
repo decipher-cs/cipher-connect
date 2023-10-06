@@ -94,7 +94,11 @@ export const roomReducer: React.Reducer<RoomsState, RoomActions> = (state, actio
             })
             break
         case RoomActionType.addParticipants:
-            // room.joinedRooms.find(r => r.roomId === action.roomId)
+            room.joinedRooms.forEach(room => {
+                if (room.roomId === action.roomId) {
+                    room.participants = [...room.participants, ...action.participants]
+                }
+            })
             break
 
         case RoomActionType.changeRoom:

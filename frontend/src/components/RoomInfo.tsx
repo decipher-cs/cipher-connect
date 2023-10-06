@@ -261,7 +261,7 @@ const AddGroupParticipantsDialog = (props: {
 
     const { startFetching: varifyUsername } = useFetch<boolean>(Routes.get.isUsernameValid, true)
 
-    const { startFetching: addParticipants } = useFetch<boolean>(Routes.post.participants, true)
+    const { startFetching: addParticipants } = useFetch<string>(Routes.post.participants, true)
 
     const handleSubmit = async ({ usersToBeAdded }: { usersToBeAdded: string[] }) => {
         const res = await addParticipants({
@@ -272,8 +272,7 @@ const AddGroupParticipantsDialog = (props: {
                 'Content-Type': 'application/json',
             },
         })
-
-        console.log(res)
+        if (res.toLowerCase() === 'ok') props.socketObject.emit('userJoinedRoom', props.room.roomId, usersToBeAdded)
     }
 
     const handleValidation = async ({ usersToBeAdded }: { usersToBeAdded: string[] }) => {
@@ -297,12 +296,6 @@ const AddGroupParticipantsDialog = (props: {
         useFormik({
             initialValues: { usersToBeAdded: [''] },
             onSubmit: handleSubmit,
-            // validate: async ({ usersToBeAdded }: { usersToBeAdded: string[] }) => {
-            //     return new Promise(res => {
-            //         res()
-            //         // res({ usersToBeAdded: [undefined, undefined] })
-            //     })
-            // },
             validate: handleValidation,
         })
 

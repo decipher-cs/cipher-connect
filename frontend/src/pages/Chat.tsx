@@ -5,7 +5,7 @@ import { CredentialContext } from '../contexts/Credentials'
 import { socket } from '../socket'
 import { PulseLoader } from 'react-spinners'
 import { RoomInfo } from '../components/RoomInfo'
-import { RoomDetails, RoomWithParticipants } from '../types/prisma.client'
+import { RoomDetails, RoomWithParticipants, User } from '../types/prisma.client'
 import { Sidebar } from '../components/Sidebar'
 import { MessageListActionType, messageListReducer } from '../reducer/messageListReducer'
 import { RoomActionType, roomReducer } from '../reducer/roomReducer'
@@ -28,6 +28,8 @@ export const Chat = () => {
     const { startFetching: initializeRooms } = useFetch<RoomDetails[]>(Routes.get.userRooms, true, username)
 
     const { startFetching: fetchNewRoomDetails } = useFetch<RoomDetails>(Routes.get.userRoom, true)
+
+    const { startFetching: fetchUsers } = useFetch<User>(Routes.get.users, true)
 
     useEffect(() => {
         if (socket.connected === false && isLoggedIn === true) {
@@ -75,6 +77,10 @@ export const Chat = () => {
                 roomDispatcher({ type: RoomActionType.removeRoom, roomId })
             }
             if (username) roomDispatcher({ type: RoomActionType.removeParticipants, roomId, username: staleUsername })
+        })
+
+        socket.on('userJoinedRoom', async (roomId, participants) => {
+            roomDispatcher({ type: RoomActionType.addParticipants, roomId, participants })
         })
 
         socket.on('userProfileUpdated', profile => {})

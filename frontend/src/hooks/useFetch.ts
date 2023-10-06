@@ -39,6 +39,7 @@ export const useFetch = <T>(
             const configURL =
                 localParams === undefined || localParams === null ? URL : URL + ('/' + localParams.join('/'))
 
+            console.log('fetch started', configURL)
             const response = await fetch(configURL, defaultConfig)
             if (response.ok === false) {
                 setError(response.statusText)
