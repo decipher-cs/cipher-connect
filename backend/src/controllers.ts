@@ -311,14 +311,12 @@ export const handleGroupCreation = async (req: Request, res: Response) => {
 
 export const handleUserDeletesRoom = async (req: Request, res: Response) => {
     const { roomId } = req.params
-    console.log(roomId)
     if (!roomId) {
         res.sendStatus(400)
         return
     }
     try {
         const removedUserRoom = await deleteRoom(roomId)
-        console.log(removedUserRoom)
     } catch (err) {}
     res.sendStatus(200)
 }

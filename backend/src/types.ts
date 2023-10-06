@@ -23,6 +23,7 @@ export interface ServerToClientEvents {
     notification: (roomId: string) => void
     userLeftRoom: (username: User['username'], roomId: Room['roomId']) => void
     userJoinedRoom: (roomId: Room['roomId'], participants: UserWithoutID[]) => void
+    roomDeleted: (roomId: Room['roomId']) => void
 }
 
 // for io.on()
@@ -37,8 +38,7 @@ export interface ClientToServerEvents {
     newRoomCreated: (participants: User['username'][], roomId: Room['roomId']) => void
     userLeftRoom: (roomId: Room['roomId']) => void
     userJoinedRoom: (roomId: Room['roomId'], participants: User['username'][]) => void
-    // addUsersToRoom: (usersToAdd: string[], roomName: string) => void
-    // addParticipantsToGroup: (participants: string[], roomId: string, callback: (response: string) => void) => void
+    roomDeleted: (roomId: Room['roomId']) => void
 }
 
 export interface SocketData {

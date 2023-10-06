@@ -50,6 +50,7 @@ import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { ConfirmationDialog } from './ConfirmationDialog'
 import { CredentialContext } from '../contexts/Credentials'
 import { useFormik, FormikErrors } from 'formik'
+import { AddGroupParticipantsDialog } from './AddGroupParticipantsDialog'
 
 interface RoomInfoProps {
     room: RoomsState['joinedRooms'][0]
@@ -101,15 +102,6 @@ export const RoomInfo = (props: RoomInfoProps) => {
 
         props.socketObject.emit('roomUpdated', { roomAvatar: newPath })
     }
-
-    const { startFetching: leaveRoom } = useFetch(
-        Routes.delete.userRoom,
-        true,
-        `${username}/${props.room.roomId}`,
-        undefined,
-        () => {},
-        'delete'
-    )
 
     const { startFetching: deleteRoom } = useFetch(
         Routes.delete.room,
@@ -232,130 +224,17 @@ export const RoomInfo = (props: RoomInfoProps) => {
             <ConfirmationDialog
                 openDialog={openLeaveGroupDialog}
                 toggleConfirmationDialog={toggleLeaveGroupDialog}
-                onAccept={async () => {
-                    await leaveRoom()
+                onAccept={() => {
                     props.socketObject.emit('userLeftRoom', props.room.roomId)
                 }}
             />
             <ConfirmationDialog
                 openDialog={openDeleteGroupDialog}
                 toggleConfirmationDialog={toggleDeleteGroupDialog}
-                onAccept={async () => {
-                    await deleteRoom()
-                    // props.socketObject.emit()
+                onAccept={() => {
+                    props.socketObject.emit('roomDeleted', props.room.roomId)
                 }}
             />
         </Box>
-    )
-}
-
-const AddGroupParticipantsDialog = (props: {
-    socketObject: SocketWithCustomEvents
-    room: RoomsState['joinedRooms'][0]
-}) => {
-    const { username } = useContext(CredentialContext)
-
-    const [isOpen, setIsOpen] = useState(false)
-
-    const handleClose = () => setIsOpen(false)
-
-    const { startFetching: varifyUsername } = useFetch<boolean>(Routes.get.isUsernameValid, true)
-
-    const { startFetching: addParticipants } = useFetch<string>(Routes.post.participants, true)
-
-    const handleSubmit = async ({ usersToBeAdded }: { usersToBeAdded: string[] }) => {
-        const res = await addParticipants({
-            body: JSON.stringify({ roomId: props.room.roomId, participants: usersToBeAdded }),
-            method: 'post',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-        })
-        if (res.toLowerCase() === 'ok') props.socketObject.emit('userJoinedRoom', props.room.roomId, usersToBeAdded)
-    }
-
-    const handleValidation = async ({ usersToBeAdded }: { usersToBeAdded: string[] }) => {
-        const errors = await Promise.all(
-            usersToBeAdded.map(async username => {
-                if (username.length < 3) return 'Min length is 3 characters'
-                if (username.length > 16) return 'Max length is 16 characters, i think...'
-
-                const valid = await varifyUsername(undefined, [username])
-
-                return valid === true ? undefined : 'Invalid Username'
-            })
-        )
-        for (const err of errors) {
-            if (err !== undefined) return { usersToBeAdded: errors }
-        }
-        return undefined
-    }
-
-    const { setFieldValue, getFieldProps, errors, isValidating, dirty, touched, values, isSubmitting, submitForm } =
-        useFormik({
-            initialValues: { usersToBeAdded: [''] },
-            onSubmit: handleSubmit,
-            validate: handleValidation,
-        })
-
-    const handleAddTextField = () => setFieldValue('usersToBeAdded', [...values.usersToBeAdded, ''])
-    const handleRemoveTextField = (index: number) =>
-        setFieldValue('usersToBeAdded', [...values.usersToBeAdded.filter((_, i) => i !== index)])
-
-    return (
-        <>
-            <IconButton onClick={() => setIsOpen(true)}>
-                <PersonAddRounded />
-            </IconButton>
-            <Dialog open={isOpen} onClose={handleClose} fullWidth>
-                <DialogTitle>Add members to group</DialogTitle>
-
-                <Button onClick={handleAddTextField}>Add</Button>
-
-                <DialogContent>
-                    {values.usersToBeAdded.map((value, i) => (
-                        <StyledTextField
-                            key={i}
-                            size='small'
-                            sx={{ width: '100%' }}
-                            {...getFieldProps(`usersToBeAdded.${i}`)}
-                            placeholder='Add User'
-                            error={errors.usersToBeAdded !== undefined && errors.usersToBeAdded[i] !== undefined}
-                            helperText={errors.usersToBeAdded && errors.usersToBeAdded[i]}
-                            InputProps={{
-                                endAdornment: (
-                                    <>
-                                        {isValidating ? <CircularProgress size={'1rem'} /> : <DoneAllRounded />}
-                                        <IconButton onClick={() => handleRemoveTextField(i)}>
-                                            <DeleteRounded />
-                                        </IconButton>
-                                    </>
-                                ),
-                            }}
-                        />
-                    ))}
-                </DialogContent>
-
-                <DialogActions>
-                    <ButtonGroup>
-                        <Button onClick={handleClose}>Cancel</Button>
-                        <Button
-                            disabled={isSubmitting}
-                            onClick={async () => {
-                                try {
-                                    await submitForm()
-                                    // handleClose()
-                                } catch (error) {
-                                    throw error
-                                }
-                            }}
-                        >
-                            Confirm
-                        </Button>
-                    </ButtonGroup>
-                </DialogActions>
-            </Dialog>
-        </>
     )
 }

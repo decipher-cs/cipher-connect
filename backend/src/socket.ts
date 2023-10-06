@@ -11,6 +11,8 @@ import {
 } from './models/find.js'
 import { addMessageToDB, createGroup, createPrivateRoom } from './models/create.js'
 import { updateUser } from './models/update.js'
+import { updateRoomParticipants } from './models/update.js'
+import { deleteRoom, deleteUserRoom } from './models/delete.js'
 
 export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>) => {
     // Set socket.data.username on socket
@@ -43,7 +45,8 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
 
         socket.on('message', async message => {
             socket.broadcast.to(message.roomId).emit('message', message)
-            // TODO: notify everbody in the group about the new message by sending an emit('notify').
+            // TODO: notify everbody in the group about the new message by sending an emit('notify'). Or perhaps handle it on client side only.
+            io.in(message.roomId).emit('notification', message.roomId)
 
             try {
                 await addMessageToDB(message)
@@ -70,12 +73,22 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         })
 
         socket.on('userLeftRoom', roomId => {
+            deleteUserRoom(username, roomId)
             io.in(roomId).emit('userLeftRoom', username, roomId)
         })
 
+        socket.on('roomDeleted', roomId => {
+            deleteRoom(roomId)
+            io.in(roomId).emit('roomDeleted', roomId)
+        })
+
         socket.on('userJoinedRoom', async (roomId, participants) => {
+            await updateRoomParticipants(roomId, participants)
+
             const users = await getUsers(participants)
+
             if (users) io.in(roomId).emit('userJoinedRoom', roomId, users)
+
             io.to(participants).emit('newRoomCreated', roomId)
         })
 

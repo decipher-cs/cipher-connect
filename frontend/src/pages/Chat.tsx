@@ -83,6 +83,10 @@ export const Chat = () => {
             roomDispatcher({ type: RoomActionType.addParticipants, roomId, participants })
         })
 
+        socket.on('roomDeleted', roomId => {
+            roomDispatcher({ type: RoomActionType.removeRoom, roomId })
+        })
+
         socket.on('userProfileUpdated', profile => {})
 
         return () => {
