@@ -17,13 +17,20 @@ model RefreshToken {
   username             String
 }
 
+enum UserStatus {
+  offline
+  online
+  hidden
+}
+
 model User {
   userId     String   @id @unique @default(cuid())
   username   String   @unique @db.VarChar(16)
   createTime DateTime @default(now()) @db.Timestamp(0)
 
-  displayName String  @db.VarChar(16)
-  avatarPath  String? @db.MediumText
+  displayName String     @db.VarChar(16)
+  avatarPath  String?    @db.MediumText
+  status      UserStatus @default(offline)
 
   refreshTokens RefreshToken[]
   message       Message[]
