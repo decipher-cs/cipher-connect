@@ -107,9 +107,12 @@ export const roomReducer: React.Reducer<RoomsState, RoomActions> = (state, actio
             break
 
         case RoomActionType.changeNotificationStatus:
-            if (selectedRoom !== null && selectedRoom.roomId === action.roomId) {
-                selectedRoom.hasUnreadMessages = action.unreadMessages
-            }
+            // if (selectedRoom !== null && selectedRoom.roomId === action.roomId) {
+            //     selectedRoom.hasUnreadMessages = action.unreadMessages
+            // }
+            room.joinedRooms.forEach(room => {
+                if (room.roomId === action.roomId) room.hasUnreadMessages = action.unreadMessages
+            })
             break
 
         case RoomActionType.alterRoomProperties:

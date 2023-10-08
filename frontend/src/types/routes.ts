@@ -15,6 +15,9 @@ export const Routes = {
         group: '/group',
         participants: '/participants',
     },
+    put: {
+        messageReadStatus: '/message-read-status',
+    },
     delete: {
         userRoom: '/user-room',
         room: '/room',

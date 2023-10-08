@@ -25,10 +25,8 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
 
     const scrollToBottomRef = useRef<HTMLDivElement>(null)
 
-    const chatMessageList = props.chatMessageList.slice()
-
     // TODO: cache this using usecallback or useMemo
-    chatMessageList.sort((a, b) => {
+    const chatMessageList = props.chatMessageList.slice().sort((a, b) => {
         const aInMilliseconds = new Date(a.createdAt).valueOf()
         const bInMilliseconds = new Date(b.createdAt).valueOf()
         return aInMilliseconds - bInMilliseconds

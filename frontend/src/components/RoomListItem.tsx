@@ -8,6 +8,7 @@ import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { Message } from '../types/prisma.client'
 import { Routes } from '../types/routes'
 import { RoomWithParticipants } from '../types/prisma.client'
+import { PhoneEnabled } from '@mui/icons-material'
 
 interface RoomListItemProps {
     room: RoomsState['joinedRooms'][0]
@@ -21,6 +22,12 @@ export const RoomListItem = memo((props: RoomListItemProps) => {
     const { username } = useContext(CredentialContext)
 
     const { startFetching: initializeMessages } = useFetch<Message[]>(Routes.get.messages, true, props.room.roomId)
+
+    const { startFetching: changeMessageReadStatus } = useFetch<string>(
+        Routes.put.messageReadStatus,
+        true,
+        props.room.roomId + '/' + username
+    )
 
     const [displayName, setDiplayName] = useState(() => {
         return props.room.roomType === 'private' && props.room.roomAvatar === null
@@ -39,14 +46,14 @@ export const RoomListItem = memo((props: RoomListItemProps) => {
             divider
             onClick={async () => {
                 try {
-                    if (props.roomIndex === props.selectedRoomIndex) return
-
-                    props.roomDispatcher({ type: RoomActionType.changeRoom, newRoomIndex: props.roomIndex })
+                    // if (props.roomIndex === props.selectedRoomIndex) return
 
                     const messages = await initializeMessages()
 
+                    props.roomDispatcher({ type: RoomActionType.changeRoom, newRoomIndex: props.roomIndex })
+
                     props.messageListDispatcher({
-                        type: MessageListActionType.INITIALIZE_MESSAGES,
+                        type: MessageListActionType.initializeMessages,
                         newMessages: messages,
                     })
 
@@ -54,6 +61,15 @@ export const RoomListItem = memo((props: RoomListItemProps) => {
                         type: RoomActionType.changeNotificationStatus,
                         roomId: props.room.roomId,
                         unreadMessages: false,
+                    })
+
+                    const res = await changeMessageReadStatus({
+                        method: 'put',
+                        body: JSON.stringify({ hasUnreadMessages: false }),
+                        headers: {
+                            Accept: 'application/json',
+                            'Content-Type': 'application/json',
+                        },
                     })
                 } catch (error) {
                     throw new Error('Error during room selection')

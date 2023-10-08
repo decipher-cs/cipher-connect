@@ -17,6 +17,7 @@ export type User = {
     createTime: Date
     displayName: string
     avatarPath: string | null
+    status: UserStatus
 }
 
 /**
@@ -93,6 +94,12 @@ export enum MessageContentType {
 export enum RoomType {
     private = 'private',
     group = 'group',
+}
+
+export enum UserStatus {
+    offline = 'offline',
+    online = 'online',
+    hidden = 'hidden',
 }
 
 export type UserWithoutID = Omit<User, 'userId'>

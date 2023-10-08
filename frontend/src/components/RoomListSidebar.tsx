@@ -44,14 +44,14 @@ export const RoomListSidebar = (props: RoomListSidebar) => {
                 sx={{ justifySelf: 'flex-end', gridArea: '1 / 1 / 1 / 1', pr: 2 }}
             >
                 <AddToPhotosRounded />
-            </IconButton>
 
-            <CreateRoomDialog
-                socketObject={props.socketObject}
-                openDialog={showCreateRoomDialog}
-                roomDispatcher={props.roomDispatcher}
-                handleClose={() => setShowCreateRoomDialog(false)}
-            />
+                <CreateRoomDialog
+                    socketObject={props.socketObject}
+                    openDialog={showCreateRoomDialog}
+                    roomDispatcher={props.roomDispatcher}
+                    handleClose={() => setShowCreateRoomDialog(false)}
+                />
+            </IconButton>
 
             <List sx={{ overflowY: 'auto' }}>
                 {props.rooms.map((room, i) => {

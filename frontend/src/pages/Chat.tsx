@@ -29,7 +29,11 @@ export const Chat = () => {
 
     const { startFetching: fetchNewRoomDetails } = useFetch<RoomDetails>(Routes.get.userRoom, true)
 
-    const { startFetching: fetchUsers } = useFetch<User>(Routes.get.users, true)
+    const { startFetching: changeMessageReadStatus } = useFetch<string>(
+        Routes.put.messageReadStatus,
+        true,
+        rooms.selectedRoom !== null ? rooms.joinedRooms[rooms.selectedRoom].roomId + '/' + username : ''
+    )
 
     useEffect(() => {
         if (socket.connected === false && isLoggedIn === true) {
@@ -43,31 +47,12 @@ export const Chat = () => {
             roomDispatcher({ type: RoomActionType.initializeRoom, rooms: data })
         })
 
-        socket.on('message', messageFromServer => {
-            messageDispatcher({ type: MessageListActionType.ADD, newMessage: messageFromServer })
-            if (rooms.selectedRoom && rooms.joinedRooms[rooms.selectedRoom].roomId !== messageFromServer.roomId)
-                roomDispatcher({
-                    type: RoomActionType.changeNotificationStatus,
-                    roomId: messageFromServer.roomId,
-                    unreadMessages: true,
-                })
-        })
-
         socket.on('newRoomCreated', async roomId => {
             const roomDetails = await fetchNewRoomDetails({ method: 'get' }, [username, roomId])
             roomDispatcher({
                 type: RoomActionType.addRoom,
                 room: roomDetails,
             })
-        })
-
-        socket.on('notification', roomId => {
-            if (rooms.selectedRoom && rooms.joinedRooms[rooms.selectedRoom].roomId !== roomId)
-                roomDispatcher({
-                    type: RoomActionType.changeNotificationStatus,
-                    roomId: roomId,
-                    unreadMessages: true,
-                })
         })
 
         socket.on('userLeftRoom', (staleUsername, roomId) => {
@@ -95,6 +80,47 @@ export const Chat = () => {
         }
     }, [])
 
+    useEffect(() => {
+        socket.on('message', messageFromServer => {
+            if (rooms.selectedRoom === null) return
+
+            if (rooms.joinedRooms[rooms.selectedRoom].roomId === messageFromServer.roomId) {
+                messageDispatcher({ type: MessageListActionType.add, newMessage: messageFromServer })
+            }
+        })
+
+        socket.on('notification', roomId => {
+            if (rooms.selectedRoom === null) return
+
+            if (rooms.joinedRooms[rooms.selectedRoom].roomId !== roomId) {
+                roomDispatcher({
+                    type: RoomActionType.changeNotificationStatus,
+                    roomId: roomId,
+                    unreadMessages: true,
+                })
+            } else {
+                roomDispatcher({
+                    type: RoomActionType.changeNotificationStatus,
+                    roomId: roomId,
+                    unreadMessages: false,
+                })
+                changeMessageReadStatus({
+                    method: 'put',
+                    body: JSON.stringify({ hasUnreadMessages: false }),
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                })
+            }
+        })
+
+        return () => {
+            socket.removeListener('message')
+            socket.removeListener('notification')
+        }
+    }, [rooms.selectedRoom])
+
     if (isLoading) return <PulseLoader color='#36d7b7' />
 
     return (
@@ -109,7 +135,6 @@ export const Chat = () => {
                 }}
             >
                 <Sidebar socketObject={socket} /* userSettings={userSettings} setUserSettings={setUserSettings} */ />
-
                 <RoomListSidebar
                     socketObject={socket}
                     rooms={rooms.joinedRooms}

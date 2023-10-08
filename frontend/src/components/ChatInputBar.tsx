@@ -72,7 +72,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
             // MIME: 'MIME' in args ? args.MIME : null,
         }
 
-        props.messageListDispatcher({ type: MessageListActionType.ADD, newMessage: message })
+        props.messageListDispatcher({ type: MessageListActionType.add, newMessage: message })
 
         props.socketObject.emit('message', message)
     }
