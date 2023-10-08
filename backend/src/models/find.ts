@@ -11,6 +11,7 @@ export const getUser = async (username: string): Promise<UserWithoutID | null> =
             createTime: true,
             displayName: true,
             avatarPath: true,
+            status: true,
         },
     })
 }
@@ -41,6 +42,7 @@ export const getUsersById = async (userIDs: string[]): Promise<UserWithoutID[] |
             createTime: true,
             displayName: true,
             avatarPath: true,
+            status: true,
         },
     })
 }
@@ -56,6 +58,7 @@ export const getUsers = async (usernames: string[]): Promise<UserWithoutID[] | n
             createTime: true,
             displayName: true,
             avatarPath: true,
+            status: true,
         },
     })
 }

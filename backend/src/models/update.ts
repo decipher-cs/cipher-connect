@@ -1,4 +1,4 @@
-import { Room, User } from '@prisma/client'
+import { Room, User, UserRoom } from '@prisma/client'
 import { prisma } from '../server.js'
 
 export const updateUser = async (username: string, user: Partial<User>) => {
@@ -43,4 +43,25 @@ export const updateRoomParticipants = async (roomId: Room['roomId'], participant
         },
     })
     return updatedRoom.roomId
+}
+
+export const updateMessageReadStatus = async (
+    roomId: Room['roomId'],
+    hasUnreadMessages: UserRoom['hasUnreadMessages'],
+    usernames?: User['username'][]
+) => {
+    await prisma.userRoom.updateMany({
+        where: {
+            roomId,
+            username: usernames ? { in: usernames } : undefined,
+        },
+        data: { hasUnreadMessages },
+    })
+    // await prisma.userRoom.updateMany({
+    //     where: {
+    //         roomId,
+    //         username: { in: usernames },
+    //     },
+    //     data: { hasUnreadMessages },
+    // })
 }

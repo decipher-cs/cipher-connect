@@ -15,7 +15,7 @@ import {
 } from './models/find.js'
 import { addRefreshToken, createGroup, createNewUser, createPrivateRoom } from './models/create.js'
 import { deleteRefreshToken, deleteRoom, deleteUserRoom } from './models/delete.js'
-import { updateRoom, updateRoomParticipants, updateUser } from './models/update.js'
+import { updateMessageReadStatus, updateRoom, updateRoomParticipants, updateUser } from './models/update.js'
 import { User } from '@prisma/client'
 import { RoomDetails } from './types.js'
 
@@ -353,12 +353,20 @@ export const handleNewParticipants = async (req: Request, res: Response) => {
     }
     return
 }
+
+export const handleMessageReadStatusChange = async (req: Request, res: Response) => {
+    const { roomId, username } = req.params
+    const { hasUnreadMessages }: { hasUnreadMessages: boolean } = req.body
+    try {
+        if (!roomId || !username || hasUnreadMessages === undefined) throw new Error('Incorrect params')
+
+        await updateMessageReadStatus(roomId, hasUnreadMessages, [username])
+
+        res.sendStatus(200)
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(400)
+    }
+}
+
 export const test = async (req: Request, res: Response) => {}
-
-// REQUIRMENTS
-// user creates a new room
-// members of new room get alerted.
-// room gets added for every member in that room
-
-// user click enter to creates a unique room
-// client hits endpoint to create room

@@ -21,6 +21,7 @@ import {
     handleUserDeletesRoom,
     handleUserExistsCheck,
     handleNewParticipants,
+    handleMessageReadStatusChange,
 } from './controllers.js'
 import { avatar, media } from './server.js'
 
@@ -41,6 +42,9 @@ const routes = {
         privateRoom: '/private-room',
         group: '/group',
         participants: '/participants',
+    },
+    put: {
+        messageReadStatus: '/message-read-status',
     },
     delete: {
         userRoom: '/user-room',
@@ -83,6 +87,8 @@ export const initRoutes = (app: Express) => {
     app.post(routes.post.group, handleGroupCreation)
 
     app.post(routes.post.participants, handleNewParticipants)
+
+    app.put(routes.put.messageReadStatus + '/:roomId/:username', handleMessageReadStatusChange)
 
     app.delete(routes.delete.userRoom + '/:username/:roomId', handleUserLeavesRoom)
 

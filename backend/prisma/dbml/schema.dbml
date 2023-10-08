@@ -2,41 +2,43 @@
 //// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 //// ------------------------------------------------------
 
-Table refresh_token {
+Table RefreshToken {
   tokenOwnerIdRelation User [not null]
   tokenValue String [pk]
   username String [not null]
 }
 
 Table User {
-  username String [pk]
+  userId String [pk]
+  username String [unique, not null]
   createTime DateTime [default: `now()`, not null]
   displayName String [not null]
   avatarPath String
-  refreshTokens refresh_token [not null]
+  status UserStatus [not null, default: 'offline']
+  refreshTokens RefreshToken [not null]
   message Message [not null]
-  roomConfig room_config [not null]
-  userRoom user_room [not null]
-  passwordHash password_hash
+  roomConfig RoomConfig [not null]
+  userRoom UserRoom [not null]
+  passwordHash PasswordHash
   rooms Room [not null]
 }
 
-Table password_hash {
-  key Int [pk, increment]
+Table PasswordHash {
+  id Int [pk, increment]
   username String [unique, not null]
   hash String [not null]
   user User [not null]
 }
 
-Table room_config {
+Table RoomConfig {
   username String [not null]
   roomId String [not null]
   isHidden Boolean [not null, default: false]
-  hasUnreadMessages Boolean [not null, default: true]
+  isBlocked Boolean [not null, default: false]
   isNotificationMuted Boolean [not null, default: false]
   user User [not null]
   room Room [not null]
-  userRoom user_room
+  userRoom UserRoom
 
   indexes {
     (username, roomId) [pk]
@@ -45,23 +47,24 @@ Table room_config {
 
 Table Room {
   roomId String [pk]
-  roomDisplayName String
-  roomDisplayImagePath String
-  isMaxCapacityTwo Boolean [not null, default: false]
   roomType RoomType [not null]
+  roomDisplayName String
+  roomAvatar String
   message Message [not null]
-  userRoomConfig room_config [not null]
-  userRoom user_room [not null]
+  userRoomConfig RoomConfig [not null]
+  userRoom UserRoom [not null]
   user User [not null]
 }
 
-Table user_room {
+Table UserRoom {
   username String [not null]
   roomId String [not null]
-  configId Int [unique, not null]
+  joinedAt DateTime [default: `now()`, not null]
+  isAdmin Boolean [not null, default: false]
+  hasUnreadMessages Boolean [not null, default: true]
   user User [not null]
   room Room [not null]
-  roomConfig room_config [not null]
+  roomConfig RoomConfig [not null]
 
   indexes {
     (username, roomId) [pk]
@@ -76,9 +79,14 @@ Table Message {
   createdAt DateTime [default: `now()`, not null]
   editedAt DateTime
   contentType MessageContentType [not null]
-  MIME String
   sender User [not null]
   room Room [not null]
+}
+
+Enum UserStatus {
+  offline
+  online
+  hidden
 }
 
 Enum RoomType {
@@ -94,20 +102,20 @@ Enum MessageContentType {
   file
 }
 
-Ref: refresh_token.username > User.username
+Ref: RefreshToken.username > User.username
 
-Ref: password_hash.username - User.username
+Ref: PasswordHash.username - User.username
 
-Ref: room_config.username > User.username [delete: Cascade]
+Ref: RoomConfig.username > User.username [delete: Cascade]
 
-Ref: room_config.roomId > Room.roomId [delete: Cascade]
+Ref: RoomConfig.roomId > Room.roomId [delete: Cascade]
 
-Ref: user_room.username > User.username [delete: Cascade]
+Ref: UserRoom.username > User.username [delete: Cascade]
 
-Ref: user_room.roomId > Room.roomId [delete: Cascade]
+Ref: UserRoom.roomId > Room.roomId [delete: Cascade]
 
-Ref: user_room.(username, roomId) - room_config.(username, roomId) [delete: Cascade]
+Ref: UserRoom.(username, roomId) - RoomConfig.(username, roomId) [delete: Cascade]
 
-Ref: Message.senderUsername > User.username
+Ref: Message.senderUsername > User.username [delete: Cascade]
 
-Ref: Message.roomId > Room.roomId
+Ref: Message.roomId > Room.roomId [delete: Cascade]

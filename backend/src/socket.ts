@@ -10,7 +10,7 @@ import {
     getUsers,
 } from './models/find.js'
 import { addMessageToDB, createGroup, createPrivateRoom } from './models/create.js'
-import { updateUser } from './models/update.js'
+import { updateMessageReadStatus, updateUser } from './models/update.js'
 import { updateRoomParticipants } from './models/update.js'
 import { deleteRoom, deleteUserRoom } from './models/delete.js'
 
@@ -45,11 +45,11 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
 
         socket.on('message', async message => {
             socket.broadcast.to(message.roomId).emit('message', message)
-            // TODO: notify everbody in the group about the new message by sending an emit('notify'). Or perhaps handle it on client side only.
-            io.in(message.roomId).emit('notification', message.roomId)
+            socket.broadcast.to(message.roomId).emit('notification', message.roomId)
 
             try {
-                await addMessageToDB(message)
+                addMessageToDB(message)
+                updateMessageReadStatus(message.roomId, true)
             } catch (error) {
                 console.log('error uploading to server', error)
             }
