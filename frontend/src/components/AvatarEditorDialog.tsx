@@ -25,7 +25,6 @@ export const AvatarEditorDialog = (props: {
     handleSubmit: (file: File | null) => void
 
     // avatarIdentifier: { roomId: string } | { username: string }
-    // socketObject: SocketWithCustomEvents
 }) => {
     const [config, setConfig] = useState({
         image: props.imgSrc,

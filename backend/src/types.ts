@@ -10,6 +10,11 @@ export type RoomDetails = RoomWithParticipantsAndConfig & UserRoom
 
 export type Nullable<T> = { [U in keyof T]: null | T[U] }
 
+export enum TypingStatus {
+    typing = 'typing',
+    notTyping = 'not-typing',
+}
+
 export interface ServerToClientEvents {
     noArg: () => void
     basicEmit: (a: number, b: string, c: Buffer) => void
@@ -24,6 +29,7 @@ export interface ServerToClientEvents {
     userLeftRoom: (username: User['username'], roomId: Room['roomId']) => void
     userJoinedRoom: (roomId: Room['roomId'], participants: UserWithoutID[]) => void
     roomDeleted: (roomId: Room['roomId']) => void
+    typingStatusChanged: (status: TypingStatus, roomId: Room['roomId'], username: User['username']) => void
 }
 
 // for io.on()
@@ -39,6 +45,7 @@ export interface ClientToServerEvents {
     userLeftRoom: (roomId: Room['roomId']) => void
     userJoinedRoom: (roomId: Room['roomId'], participants: User['username'][]) => void
     roomDeleted: (roomId: Room['roomId']) => void
+    typingStatusChanged: (status: TypingStatus, roomId: Room['roomId'], username: User['username']) => void
 }
 
 export interface SocketData {

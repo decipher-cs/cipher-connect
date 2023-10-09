@@ -1,6 +1,13 @@
 import { Server } from 'socket.io'
 import { Message, Room, User, RoomConfig } from '@prisma/client'
-import { ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData, UserWithoutID } from './types.js'
+import {
+    ClientToServerEvents,
+    ServerToClientEvents,
+    InterServerEvents,
+    SocketData,
+    UserWithoutID,
+    TypingStatus,
+} from './types.js'
 import {
     checkIfPrivateRoomExists,
     getRoomDetails,
@@ -92,6 +99,13 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
             io.to(participants).emit('newRoomCreated', roomId)
         })
 
-        socket.on('disconnect', () => {})
+        socket.on('typingStatusChanged', (status, roomId, username) => {
+            console.log(status, username, roomId)
+            socket.in(roomId).emit('typingStatusChanged', status, roomId, username)
+        })
+
+        socket.on('disconnect', () => {
+            socket.in(joinedRooms).emit('typingStatusChanged', TypingStatus.notTyping, '', username)
+        })
     })
 }

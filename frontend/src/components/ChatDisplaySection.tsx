@@ -2,15 +2,16 @@ import { Box } from '@mui/material'
 import { useContext, useEffect, useRef } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
 import React, { useState } from 'react'
-import { RoomWithParticipants } from '../types/prisma.client'
+import { RoomWithParticipants, User } from '../types/prisma.client'
 import { MessageTile } from './MessageTile'
 import { ChatInputBar } from './ChatInputBar'
 import { RoomBanner } from './RoomBanner'
 import { Message } from '../types/prisma.client'
 import { MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
 import { Routes } from '../types/routes'
-import { SocketWithCustomEvents } from '../types/socket'
+import { SocketWithCustomEvents, TypingStatus } from '../types/socket'
 import { RoomsState } from '../reducer/roomReducer'
+import { useSocket } from '../hooks/useSocket'
 
 export interface ChatDisplaySectionProps {
     chatMessageList: Message[]
@@ -31,15 +32,40 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         return aInMilliseconds - bInMilliseconds
     })
 
+    const socket = useSocket()
+
+    const [usersCurrentlyTyping, setUsersCurrentlyTyping] = useState<User['username'][] | null>(null)
+
     useEffect(() => {
         if (scrollToBottomRef.current === null) return
         scrollToBottomRef.current.scrollIntoView(true)
     }, [props.chatMessageList])
 
+    useEffect(() => {
+        socket.on('typingStatusChanged', (status, roomId, username) => {
+            if (status === TypingStatus.typing) {
+                setUsersCurrentlyTyping(p => {
+                    if (p === null) return [username]
+                    if (p.includes(username)) return p
+                    return p.concat(username)
+                })
+            } else if (status === TypingStatus.notTyping) {
+                setUsersCurrentlyTyping(p => {
+                    if (p === null) return p
+                    if (p.includes(username)) return p.filter(pUsername => pUsername !== username)
+                    return p
+                })
+            }
+        })
+        return () => {
+            socket.removeListener('typingStatusChanged')
+        }
+    }, [usersCurrentlyTyping])
+
+    console.log(usersCurrentlyTyping)
     return (
         <>
             <RoomBanner setRoomInfoVisible={props.setRoomInfoVisible} room={props.currRoom} />
-
             <Box
                 sx={{
                     display: 'grid',
@@ -67,11 +93,10 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                     )
                 })}
             </Box>
-
-            <ChatInputBar
-                messageListDispatcher={props.messageListDispatcher}
-                currRoom={props.currRoom}
-            />
+            {usersCurrentlyTyping !== null && usersCurrentlyTyping.length > 0
+                ? usersCurrentlyTyping.join(', ') + ' typing...'
+                : null}
+            <ChatInputBar messageListDispatcher={props.messageListDispatcher} currRoom={props.currRoom} />
         </>
     )
 }
