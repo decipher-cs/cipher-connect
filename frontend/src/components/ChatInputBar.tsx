@@ -160,11 +160,10 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
                     ),
                 }}
                 onFocus={() => {
-                    console.log('hi')
                     socket.emit('typingStatusChanged', TypingStatus.typing, props.currRoom.roomId, username)
                 }}
                 onBlur={() => {
-                    // socket.emit('typingStatusChanged', TypingStatus.notTyping, props.currRoom.roomId, username)
+                    socket.emit('typingStatusChanged', TypingStatus.notTyping, props.currRoom.roomId, username)
                 }}
                 value={currInputText}
                 fullWidth

@@ -100,7 +100,6 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         })
 
         socket.on('typingStatusChanged', (status, roomId, username) => {
-            console.log(status, username, roomId)
             socket.in(roomId).emit('typingStatusChanged', status, roomId, username)
         })
 

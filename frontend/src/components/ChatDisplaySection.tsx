@@ -62,7 +62,6 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         }
     }, [usersCurrentlyTyping])
 
-    console.log(usersCurrentlyTyping)
     return (
         <>
             <RoomBanner setRoomInfoVisible={props.setRoomInfoVisible} room={props.currRoom} />
