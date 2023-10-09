@@ -26,6 +26,7 @@ import { SocketWithCustomEvents } from '../types/socket'
 import { useFetch } from '../hooks/useFetch'
 import { Routes } from '../types/routes'
 import { CredentialContext } from '../contexts/Credentials'
+import { useSocket } from '../hooks/useSocket'
 
 // TODO: Incorporate yup for string validation
 const validateForm = (values: { user: string } | { groupDisplayName: string }) => {
@@ -51,16 +52,17 @@ const MAX_ALLOWED_USERS_IN_PRIVATE_ROOM = 1
 interface CreateRoomDialogProps {
     openDialog: boolean
     roomDispatcher: React.Dispatch<RoomActions>
-    socketObject: SocketWithCustomEvents
     handleClose: () => void
 }
 
-export const CreateRoomDialog = ({ openDialog, socketObject, handleClose, roomDispatcher }: CreateRoomDialogProps) => {
+export const CreateRoomDialog = ({ openDialog, handleClose, roomDispatcher }: CreateRoomDialogProps) => {
     const { startFetching: uploadPrivateRoom } = useFetch<Room['roomId']>(Routes.post.privateRoom, true)
 
     const { startFetching: uploadGroup } = useFetch<Room['roomId']>(Routes.post.group, true)
 
     const { username } = useContext(CredentialContext)
+
+    const socket = useSocket()
 
     type initialValue = Omit<Room, 'roomId'> & { participants: User['username'][] }
 
@@ -82,13 +84,13 @@ export const CreateRoomDialog = ({ openDialog, socketObject, handleClose, roomDi
                 body: JSON.stringify({ participants: participantsWithUser }),
             })
             // roomDispatcher({ type: RoomActionType.addRoom, room: roomId })
-            if (roomId) socketObject.emit('newRoomCreated', participantsWithUser, roomId)
+            if (roomId) socket.emit('newRoomCreated', participantsWithUser, roomId)
         } else if (roomType === RoomType.group) {
             const roomId = await uploadGroup({
                 method: 'post',
                 body: JSON.stringify({ participants: participantsWithUser, roomDisplayName }),
             })
-            if (roomId) socketObject.emit('newRoomCreated', participantsWithUser, roomId)
+            if (roomId) socket.emit('newRoomCreated', participantsWithUser, roomId)
         }
         handleClose()
     }

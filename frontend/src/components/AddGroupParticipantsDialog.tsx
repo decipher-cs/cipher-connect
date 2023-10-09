@@ -50,21 +50,21 @@ import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { ConfirmationDialog } from './ConfirmationDialog'
 import { CredentialContext } from '../contexts/Credentials'
 import { useFormik, FormikErrors } from 'formik'
+import { useSocket } from '../hooks/useSocket'
 
-export const AddGroupParticipantsDialog = (props: {
-    socketObject: SocketWithCustomEvents
-    room: RoomsState['joinedRooms'][0]
-}) => {
+export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRooms'][0] }) => {
     const { username } = useContext(CredentialContext)
 
     const [isOpen, setIsOpen] = useState(false)
 
     const handleClose = () => setIsOpen(false)
 
+    const socket = useSocket()
+
     const { startFetching: varifyUsername } = useFetch<boolean>(Routes.get.isUsernameValid, true)
 
     const handleSubmit = async ({ usersToBeAdded }: { usersToBeAdded: string[] }) => {
-        props.socketObject.emit('userJoinedRoom', props.room.roomId, usersToBeAdded)
+        socket.emit('userJoinedRoom', props.room.roomId, usersToBeAdded)
     }
 
     const handleValidation = async ({ usersToBeAdded }: { usersToBeAdded: string[] }) => {

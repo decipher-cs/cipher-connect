@@ -9,6 +9,8 @@ import { Login } from './pages/Login'
 import { Logout } from './pages/Logout'
 import { lightMod } from './theme/customThemes/lightModTheme'
 import { Routes as ApiRoutes } from './types/routes'
+import { SocketContextProvider } from './contexts/Socket'
+import { socket } from './socket'
 
 const TempUsernameDisplay = () => {
     const { username, handleCredentialChange, isLoggedIn } = useContext(CredentialContext)
@@ -56,7 +58,9 @@ const App = () => {
                                 path='/chat'
                                 element={
                                     <RequireAuth>
-                                        <Chat />
+                                        <SocketContextProvider>
+                                            <Chat />
+                                        </SocketContextProvider>
                                     </RequireAuth>
                                 }
                             />

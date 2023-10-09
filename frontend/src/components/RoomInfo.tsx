@@ -51,10 +51,10 @@ import { ConfirmationDialog } from './ConfirmationDialog'
 import { CredentialContext } from '../contexts/Credentials'
 import { useFormik, FormikErrors } from 'formik'
 import { AddGroupParticipantsDialog } from './AddGroupParticipantsDialog'
+import { useSocket } from '../hooks/useSocket'
 
 interface RoomInfoProps {
     room: RoomsState['joinedRooms'][0]
-    socketObject: SocketWithCustomEvents
     setRoomInfoVisible: React.Dispatch<React.SetStateAction<boolean>>
     roomDispatcher: (value: RoomActions) => void
 }
@@ -71,6 +71,8 @@ export const RoomInfo = (props: RoomInfoProps) => {
     const toggleDeleteGroupDialog = () => setOpenDeleteGroupDialog(p => !p)
 
     const roomType = props.room.roomType
+
+    const socket = useSocket()
 
     const roomAvatar = props.room.roomAvatar ? import.meta.env.VITE_AVATAR_STORAGE_URL + props.room.roomAvatar : ''
 
@@ -100,7 +102,7 @@ export const RoomInfo = (props: RoomInfoProps) => {
             newRoomProperties: { roomAvatar: newPath },
         })
 
-        props.socketObject.emit('roomUpdated', { roomAvatar: newPath })
+        socket.emit('roomUpdated', { roomAvatar: newPath })
     }
 
     const { startFetching: deleteRoom } = useFetch(
@@ -197,9 +199,7 @@ export const RoomInfo = (props: RoomInfoProps) => {
 
             <Stack direction='row' sx={{ alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
                 <Typography noWrap>Members ({props.room.participants.length})</Typography>
-                {roomType === 'group' ? (
-                    <AddGroupParticipantsDialog socketObject={props.socketObject} room={props.room} />
-                ) : null}
+                {roomType === 'group' ? <AddGroupParticipantsDialog room={props.room} /> : null}
             </Stack>
 
             <List dense sx={{ maxHeight: '220px', overflow: 'auto' }}>
@@ -225,14 +225,14 @@ export const RoomInfo = (props: RoomInfoProps) => {
                 openDialog={openLeaveGroupDialog}
                 toggleConfirmationDialog={toggleLeaveGroupDialog}
                 onAccept={() => {
-                    props.socketObject.emit('userLeftRoom', props.room.roomId)
+                    socket.emit('userLeftRoom', props.room.roomId)
                 }}
             />
             <ConfirmationDialog
                 openDialog={openDeleteGroupDialog}
                 toggleConfirmationDialog={toggleDeleteGroupDialog}
                 onAccept={() => {
-                    props.socketObject.emit('roomDeleted', props.room.roomId)
+                    socket.emit('roomDeleted', props.room.roomId)
                 }}
             />
         </Box>

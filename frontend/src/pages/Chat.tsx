@@ -2,7 +2,6 @@ import { Box, Button, Collapse, Container, Dialog, Slide, TextField, Typography 
 import { useContext, useEffect, useReducer, useRef, useState } from 'react'
 import { ChatDisplaySection } from '../components/ChatDisplaySection'
 import { CredentialContext } from '../contexts/Credentials'
-import { socket } from '../socket'
 import { PulseLoader } from 'react-spinners'
 import { RoomInfo } from '../components/RoomInfo'
 import { RoomDetails, RoomWithParticipants, User } from '../types/prisma.client'
@@ -13,9 +12,12 @@ import { useFetch } from '../hooks/useFetch'
 import { Routes } from '../types/routes'
 import { RoomListSidebar } from '../components/RoomListSidebar'
 import { StyledTextField } from '../components/StyledTextField'
+import { useSocket } from '../hooks/useSocket'
 
 export const Chat = () => {
     const [isLoading, setIsLoading] = useState(true)
+
+    const socket = useSocket()
 
     const [messages, messageDispatcher] = useReducer(messageListReducer, [])
 
@@ -134,9 +136,9 @@ export const Chat = () => {
                     // overflow: 'hidden',
                 }}
             >
-                <Sidebar socketObject={socket} /* userSettings={userSettings} setUserSettings={setUserSettings} */ />
+                <Sidebar />
+
                 <RoomListSidebar
-                    socketObject={socket}
                     rooms={rooms.joinedRooms}
                     selectedRoomIndex={rooms.selectedRoom}
                     roomDispatcher={roomDispatcher}
@@ -165,7 +167,6 @@ export const Chat = () => {
                         >
                             <ChatDisplaySection
                                 // setChatMessageList={setChatMessageList}
-                                socketObject={socket}
                                 currRoom={rooms.joinedRooms[rooms.selectedRoom]}
                                 setRoomInfoVisible={setRoomInfoVisible}
                                 chatMessageList={messages}
@@ -179,7 +180,6 @@ export const Chat = () => {
                             component={Box}
                         >
                             <RoomInfo
-                                socketObject={socket}
                                 room={rooms.joinedRooms[rooms.selectedRoom]}
                                 setRoomInfoVisible={setRoomInfoVisible}
                                 roomDispatcher={roomDispatcher}

@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom'
 import { GridLoader, MoonLoader } from 'react-spinners'
 import { CredentialContext } from '../contexts/Credentials'
 import { useFetch } from '../hooks/useFetch'
+import { useSocket } from '../hooks/useSocket'
 import { User, UserWithoutID } from '../types/prisma.client'
 import { Routes } from '../types/routes'
 import { SocketWithCustomEvents } from '../types/socket'
@@ -19,8 +20,6 @@ import { DarkModeToggleSwitch } from './DarkModeToggleSwitch'
 import { ProfileSettingsDialog } from './ProfileSettingsDialog'
 
 interface SidebarProps {
-    sx?: SxProps | undefined
-    socketObject: SocketWithCustomEvents
     // userSettings: Settings
     // setUserSettings: React.Dispatch<React.SetStateAction<Settings>>
 }
@@ -70,7 +69,6 @@ export const Sidebar = (props: SidebarProps) => {
                 <ProfileSettingsDialog
                     dialogOpen={dialogOpen}
                     setDialogOpen={setDialogOpen}
-                    socketObject={props.socketObject}
                     setUserProfile={setUserProfile}
                     userProfile={userProfile}
                 />

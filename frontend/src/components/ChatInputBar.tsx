@@ -3,7 +3,7 @@ import { IconButton, InputAdornment, ToggleButton } from '@mui/material'
 import { useContext, useState } from 'react'
 import { useAudioRecorder } from '../hooks/useAudioRecorder'
 import { Message, MessageContentType } from '../types/prisma.client'
-import { SocketWithCustomEvents } from '../types/socket'
+import { SocketWithCustomEvents, TypingStatus } from '../types/socket'
 import { MultimediaAttachmentMenu } from './MultimediaAttachmentMenu'
 import { StyledTextField } from './StyledTextField'
 import { CredentialContext } from '../contexts/Credentials'
@@ -12,6 +12,7 @@ import { RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { Routes } from '../types/routes'
 import { useFetch } from '../hooks/useFetch'
 import filetypeinfo, { filetypeextension, filetypemime, filetypename } from 'magic-bytes.js'
+import { useSocket } from '../hooks/useSocket'
 
 const mimeToFileType = (mime: string) => {
     return mime.split('/')[0]
@@ -19,7 +20,6 @@ const mimeToFileType = (mime: string) => {
 
 interface ChatInputBarProps {
     currRoom: RoomsState['joinedRooms'][0]
-    socketObject: SocketWithCustomEvents
     messageListDispatcher: React.Dispatch<MessageListAction>
 }
 
@@ -35,6 +35,8 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
     const audioRecorder = useAudioRecorder()
 
     const deliverMessage = useFetch<string>(Routes.post.media, true)
+
+    const socket = useSocket()
 
     type HandleMessageDeliveryArgs =
         | {
@@ -74,7 +76,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
 
         props.messageListDispatcher({ type: MessageListActionType.add, newMessage: message })
 
-        props.socketObject.emit('message', message)
+        socket.emit('message', message)
     }
 
     const handleUpload = async (
@@ -156,6 +158,9 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
                             </IconButton>
                         </InputAdornment>
                     ),
+                }}
+                onFocus={() => {
+                    socket.emit('typingStatusChanged', TypingStatus.typing, props.currRoom.roomId, username)
                 }}
                 value={currInputText}
                 fullWidth

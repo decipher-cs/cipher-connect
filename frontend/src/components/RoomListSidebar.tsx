@@ -12,7 +12,6 @@ import { useFetch } from '../hooks/useFetch'
 import { CreateRoomDialog } from './CreateRoomDialog'
 
 interface RoomListSidebar {
-    socketObject: SocketWithCustomEvents
     roomDispatcher: React.Dispatch<RoomActions>
     rooms: RoomsState['joinedRooms']
     selectedRoomIndex: RoomsState['selectedRoom']
@@ -27,10 +26,11 @@ export const RoomListSidebar = (props: RoomListSidebar) => {
             sx={{
                 flexShrink: 0,
                 flexGrow: 0,
+                width: '23%',
+                minWidth: 'max-content',
 
                 display: 'grid',
                 alignContent: 'flex-start',
-                minWidth: '20%',
             }}
         >
             <Typography pl={2} display={'inline'} sx={{ gridArea: '1 / 1 / 1 / 1', alignSelf: 'center' }}>
@@ -46,7 +46,6 @@ export const RoomListSidebar = (props: RoomListSidebar) => {
                 <AddToPhotosRounded />
 
                 <CreateRoomDialog
-                    socketObject={props.socketObject}
                     openDialog={showCreateRoomDialog}
                     roomDispatcher={props.roomDispatcher}
                     handleClose={() => setShowCreateRoomDialog(false)}

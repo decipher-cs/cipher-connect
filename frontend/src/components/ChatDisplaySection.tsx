@@ -16,7 +16,6 @@ export interface ChatDisplaySectionProps {
     chatMessageList: Message[]
     currRoom: RoomsState['joinedRooms'][0]
     setRoomInfoVisible: React.Dispatch<React.SetStateAction<boolean>>
-    socketObject: SocketWithCustomEvents
     messageListDispatcher: React.Dispatch<MessageListAction>
 }
 
@@ -72,7 +71,6 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
             <ChatInputBar
                 messageListDispatcher={props.messageListDispatcher}
                 currRoom={props.currRoom}
-                socketObject={props.socketObject}
             />
         </>
     )

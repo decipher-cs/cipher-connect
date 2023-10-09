@@ -30,10 +30,10 @@ import FileUploadRoundedIcon from '@mui/icons-material/FileUploadRounded'
 import { AvatarEditorDialog } from './AvatarEditorDialog'
 import AvatarEditor from 'react-avatar-editor'
 import { CloudUploadRounded, FaceRounded } from '@mui/icons-material'
+import { useSocket } from '../hooks/useSocket'
 
 interface ProfileSettingsDialogProps {
     readonly dialogOpen: boolean
-    readonly socketObject: SocketWithCustomEvents
     setDialogOpen: React.Dispatch<React.SetStateAction<boolean>>
     setUserProfile: React.Dispatch<React.SetStateAction<UserWithoutID>>
     userProfile: UserWithoutID
@@ -52,6 +52,8 @@ const validate = (values: { displayName: string }) => {
 
 export const ProfileSettingsDialog = (props: ProfileSettingsDialogProps) => {
     const { username } = useContext(CredentialContext)
+
+    const socket = useSocket()
 
     const handleClose = () => props.setDialogOpen(false)
 
@@ -73,14 +75,14 @@ export const ProfileSettingsDialog = (props: ProfileSettingsDialogProps) => {
 
         const newPath = await uploadAvater({ body: fd, method: 'POST' })
 
-        props.socketObject.emit('userProfileUpdated', { ...props.userProfile, avatarPath: newPath })
+        socket.emit('userProfileUpdated', { ...props.userProfile, avatarPath: newPath })
 
         props.setUserProfile(p => ({ ...p, avatarPath: newPath }))
     }
 
     const handleSettingsUpdate = async (values: { displayName: string }) => {
         try {
-            props.socketObject.emit('userProfileUpdated', {
+            socket.emit('userProfileUpdated', {
                 ...props.userProfile,
                 displayName: values.displayName,
             })
