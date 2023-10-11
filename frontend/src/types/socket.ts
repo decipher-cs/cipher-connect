@@ -25,12 +25,25 @@ export interface ClientToServerEvents {
     userProfileUpdated: (newSettings: Partial<User>) => void
     roomUpdated: (updatedDetails: Partial<Room>) => void
     notification: (roomId: Room['roomId']) => void
-    newRoomCreated: (participants: User['username'][], roomId: Room['roomId']) => void
+    // newRoomCreated: (participants: User['username'][], roomId: Room['roomId']) => void
+    newRoomCreated: (paramteres: NewRoomParameters) => void
     userLeftRoom: (roomId: Room['roomId']) => void
     userJoinedRoom: (roomId: Room['roomId'], participants: User['username'][]) => void
     roomDeleted: (roomId: Room['roomId']) => void
     typingStatusChanged: (status: TypingStatus, roomId: Room['roomId'], username: User['username']) => void
 }
+
+export type NewRoomParameters =
+    | {
+          roomType: 'private'
+          participant: User['username']
+      }
+    | {
+          roomType: 'group'
+          avatarPath: Room['roomAvatar']
+          displayName: NonNullable<Room['roomDisplayName']>
+          participants: User['username'][]
+      }
 
 export enum TypingStatus {
     typing = 'typing',
