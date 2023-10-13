@@ -1,5 +1,5 @@
 import { Server } from 'socket.io'
-import { Message, Room, User, RoomConfig } from '@prisma/client'
+import { Message, Room, User, RoomConfig, RoomType } from '@prisma/client'
 import {
     ClientToServerEvents,
     ServerToClientEvents,
@@ -74,9 +74,23 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
 
         socket.on('roomUpdated', updatedDetails => {})
 
-        socket.on('newRoomCreated', (participants, roomId) => {
-            io.to(participants).emit('newRoomCreated', roomId)
-            io.in(participants).socketsJoin(roomId)
+        socket.on('newRoomCreated', async room => {
+            const participants = room.roomType === RoomType.private ? room.participant : room.participants
+
+            try {
+                let roomId: string | undefined
+                if (room.roomType === RoomType.private) {
+                    roomId = await createPrivateRoom(username, room.participant)
+                } else if (room.roomType === RoomType.group) {
+                    roomId = await createGroup(room.participants, room.displayName)
+                }
+                if (roomId !== undefined) {
+                    io.to(participants).socketsJoin(roomId)
+                    io.to(participants).emit('newRoomCreated', roomId)
+                }
+            } catch (err) {
+                console.log(err)
+            }
         })
 
         socket.on('userLeftRoom', roomId => {

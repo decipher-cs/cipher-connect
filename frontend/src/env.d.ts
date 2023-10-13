@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+import { Flags, InferType } from 'yup'
 
 interface ImportMetaEnv {
     readonly VITE_APP_TITLE: string

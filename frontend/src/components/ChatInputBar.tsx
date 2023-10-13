@@ -74,9 +74,9 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
             // MIME: 'MIME' in args ? args.MIME : null,
         }
 
-        props.messageListDispatcher({ type: MessageListActionType.add, newMessage: message })
-
         socket.emit('message', message)
+
+        props.messageListDispatcher({ type: MessageListActionType.add, newMessage: message })
     }
 
     const handleUpload = async (

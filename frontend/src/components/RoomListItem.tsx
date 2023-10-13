@@ -7,8 +7,6 @@ import { MessageListAction, MessageListActionType } from '../reducer/messageList
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { Message } from '../types/prisma.client'
 import { Routes } from '../types/routes'
-import { RoomWithParticipants } from '../types/prisma.client'
-import { PhoneEnabled } from '@mui/icons-material'
 
 interface RoomListItemProps {
     room: RoomsState['joinedRooms'][0]

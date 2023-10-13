@@ -1,13 +1,9 @@
 import {
     Avatar,
-    TextField,
     Box,
-    Icon,
     Typography,
     IconButton,
     Button,
-    Drawer,
-    InputAdornment,
     Divider,
     Stack,
     Tooltip,
@@ -17,39 +13,20 @@ import {
     ListItem,
     ListItemAvatar,
     ListItemText,
-    Collapse,
-    Dialog,
-    DialogActions,
-    DialogTitle,
-    DialogContent,
-    CircularProgress,
 } from '@mui/material'
-import AddIcon from '@mui/icons-material/Add'
-import { SocketWithCustomEvents } from '../types/socket'
 import { ForwardedRef, forwardRef, Ref, useContext, useRef, useState } from 'react'
 import {
-    ArrowForwardRounded,
     CancelRounded,
-    DeleteRounded,
-    DoneAllRounded,
     InfoRounded,
     NotificationsRounded,
-    PersonAddRounded,
-    RemoveRounded,
-    SearchSharp,
-    SettingsRemoteSharp,
 } from '@mui/icons-material'
-import { StyledTextField } from './StyledTextField'
-import { EditableText } from './EditableText'
 import { Balancer } from 'react-wrap-balancer'
 import { AvatarEditorDialog } from './AvatarEditorDialog'
-import AvatarEditor from 'react-avatar-editor'
 import { useFetch } from '../hooks/useFetch'
 import { Routes } from '../types/routes'
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { ConfirmationDialog } from './ConfirmationDialog'
 import { CredentialContext } from '../contexts/Credentials'
-import { useFormik, FormikErrors } from 'formik'
 import { AddGroupParticipantsDialog } from './AddGroupParticipantsDialog'
 import { useSocket } from '../hooks/useSocket'
 

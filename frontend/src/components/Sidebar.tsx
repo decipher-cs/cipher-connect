@@ -15,7 +15,6 @@ import { useFetch } from '../hooks/useFetch'
 import { useSocket } from '../hooks/useSocket'
 import { User, UserWithoutID } from '../types/prisma.client'
 import { Routes } from '../types/routes'
-import { SocketWithCustomEvents } from '../types/socket'
 import { DarkModeToggleSwitch } from './DarkModeToggleSwitch'
 import { ProfileSettingsDialog } from './ProfileSettingsDialog'
 

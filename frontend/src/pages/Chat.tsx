@@ -139,8 +139,7 @@ export const Chat = () => {
                 <Sidebar />
 
                 <RoomListSidebar
-                    rooms={rooms.joinedRooms}
-                    selectedRoomIndex={rooms.selectedRoom}
+                    rooms={rooms}
                     roomDispatcher={roomDispatcher}
                     messageListDispatcher={messageDispatcher}
                 />
@@ -166,7 +165,6 @@ export const Chat = () => {
                             }}
                         >
                             <ChatDisplaySection
-                                // setChatMessageList={setChatMessageList}
                                 currRoom={rooms.joinedRooms[rooms.selectedRoom]}
                                 setRoomInfoVisible={setRoomInfoVisible}
                                 chatMessageList={messages}

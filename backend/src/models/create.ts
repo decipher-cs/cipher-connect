@@ -1,5 +1,6 @@
 import { PrismaClient, Prisma, MessageContentType, Message, User, Room } from '@prisma/client'
 import { prisma } from '../server.js'
+import { RoomDetails } from '../types.js'
 
 export const createNewUser = async (username: string, passwordHash: string) => {
     try {
@@ -60,7 +61,7 @@ export const createPrivateRoom = async (participant1: string, participant2: stri
 }
 
 export const createGroup = async (usernames: User['username'][], roomDisplayName: string) => {
-    const room = prisma.room.create({
+    const room = await prisma.room.create({
         data: {
             roomDisplayName,
             roomType: 'group',
@@ -78,9 +79,9 @@ export const createGroup = async (usernames: User['username'][], roomDisplayName
                 },
             },
         },
-        select: { roomId: true },
+        include: { user: true },
     })
-    return (await room).roomId
+    return room.roomId
 }
 
 export const addMessageToDB = async (message: Message) => {

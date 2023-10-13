@@ -1,4 +1,4 @@
-import { Message, Room, User, RoomConfig, UserRoom } from '@prisma/client'
+import { Message, Room, User, RoomConfig, UserRoom, RoomType } from '@prisma/client'
 
 export type UserWithoutID = Omit<User, 'userId'>
 
@@ -15,13 +15,24 @@ export enum TypingStatus {
     notTyping = 'not-typing',
 }
 
+export type NewRoomParameters =
+    | {
+          roomType: 'private'
+          participant: User['username']
+      }
+    | {
+          roomType: 'group'
+          displayName: NonNullable<Room['roomDisplayName']>
+          avatarPath: Room['roomAvatar']
+          participants: User['username'][]
+      }
+
 export interface ServerToClientEvents {
     noArg: () => void
     basicEmit: (a: number, b: string, c: Buffer) => void
     withAck: (d: string, callback: (e: number) => void) => void
     message: (message: Message) => void
 
-    // newRoomCreated: (roomDetails: RoomDetails) => void
     newRoomCreated: (roomId: Room['roomId']) => void
 
     userProfileUpdated: (newSettings: Partial<User>) => void
@@ -41,7 +52,8 @@ export interface ClientToServerEvents {
     userProfileUpdated: (newSettings: Partial<User>) => void
     roomUpdated: (updatedDetails: Partial<Room>) => void
     notification: (roomId: Room['roomId']) => void
-    newRoomCreated: (participants: User['username'][], roomId: Room['roomId']) => void
+    // newRoomCreated: (participants: User['username'][], roomId: Room['roomId']) => void
+    newRoomCreated: (paramteres: NewRoomParameters) => void
     userLeftRoom: (roomId: Room['roomId']) => void
     userJoinedRoom: (roomId: Room['roomId'], participants: User['username'][]) => void
     roomDeleted: (roomId: Room['roomId']) => void
