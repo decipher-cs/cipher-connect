@@ -120,6 +120,8 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose, roomDispatcher }: Cr
                 avatarPath: null,
             })
         }
+        reset()
+        handleClose()
     }
 
     return (

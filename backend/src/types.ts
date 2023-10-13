@@ -52,7 +52,6 @@ export interface ClientToServerEvents {
     userProfileUpdated: (newSettings: Partial<User>) => void
     roomUpdated: (updatedDetails: Partial<Room>) => void
     notification: (roomId: Room['roomId']) => void
-    // newRoomCreated: (participants: User['username'][], roomId: Room['roomId']) => void
     newRoomCreated: (paramteres: NewRoomParameters) => void
     userLeftRoom: (roomId: Room['roomId']) => void
     userJoinedRoom: (roomId: Room['roomId'], participants: User['username'][]) => void
