@@ -17,6 +17,7 @@
         "@mui/icons-material": "^5.11.16",
         "@mui/material": "^5.12.0",
         "@react-frontend-developer/buffers": "^2.0.1",
+        "@tanstack/react-query": "^4.36.1",
         "magic-bytes.js": "^1.0.17",
         "react": "^18.2.0",
         "react-avatar-editor": "^13.0.0",

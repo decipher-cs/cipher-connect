@@ -11,6 +11,7 @@ import { lightMod } from './theme/customThemes/lightModTheme'
 import { Routes as ApiRoutes } from './types/routes'
 import { SocketContextProvider } from './contexts/Socket'
 import { socket } from './socket'
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 
 const TempUsernameDisplay = () => {
     const { username, handleCredentialChange, isLoggedIn } = useContext(CredentialContext)
@@ -44,32 +45,36 @@ const TempUsernameDisplay = () => {
     return null
 }
 
+const queryClient = new QueryClient()
+
 const App = () => {
     return (
         <ThemeProvider theme={lightMod}>
             <CssBaseline>
-                <CredentialContextProvider>
-                    <BrowserRouter>
-                        <TempUsernameDisplay />
+                <QueryClientProvider client={queryClient}>
+                    <CredentialContextProvider>
+                        <BrowserRouter>
+                            <TempUsernameDisplay />
 
-                        <Routes>
-                            <Route path='/login' element={<Login />} />
-                            <Route
-                                path='/chat'
-                                element={
-                                    <RequireAuth>
-                                        <SocketContextProvider>
-                                            <Chat />
-                                        </SocketContextProvider>
-                                    </RequireAuth>
-                                }
-                            />
-                            <Route path='/about' element={<About />} />
-                            <Route path='/logout' element={<Logout />} />
-                            <Route path='*' element={<Navigate to='/chat' replace />} />
-                        </Routes>
-                    </BrowserRouter>
-                </CredentialContextProvider>
+                            <Routes>
+                                <Route path='/login' element={<Login />} />
+                                <Route
+                                    path='/chat'
+                                    element={
+                                        <RequireAuth>
+                                            <SocketContextProvider>
+                                                <Chat />
+                                            </SocketContextProvider>
+                                        </RequireAuth>
+                                    }
+                                />
+                                <Route path='/about' element={<About />} />
+                                <Route path='/logout' element={<Logout />} />
+                                <Route path='*' element={<Navigate to='/chat' replace />} />
+                            </Routes>
+                        </BrowserRouter>
+                    </CredentialContextProvider>
+                </QueryClientProvider>
             </CssBaseline>
         </ThemeProvider>
     )

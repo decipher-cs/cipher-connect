@@ -40,12 +40,7 @@ type InitialFormValues = {
     participants: { username: User['username'] }[]
 }
 
-const initialFormValues: InitialFormValues = {
-    roomType: RoomType.group,
-    roomDisplayName: '',
-    participants: [{ username: '' }],
-}
-
+// Validation schema
 const roomValueValidationSchema: ObjectSchema<InitialFormValues> = object().shape({
     roomType: string()
         .default(RoomType.private)
@@ -104,7 +99,14 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose, roomDispatcher }: Cr
         control,
         setValue,
         getValues,
-    } = useForm({ defaultValues: initialFormValues, resolver: yupResolver(roomValueValidationSchema) })
+    } = useForm({
+        defaultValues: {
+            roomType: RoomType.group,
+            roomDisplayName: '',
+            participants: [{ username: '' }],
+        },
+        resolver: yupResolver(roomValueValidationSchema),
+    })
 
     const { fields, append, remove } = useFieldArray({ control, name: 'participants' })
 
