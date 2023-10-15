@@ -12,6 +12,7 @@ import { Routes as ApiRoutes } from './types/routes'
 import { SocketContextProvider } from './contexts/Socket'
 import { socket } from './socket'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const TempUsernameDisplay = () => {
     const { username, handleCredentialChange, isLoggedIn } = useContext(CredentialContext)
@@ -52,6 +53,7 @@ const App = () => {
         <ThemeProvider theme={lightMod}>
             <CssBaseline>
                 <QueryClientProvider client={queryClient}>
+                    <ReactQueryDevtools initialIsOpen />
                     <CredentialContextProvider>
                         <BrowserRouter>
                             <TempUsernameDisplay />
