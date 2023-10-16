@@ -22,6 +22,7 @@ import {
     handleUserExistsCheck,
     handleNewParticipants,
     handleMessageReadStatusChange,
+    handleUserProfileUpdation,
 } from './controllers.js'
 import { avatar, media } from './server.js'
 
@@ -45,6 +46,7 @@ const routes = {
     },
     put: {
         messageReadStatus: '/message-read-status',
+        user: '/user',
     },
     delete: {
         userRoom: '/user-room',
@@ -89,6 +91,8 @@ export const initRoutes = (app: Express) => {
     app.post(routes.post.participants, handleNewParticipants)
 
     app.put(routes.put.messageReadStatus + '/:roomId/:username', handleMessageReadStatusChange)
+
+    app.put(routes.put.user, handleUserProfileUpdation)
 
     app.delete(routes.delete.userRoom + '/:username/:roomId', handleUserLeavesRoom)
 

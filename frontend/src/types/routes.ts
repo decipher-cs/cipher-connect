@@ -1,9 +1,11 @@
+const URL = import.meta.env.VITE_SERVER_URL
+
 export const Routes = {
     get: {
         messages: '/Messages',
         roomParticipants: '/room-participants',
-        userRooms: '/user-rooms',
-        userRoom: '/user-room',
+        userRooms: URL + '/user-rooms',
+        userRoom: URL + '/user-room',
         users: '/users',
         user: '/user',
         isUsernameValid: '/is-username-valid',
@@ -17,6 +19,7 @@ export const Routes = {
     },
     put: {
         messageReadStatus: '/message-read-status',
+        user: '/user',
     },
     delete: {
         userRoom: '/user-room',
@@ -28,3 +31,6 @@ export const Routes = {
     logout: '/logout',
     varifyRefreshToken: '/varify-refresh-token',
 } as const
+
+// TODO: create a function that prefixes URL to default routes
+// without manually prefixing it every time at all the places.
