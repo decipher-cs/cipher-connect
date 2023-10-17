@@ -16,13 +16,15 @@ import {
     ListItemIcon,
     ListItemSecondaryAction,
     ListItemText,
+    ToggleButton,
+    ToggleButtonGroup,
     Typography,
 } from '@mui/material'
 import { FormikConfig, useFormik } from 'formik'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
 import { useFetch } from '../hooks/useFetch'
-import { User, UserWithoutID } from '../types/prisma.client'
+import { User, UserStatus, UserWithoutID } from '../types/prisma.client'
 import { Routes } from '../types/routes'
 import { SocketWithCustomEvents } from '../types/socket'
 import { StyledTextField } from './StyledTextField'
@@ -31,39 +33,34 @@ import { AvatarEditorDialog } from './AvatarEditorDialog'
 import AvatarEditor from 'react-avatar-editor'
 import { CloudUploadRounded, FaceRounded } from '@mui/icons-material'
 import { useSocket } from '../hooks/useSocket'
+import { useMutation } from '@tanstack/react-query'
+import axios from 'axios'
+import { useForm } from 'react-hook-form'
+import { object } from 'yup'
+import { useDialog } from '../hooks/useDialog'
+import { ImageEditorDialog } from './ImageEditorDialog'
+import { useImageEditor } from '../hooks/useImageEditor'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { userProfileUpdationFormValidation } from '../schemaValidators/yupFormValidators'
 
 interface ProfileSettingsDialogProps {
     readonly dialogOpen: boolean
-    setDialogOpen: React.Dispatch<React.SetStateAction<boolean>>
-    setUserProfile: React.Dispatch<React.SetStateAction<UserWithoutID>>
+    handleClose: () => void
     userProfile: UserWithoutID
 }
 
-const validate = (values: { displayName: string }) => {
-    const { displayName } = values
-    const errors: { [key: string]: null | string } = { displayName: null }
-    const MIN_LEN = 3
-    const MAX_LEN = 16
-
-    if (!displayName || displayName.length < 3 || displayName.length > 16)
-        errors.displayName = `Name length can only be between ${MIN_LEN} and ${MAX_LEN} characters.`
-    return errors
-}
-
-export const ProfileSettingsDialog = (props: ProfileSettingsDialogProps) => {
+export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: ProfileSettingsDialogProps) => {
     const { username } = useContext(CredentialContext)
 
     const socket = useSocket()
 
-    const handleClose = () => props.setDialogOpen(false)
+    const { imageEditorProps, editorRef, editedImage, handleOpen, originalImage, setOriginalImage } = useImageEditor()
 
-    const { startFetching: uploadAvater } = useFetch<string>(Routes.post.avatar, true)
-
-    const [selectedImage, setSelectedImage] = useState<File | null>(null)
-
-    const [openAvatarEditor, setOpenAvatarEditor] = useState(false)
-
-    const handleAvatarEditorToggle = () => setOpenAvatarEditor(p => !p)
+    const { mutate: mutateProfile, data: updatedProfileData } = useMutation({
+        mutationKey: ['updateProfile'],
+        mutationFn: (formData: FormData) =>
+            axios.post(Routes.put.user, formData, { baseURL: import.meta.env.VITE_SERVER_URL }).then(res => res.data),
+    })
 
     const handleImageUpload = async (newAvatar: File) => {
         if (!newAvatar) return
@@ -73,73 +70,66 @@ export const ProfileSettingsDialog = (props: ProfileSettingsDialogProps) => {
         fd.append('avatar', newAvatar)
         fd.append('username', username)
 
-        const newPath = await uploadAvater({ body: fd, method: 'POST' })
-
-        socket.emit('userProfileUpdated', { ...props.userProfile, avatarPath: newPath })
-
-        props.setUserProfile(p => ({ ...p, avatarPath: newPath }))
+        // const newPath = mutateAvatar(fd)
     }
 
-    const handleSettingsUpdate = async (values: { displayName: string }) => {
-        try {
-            socket.emit('userProfileUpdated', {
-                ...props.userProfile,
-                displayName: values.displayName,
-            })
-        } catch (err) {
-            throw new Error('error: ' + err)
-        }
+    // this needs to be emitted so other users know to update user settings
+    // const handleSettingsUpdate = async (values: { displayName: string }) => {
+    //     try {
+    //         socket.emit('userProfileUpdated', {
+    //             ...props.userProfile,
+    //             displayName: values.displayName,
+    //         })
+    //     } catch (err) {
+    //         throw new Error('error: ' + err)
+    //     }
+    // }
+
+    const foobar = () => {
+        return
     }
 
-    const formikProfileSettings = useFormik({
-        initialValues: { displayName: '' },
-        validate,
-        onSubmit: handleSettingsUpdate,
+    const {
+        register,
+        handleSubmit,
+        watch,
+        reset,
+        formState: { errors, isSubmitting },
+        control,
+        setValue,
+        getValues,
+    } = useForm({
+        // resolver: yupResolver(userProfileUpdationFormValidation),
+        defaultValues: {
+            displayName: userProfile.displayName,
+            status: userProfile.status,
+            avatar: userProfile.avatarPath,
+        },
     })
 
-    const ref = useRef<AvatarEditor>(null)
-
-    ref.current?.getImage().toBlob(blob => {
-        if (blob) {
-            const file = new File([blob], 'avatar', { type: blob.type })
-            setSelectedImage(file)
-        }
-    })
+    console.log(watch('displayName'), watch('status'))
 
     return (
         <>
             <Dialog open={props.dialogOpen} onClose={handleClose} fullWidth>
                 <DialogTitle>Profile Settings</DialogTitle>
 
-                {selectedImage ? (
-                    <AvatarEditorDialog
-                        imgSrc={selectedImage}
-                        handleClose={handleAvatarEditorToggle}
-                        open={openAvatarEditor}
-                        handleSubmit={file => {
-                            setSelectedImage(null)
-                            file && handleImageUpload(file)
-                        }}
-                    />
-                ) : null}
+                {originalImage && <ImageEditorDialog {...imageEditorProps} originalImgSource={originalImage} />}
 
                 <DialogContent>
-                    <DialogContentText>
-                        {/* TODO: set color='red' to color = theme.pallete.main.error*/}
-                        <Typography color='red'>
-                            {formikProfileSettings.touched.displayName && formikProfileSettings.errors.displayName}
-                        </Typography>
-                    </DialogContentText>
-                    <List
-                        // disablePadding
-                        id='profile-settings'
-                        component='form'
-                        onSubmit={formikProfileSettings.handleSubmit}
-                    >
+                    <DialogContentText></DialogContentText>
+                    <List component='form' onSubmit={() => handleSubmit(foobar)}>
                         <ListItem>
-                            <ListItemText>Change Picture</ListItemText>
+                            <ListItemText>Avatar</ListItemText>
 
-                            <Button variant='outlined' component={'label'} startIcon={<CloudUploadRounded />}>
+                            <Avatar src={editedImage} sx={{ mr: 6 }} />
+
+                            <Button
+                                variant='outlined'
+                                size='small'
+                                component={'label'}
+                                startIcon={<CloudUploadRounded />}
+                            >
                                 Upload
                                 <input
                                     type='file'
@@ -148,37 +138,43 @@ export const ProfileSettingsDialog = (props: ProfileSettingsDialogProps) => {
                                     onChange={e => {
                                         const file = e.target.files && e.target.files[0]
                                         if (file) {
-                                            setSelectedImage(file)
-                                            handleAvatarEditorToggle()
+                                            setOriginalImage(file)
+                                            handleOpen()
                                         }
                                     }}
                                 />
                             </Button>
                         </ListItem>
+
                         <ListItem>
-                            <ListItemText>Change Name</ListItemText>
-                            <StyledTextField
-                                sx={{ width: '40%' }}
-                                size='small'
-                                placeholder='New Name'
-                                error={
-                                    formikProfileSettings.touched.displayName &&
-                                    formikProfileSettings.errors.displayName !== undefined
-                                }
-                                // helperText={
-                                //     formikProfileSettings.touched.displayName &&
-                                //     formikProfileSettings.errors.displayName
-                                // }
-                                {...formikProfileSettings.getFieldProps('displayName')}
-                            />
+                            <ListItemText>Display Name</ListItemText>
+                            <StyledTextField size='small' {...register('displayName')} />
                         </ListItem>
+
+                        <ListItem>
+                            <ListItemText>Status</ListItemText>
+                            <ToggleButtonGroup
+                                exclusive
+                                size='small'
+                                value={watch('status')}
+                                onChange={(e, value) => {
+                                    setValue('status', value)
+                                }}
+                            >
+                                <ToggleButton value={UserStatus.available}>{UserStatus.available}</ToggleButton>
+                                <ToggleButton value={UserStatus.dnd}>{UserStatus.dnd}</ToggleButton>
+                                <ToggleButton value={UserStatus.hidden}>{UserStatus.hidden}</ToggleButton>
+                            </ToggleButtonGroup>
+                        </ListItem>
+                        <ListItem>{errors.root?.message}</ListItem>
                     </List>
                 </DialogContent>
                 <DialogActions>
-                    <Button variant='outlined' onClick={handleClose}>
-                        Close Settings
-                    </Button>
-                    <Button variant='contained'>Update Settings </Button>
+                    <ButtonGroup variant='outlined'>
+                        <Button onClick={handleClose}>Cancel</Button>
+                        <Button onClick={() => reset()}>reset</Button>
+                        <Button disabled={isSubmitting}>Confirm</Button>
+                    </ButtonGroup>
                 </DialogActions>
             </Dialog>
         </>
