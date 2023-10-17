@@ -1,6 +1,6 @@
 {
     "name": "cipher-connect",
-    "version": "5.0.0",
+    "version": "6.0.0",
     "type": "module",
     "License": "GNU General Public License v3.0",
     "author": "decipher",
@@ -18,6 +18,7 @@
         "@mui/material": "^5.12.0",
         "@react-frontend-developer/buffers": "^2.0.1",
         "@tanstack/react-query": "^4.36.1",
+        "axios": "^1.5.1",
         "magic-bytes.js": "^1.0.17",
         "react": "^18.2.0",
         "react-avatar-editor": "^13.0.0",
@@ -30,6 +31,7 @@
         "yup": "^1.3.2"
     },
     "devDependencies": {
+        "@tanstack/react-query-devtools": "^4.36.1",
         "@types/react": "^18.0.28",
         "@types/react-avatar-editor": "^13.0.0",
         "@types/react-dom": "^18.0.11",
