@@ -17,7 +17,7 @@ import { addRefreshToken, createGroup, createNewUser, createPrivateRoom } from '
 import { deleteRefreshToken, deleteRoom, deleteUserRoom } from './models/delete.js'
 import { updateMessageReadStatus, updateRoom, updateRoomParticipants, updateUser } from './models/update.js'
 import { User } from '@prisma/client'
-import { RoomDetails } from './types.js'
+import { RoomDetails, UserWithoutID } from './types.js'
 
 interface LoginCredentials {
     username: string
@@ -203,7 +203,6 @@ export const returnUser = async (req: Request, res: Response) => {
 }
 export const returnUsers = async (req: Request, res: Response) => {
     const { usernames } = req.query as { usernames: string[] }
-    console.log(usernames, typeof usernames)
 
     try {
         if (!usernames || Array.isArray(usernames) === false) throw new Error('Expected array')
@@ -219,7 +218,6 @@ export const returnUsers = async (req: Request, res: Response) => {
 
 export const fetchMessages = async (req: Request, res: Response) => {
     const { roomId } = req.params
-    console.log(roomId)
     if (roomId === undefined) {
         res.sendStatus(400)
         return
@@ -258,7 +256,6 @@ export const handleGettingRoomDetails = async (req: Request, res: Response) => {
 }
 export const handleGettingUniqueRoomDetails = async (req: Request, res: Response) => {
     const { username, roomId } = req.params
-    console.log(req.params)
 
     if (username === undefined) {
         res.sendStatus(400)
@@ -276,7 +273,6 @@ export const handleGettingUniqueRoomDetails = async (req: Request, res: Response
 
 export const handlePrivateRoomCreation = async (req: Request, res: Response) => {
     const { participants }: { participants: [string, string] } = req.body
-    console.log(participants)
 
     if (participants.length !== 2) {
         res.sendStatus(400)
@@ -323,14 +319,12 @@ export const handleUserDeletesRoom = async (req: Request, res: Response) => {
 
 export const handleUserLeavesRoom = async (req: Request, res: Response) => {
     const { username, roomId } = req.params
-    console.log(username, roomId)
     if (!username || !roomId) {
         res.sendStatus(400)
         return
     }
     try {
         const removedUserRoom = await deleteUserRoom(username, roomId)
-        console.log(removedUserRoom)
     } catch (err) {}
     res.sendStatus(200)
 }
@@ -364,7 +358,23 @@ export const handleMessageReadStatusChange = async (req: Request, res: Response)
 
         res.sendStatus(200)
     } catch (err) {
-        console.log(err)
+        res.sendStatus(400)
+    }
+}
+
+export const handleUserProfileUpdation = async (req: Request, res: Response) => {
+    const { status, displayName, username }: Partial<Pick<UserWithoutID, 'displayName' | 'username' | 'status'>> =
+        req.body
+    const { filename } = req.file ?? { filename: undefined }
+
+    try {
+        if (!username) throw new Error('No username provided while updating profile')
+
+        await updateUser(username, { displayName, status, avatarPath: filename })
+
+        res.sendStatus(200)
+    } catch (err) {
+        console.log('errr', err)
         res.sendStatus(400)
     }
 }
