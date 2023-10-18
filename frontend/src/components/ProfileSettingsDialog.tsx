@@ -35,13 +35,14 @@ import { CloudUploadRounded, FaceRounded } from '@mui/icons-material'
 import { useSocket } from '../hooks/useSocket'
 import { useMutation } from '@tanstack/react-query'
 import axios from 'axios'
-import { useForm } from 'react-hook-form'
+import { SubmitHandler, useForm } from 'react-hook-form'
 import { object } from 'yup'
 import { useDialog } from '../hooks/useDialog'
 import { ImageEditorDialog } from './ImageEditorDialog'
 import { useImageEditor } from '../hooks/useImageEditor'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { userProfileUpdationFormValidation } from '../schemaValidators/yupFormValidators'
+import { axiosServerInstance } from '../App'
 
 interface ProfileSettingsDialogProps {
     readonly dialogOpen: boolean
@@ -49,43 +50,33 @@ interface ProfileSettingsDialogProps {
     userProfile: UserWithoutID
 }
 
+export type ProfileFormValues = {
+    displayName: UserWithoutID['displayName']
+    status: UserWithoutID['status']
+    avatar: File | Blob | undefined
+    // avatar: UserWithoutID['avatarPath']
+}
+
 export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: ProfileSettingsDialogProps) => {
-    const { username } = useContext(CredentialContext)
-
     const socket = useSocket()
-
-    const { imageEditorProps, editorRef, editedImage, handleOpen, originalImage, setOriginalImage } = useImageEditor()
 
     const { mutate: mutateProfile, data: updatedProfileData } = useMutation({
         mutationKey: ['updateProfile'],
-        mutationFn: (formData: FormData) =>
-            axios.post(Routes.put.user, formData, { baseURL: import.meta.env.VITE_SERVER_URL }).then(res => res.data),
+        mutationFn: (formData: FormData) => axiosServerInstance.put(Routes.put.user, formData).then(res => res.data),
+        onSuccess: data => {
+            // socket.emit('userProfileUpdated', data)
+        },
     })
 
-    const handleImageUpload = async (newAvatar: File) => {
-        if (!newAvatar) return
+    const handleProfileSubmit: SubmitHandler<ProfileFormValues> = ({ displayName, avatar, status }) => {
+        console.log(displayName, avatar, status)
 
         const fd = new FormData()
+        if (displayName) fd.append('displayName', displayName)
+        if (avatar) fd.append('avatar', avatar)
+        if (status) fd.append('status', status)
 
-        fd.append('avatar', newAvatar)
-        fd.append('username', username)
-
-        // const newPath = mutateAvatar(fd)
-    }
-
-    // this needs to be emitted so other users know to update user settings
-    // const handleSettingsUpdate = async (values: { displayName: string }) => {
-    //     try {
-    //         socket.emit('userProfileUpdated', {
-    //             ...props.userProfile,
-    //             displayName: values.displayName,
-    //         })
-    //     } catch (err) {
-    //         throw new Error('error: ' + err)
-    //     }
-    // }
-
-    const foobar = () => {
+        mutateProfile(fd)
         return
     }
 
@@ -95,19 +86,23 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
         watch,
         reset,
         formState: { errors, isSubmitting },
-        control,
         setValue,
         getValues,
     } = useForm({
-        // resolver: yupResolver(userProfileUpdationFormValidation),
         defaultValues: {
             displayName: userProfile.displayName,
             status: userProfile.status,
-            avatar: userProfile.avatarPath,
-        },
+            avatar: undefined,
+            // avatar: userProfile.avatarPath,
+        } as ProfileFormValues,
+        // resolver: yupResolver(userProfileUpdationFormValidation),
     })
 
-    console.log(watch('displayName'), watch('status'))
+    const { imageEditorProps, finalImage, handleOpen, originalImage, setOriginalImage } = useImageEditor(finalImage => {
+        if (finalImage?.file) setValue('avatar', finalImage?.file)
+    })
+
+    // console.log(watch())
 
     return (
         <>
@@ -118,11 +113,11 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
 
                 <DialogContent>
                     <DialogContentText></DialogContentText>
-                    <List component='form' onSubmit={() => handleSubmit(foobar)}>
+                    <List component='form' onSubmit={() => handleSubmit(handleProfileSubmit)}>
                         <ListItem>
                             <ListItemText>Avatar</ListItemText>
 
-                            <Avatar src={editedImage} sx={{ mr: 6 }} />
+                            <Avatar src={finalImage?.url} sx={{ mr: 6 }} />
 
                             <Button
                                 variant='outlined'
@@ -157,6 +152,7 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
                                 exclusive
                                 size='small'
                                 value={watch('status')}
+                                {...register('status')}
                                 onChange={(e, value) => {
                                     setValue('status', value)
                                 }}
@@ -166,14 +162,29 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
                                 <ToggleButton value={UserStatus.hidden}>{UserStatus.hidden}</ToggleButton>
                             </ToggleButtonGroup>
                         </ListItem>
-                        <ListItem>{errors.root?.message}</ListItem>
+
+                        <ListItem>
+                            <Typography color='red' variant='body1'>
+                                {errors &&
+                                    (errors?.avatar?.message ||
+                                        errors?.status?.message ||
+                                        errors?.displayName?.message ||
+                                        errors?.root?.message)}
+                            </Typography>
+                        </ListItem>
                     </List>
                 </DialogContent>
                 <DialogActions>
                     <ButtonGroup variant='outlined'>
                         <Button onClick={handleClose}>Cancel</Button>
                         <Button onClick={() => reset()}>reset</Button>
-                        <Button disabled={isSubmitting}>Confirm</Button>
+                        <Button
+                            disabled={isSubmitting}
+                            type='submit'
+                            onClick={() => handleSubmit(handleProfileSubmit)()}
+                        >
+                            Confirm
+                        </Button>
                     </ButtonGroup>
                 </DialogActions>
             </Dialog>
