@@ -97,8 +97,8 @@ export enum RoomType {
 }
 
 export enum UserStatus {
-    offline = 'offline',
-    online = 'online',
+    available = 'available',
+    dnd = 'dnd',
     hidden = 'hidden',
 }
 

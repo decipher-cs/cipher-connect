@@ -1,24 +1,24 @@
-import { Ref, useRef, useState } from 'react'
+import { useState } from 'react'
 import AvatarEditor, { AvatarEditorProps } from 'react-avatar-editor'
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Slider, Stack, Typography } from '@mui/material'
 
 interface ImageEditroDialogProps {
-    dialogOpen: boolean
-    originalImgSource: string | File
     handleClose: () => void
+    handleOnEditConfirm: (canvasElement: HTMLCanvasElement | undefined) => void
+    dialogOpen: boolean
+    sourceImage: AvatarEditorProps['image']
     editorRef: React.MutableRefObject<null | AvatarEditor>
-    onSuccess: (canvasElement: HTMLCanvasElement | undefined) => void
 }
 
 export const ImageEditorDialog = ({
     handleClose,
+    handleOnEditConfirm,
     dialogOpen,
-    originalImgSource,
+    sourceImage,
     editorRef,
-    onSuccess,
 }: ImageEditroDialogProps) => {
-    const [config, setConfig] = useState<Partial<AvatarEditorProps> & { image: string | File }>({
-        image: originalImgSource,
+    const [config, setConfig] = useState<Partial<AvatarEditorProps> & { image: AvatarEditorProps['image'] }>({
+        image: sourceImage,
         rotate: 0,
         scale: 1,
         width: 350,
@@ -31,10 +31,12 @@ export const ImageEditorDialog = ({
     return (
         <Dialog fullScreen open={dialogOpen}>
             <DialogTitle>Edit Avatar</DialogTitle>
+
             <DialogContent dividers>
                 <Stack spacing={2} direction='row' sx={{ mb: 1 }} alignItems='center'>
                     <Stack spacing={2} direction='column' sx={{ m: 1, flexGrow: 1 }}>
                         <Typography>Zoom</Typography>
+
                         <Slider
                             onChange={(_, scale) => Array.isArray(scale) || setConfig(p => ({ ...p, scale }))}
                             min={0}
@@ -50,6 +52,7 @@ export const ImageEditorDialog = ({
                             ]}
                         />
                         <Typography>Rotate</Typography>
+
                         <Slider
                             onChange={(_, rotate) => Array.isArray(rotate) || setConfig(p => ({ ...p, rotate }))}
                             min={-360}
@@ -64,16 +67,17 @@ export const ImageEditorDialog = ({
                             ]}
                         />
                     </Stack>
-                    <AvatarEditor {...config} ref={editorRef} />
+                    <AvatarEditor {...config} image={sourceImage} ref={editorRef} />
                 </Stack>
             </DialogContent>
 
             <DialogActions>
                 <Button onClick={handleClose}>Cancel</Button>
+
                 <Button
                     variant='contained'
                     onClick={() => {
-                        onSuccess(editorRef.current?.getImage())
+                        handleOnEditConfirm(editorRef.current?.getImage())
                         handleClose()
                     }}
                 >

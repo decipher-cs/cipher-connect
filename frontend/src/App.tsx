@@ -13,6 +13,7 @@ import { SocketContextProvider } from './contexts/Socket'
 import { socket } from './socket'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import axios from 'axios'
 
 const TempUsernameDisplay = () => {
     const { username, handleCredentialChange, isLoggedIn } = useContext(CredentialContext)
@@ -46,14 +47,18 @@ const TempUsernameDisplay = () => {
     return null
 }
 
-const queryClient = new QueryClient()
+export const queryClient = new QueryClient()
+
+export const axiosServerInstance = axios.create({
+    baseURL: import.meta.env.VITE_SERVER_URL,
+})
 
 const App = () => {
     return (
         <ThemeProvider theme={lightMod}>
             <CssBaseline>
                 <QueryClientProvider client={queryClient}>
-                    <ReactQueryDevtools initialIsOpen />
+                    <ReactQueryDevtools />
                     <CredentialContextProvider>
                         <BrowserRouter>
                             <TempUsernameDisplay />

@@ -6,7 +6,7 @@ import {
     LogoutRounded,
     SettingsSuggestRounded,
 } from '@mui/icons-material'
-import { Avatar, Box, ButtonGroup, IconButton, Switch, SxProps, Tooltip } from '@mui/material'
+import { Avatar, Box, ButtonGroup, CircularProgress, IconButton, Switch, SxProps, Tooltip } from '@mui/material'
 import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GridLoader, MoonLoader } from 'react-spinners'
@@ -17,42 +17,41 @@ import { User, UserWithoutID } from '../types/prisma.client'
 import { Routes } from '../types/routes'
 import { DarkModeToggleSwitch } from './DarkModeToggleSwitch'
 import { ProfileSettingsDialog } from './ProfileSettingsDialog'
+import { useQuery, useMutation, useQueries } from '@tanstack/react-query'
+import axios from 'axios'
+import { useDialog } from '../hooks/useDialog'
+import { axiosServerInstance } from '../App'
 
-interface SidebarProps {
-    // userSettings: Settings
-    // setUserSettings: React.Dispatch<React.SetStateAction<Settings>>
-}
+interface SidebarProps {}
 
 export const Sidebar = (props: SidebarProps) => {
     const navigate = useNavigate()
 
-    const [dialogOpen, setDialogOpen] = useState(false)
+    const { dialogOpen, handleOpen, handleClose } = useDialog()
 
     const { username } = useContext(CredentialContext)
 
-    const [userProfile, setUserProfile] = useState<UserWithoutID>({
-        username,
-        createTime: new Date(),
-        displayName: username,
-        avatarPath: null,
+    const { data: userProfile } = useQuery({
+        queryKey: ['userProfile'],
+        queryFn: () => axiosServerInstance.get<UserWithoutID>(Routes.get.user + `/${username}`).then(res => res.data),
     })
 
-    useFetch<UserWithoutID>(Routes.get.user, false, username, undefined, data => {
-        setUserProfile(data)
-    })
+    if (!userProfile) return <CircularProgress />
 
-    if (!userProfile || !setUserProfile) return <MoonLoader />
-
-    const avatarURL = userProfile.avatarPath ? import.meta.env.VITE_AVATAR_STORAGE_URL + userProfile.avatarPath : ''
+    const avatarURL =
+        userProfile.avatarPath !== null && userProfile.avatarPath !== undefined
+            ? import.meta.env.VITE_AVATAR_STORAGE_URL + userProfile.avatarPath
+            : undefined
 
     return (
-        <Box sx={{ ...props.sx, display: 'grid', justifyItems: 'center' }}>
+        <Box sx={{ display: 'grid', justifyItems: 'center' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Tooltip title='Profile'>
-                    <IconButton sx={{ justifySelf: 'center' }} onClick={() => setDialogOpen(true)}>
+                    <IconButton sx={{ justifySelf: 'center' }} onClick={handleOpen}>
                         <Avatar src={avatarURL} />
                     </IconButton>
                 </Tooltip>
+
                 <Tooltip title='Source code'>
                     <IconButton
                         sx={{ justifySelf: 'center' }}
@@ -64,21 +63,14 @@ export const Sidebar = (props: SidebarProps) => {
                 </Tooltip>
             </Box>
 
-            {setUserProfile !== undefined ? (
-                <ProfileSettingsDialog
-                    dialogOpen={dialogOpen}
-                    setDialogOpen={setDialogOpen}
-                    setUserProfile={setUserProfile}
-                    userProfile={userProfile}
-                />
-            ) : null}
+            <ProfileSettingsDialog dialogOpen={dialogOpen} handleClose={handleClose} userProfile={userProfile} />
 
             <ButtonGroup orientation='vertical' sx={{ alignSelf: 'center' }}>
                 <IconButton onClick={() => navigate('/chat')}>
                     <ChatBubbleRounded />
                 </IconButton>
 
-                <IconButton onClick={() => setDialogOpen(true)}>
+                <IconButton onClick={handleOpen}>
                     <SettingsSuggestRounded />
                 </IconButton>
 

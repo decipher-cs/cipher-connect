@@ -1,11 +1,18 @@
 import { Box, Button, IconButton, List, Typography } from '@mui/material'
-import { useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { AddToPhotosRounded, BorderColorRounded } from '@mui/icons-material'
-import { RoomActions, RoomsState } from '../reducer/roomReducer'
+import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { RoomListItem } from './RoomListItem'
 import { MessageListAction } from '../reducer/messageListReducer'
 import { CreateRoomDialog } from './CreateRoomDialog'
 import { useDialog } from '../hooks/useDialog'
+import { useQuery } from '@tanstack/react-query'
+import { CredentialContext } from '../contexts/Credentials'
+import { Routes } from '../types/routes'
+import { DotLoader, GridLoader } from 'react-spinners'
+import { useSocket } from '../hooks/useSocket'
+import { RoomDetails } from '../types/prisma.client'
+import axios from 'axios'
 
 interface RoomListSidebar {
     roomDispatcher: React.Dispatch<RoomActions>
@@ -13,8 +20,33 @@ interface RoomListSidebar {
     messageListDispatcher: React.Dispatch<MessageListAction>
 }
 
-export const RoomListSidebar = (props: RoomListSidebar) => {
+export const RoomListSidebar = ({ rooms, roomDispatcher, messageListDispatcher }: RoomListSidebar) => {
     const { handleClose, handleOpen, dialogOpen } = useDialog()
+
+    const { username } = useContext(CredentialContext)
+
+    const socket = useSocket()
+
+    const [newRoomId, setNewRoomId] = useState<string>()
+
+    const { data: newRoom } = useQuery({
+        queryKey: ['getRoomDetails', newRoomId],
+        queryFn: () => axios.get<RoomDetails>(Routes.get.userRoom + `/${username}/${newRoomId}`).then(res => res.data),
+        enabled: newRoomId !== undefined,
+    })
+
+    useEffect(() => {
+        newRoom && roomDispatcher({ type: RoomActionType.addRoom, room: newRoom })
+    }, [newRoom])
+
+    useEffect(() => {
+        socket.on('newRoomCreated', async roomId => {
+            setNewRoomId(roomId)
+        })
+        return () => {
+            socket.removeListener('newRoomCreated')
+        }
+    }, [])
 
     return (
         <Box
@@ -35,18 +67,18 @@ export const RoomListSidebar = (props: RoomListSidebar) => {
                 <AddToPhotosRounded />
             </IconButton>
 
-            <CreateRoomDialog dialogOpen={dialogOpen} roomDispatcher={props.roomDispatcher} handleClose={handleClose} />
+            <CreateRoomDialog dialogOpen={dialogOpen} roomDispatcher={roomDispatcher} handleClose={handleClose} />
 
             <List sx={{ overflowY: 'auto' }}>
-                {props.rooms.joinedRooms.map((room, i) => {
+                {rooms.joinedRooms.map((room, i) => {
                     return (
                         <RoomListItem
                             key={room.roomId}
                             roomIndex={i}
-                            selectedRoomIndex={props.rooms.selectedRoom}
+                            selectedRoomIndex={rooms.selectedRoom}
                             room={room}
-                            roomDispatcher={props.roomDispatcher}
-                            messageListDispatcher={props.messageListDispatcher}
+                            roomDispatcher={roomDispatcher}
+                            messageListDispatcher={messageListDispatcher}
                         />
                     )
                 })}

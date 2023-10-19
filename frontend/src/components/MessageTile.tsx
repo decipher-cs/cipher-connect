@@ -3,7 +3,6 @@ import { Avatar, Dialog, IconButton, Paper, Skeleton, Typography } from '@mui/ma
 import { filetypeextension } from 'magic-bytes.js'
 import { useEffect, useState } from 'react'
 import { PulseLoader } from 'react-spinners'
-import { useFetch } from '../hooks/useFetch'
 import { Message, MessageContentType } from '../types/prisma.client'
 import { Routes } from '../types/routes'
 

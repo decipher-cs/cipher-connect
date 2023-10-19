@@ -1,4 +1,15 @@
-import { Box, Button, Collapse, Container, Dialog, Slide, TextField, Typography } from '@mui/material'
+import {
+    Avatar,
+    Box,
+    Button,
+    CircularProgress,
+    Collapse,
+    Container,
+    Dialog,
+    Slide,
+    TextField,
+    Typography,
+} from '@mui/material'
 import { useContext, useEffect, useReducer, useRef, useState } from 'react'
 import { ChatDisplaySection } from '../components/ChatDisplaySection'
 import { CredentialContext } from '../contexts/Credentials'
@@ -8,11 +19,13 @@ import { RoomDetails, RoomWithParticipants, User } from '../types/prisma.client'
 import { Sidebar } from '../components/Sidebar'
 import { MessageListActionType, messageListReducer } from '../reducer/messageListReducer'
 import { RoomActionType, roomReducer } from '../reducer/roomReducer'
-import { useFetch } from '../hooks/useFetch'
 import { Routes } from '../types/routes'
 import { RoomListSidebar } from '../components/RoomListSidebar'
-import { StyledTextField } from '../components/StyledTextField'
 import { useSocket } from '../hooks/useSocket'
+import { useQuery, useMutation } from '@tanstack/react-query'
+import axios from 'axios'
+import { ImageEditorDialog } from '../components/ImageEditorDialog'
+import { useImageEditor } from '../hooks/useImageEditor'
 
 export const Chat = () => {
     const [isLoading, setIsLoading] = useState(true)
@@ -23,19 +36,27 @@ export const Chat = () => {
 
     const { username, isLoggedIn } = useContext(CredentialContext)
 
+    const { data: fetchedRooms, isLoading: fetchingRoomsInProgress } = useQuery({
+        queryKey: ['initializeRooms'],
+        queryFn: () => axios.get<RoomDetails[]>(Routes.get.userRooms + `/${username}`).then(res => res.data),
+    })
+
     const [rooms, roomDispatcher] = useReducer(roomReducer, { selectedRoom: null, joinedRooms: [] })
+
+    useEffect(() => {
+        fetchedRooms && roomDispatcher({ type: RoomActionType.initializeRoom, rooms: fetchedRooms })
+    }, [fetchedRooms])
 
     const [roomInfoVisible, setRoomInfoVisible] = useState(false)
 
-    const { startFetching: initializeRooms } = useFetch<RoomDetails[]>(Routes.get.userRooms, true, username)
-
-    const { startFetching: fetchNewRoomDetails } = useFetch<RoomDetails>(Routes.get.userRoom, true)
-
-    const { startFetching: changeMessageReadStatus } = useFetch<string>(
-        Routes.put.messageReadStatus,
-        true,
-        rooms.selectedRoom !== null ? rooms.joinedRooms[rooms.selectedRoom].roomId + '/' + username : ''
-    )
+    const { mutate: mutateMessageReadStatus } = useMutation({
+        mutationFn: (value: { roomId: string; messageStatus: boolean }) =>
+            axios
+                .put(Routes.put.messageReadStatus + `/${value.roomId}/${username}`, {
+                    hasUnreadMessages: value.messageStatus,
+                })
+                .then(res => res.data),
+    })
 
     useEffect(() => {
         if (socket.connected === false && isLoggedIn === true) {
@@ -44,18 +65,6 @@ export const Chat = () => {
         }
 
         setIsLoading(false)
-
-        initializeRooms().then(data => {
-            roomDispatcher({ type: RoomActionType.initializeRoom, rooms: data })
-        })
-
-        socket.on('newRoomCreated', async roomId => {
-            const roomDetails = await fetchNewRoomDetails({ method: 'get' }, [username, roomId])
-            roomDispatcher({
-                type: RoomActionType.addRoom,
-                room: roomDetails,
-            })
-        })
 
         socket.on('userLeftRoom', (staleUsername, roomId) => {
             console.log(username, staleUsername, roomId)
@@ -106,14 +115,7 @@ export const Chat = () => {
                     roomId: roomId,
                     unreadMessages: false,
                 })
-                changeMessageReadStatus({
-                    method: 'put',
-                    body: JSON.stringify({ hasUnreadMessages: false }),
-                    headers: {
-                        Accept: 'application/json',
-                        'Content-Type': 'application/json',
-                    },
-                })
+                mutateMessageReadStatus({ roomId, messageStatus: false })
             }
         })
 
@@ -138,11 +140,15 @@ export const Chat = () => {
             >
                 <Sidebar />
 
-                <RoomListSidebar
-                    rooms={rooms}
-                    roomDispatcher={roomDispatcher}
-                    messageListDispatcher={messageDispatcher}
-                />
+                {fetchingRoomsInProgress === true ? (
+                    <CircularProgress />
+                ) : (
+                    <RoomListSidebar
+                        rooms={rooms}
+                        roomDispatcher={roomDispatcher}
+                        messageListDispatcher={messageDispatcher}
+                    />
+                )}
 
                 {rooms.selectedRoom === null || rooms.joinedRooms[rooms.selectedRoom] === undefined ? (
                     <Box sx={{ display: 'grid', flex: 1, placeContent: 'center' }}>

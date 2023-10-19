@@ -1,30 +1,25 @@
 import {
     Button,
     ButtonGroup,
-    createTheme,
     Dialog,
     DialogActions,
     DialogContent,
-    DialogContentText,
     DialogTitle,
     FormControlLabel,
     IconButton,
     ListItem,
-    ListItemButton,
     ListSubheader,
 } from '@mui/material'
 import { List } from '@mui/material'
-import { useContext, useState } from 'react'
-import { Room, RoomDetails, RoomType, RoomWithParticipants, User } from '../types/prisma.client'
-import { BorderColorRounded, DeleteRounded, DoneAllRounded, RoomTwoTone } from '@mui/icons-material'
+import { RoomType, User } from '../types/prisma.client'
+import { DeleteRounded, DoneAllRounded } from '@mui/icons-material'
 import { StyledTextField } from './StyledTextField'
-import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
-import { CredentialContext } from '../contexts/Credentials'
+import { RoomActions } from '../reducer/roomReducer'
 import { useSocket } from '../hooks/useSocket'
-import { object, string, number, ObjectSchema, array, boolean, InferType, addMethod } from 'yup'
 import { ButtonSwitch } from './styled/ButtonSwitch'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
+import { newRoomFormValidation } from '../schemaValidators/yupFormValidators'
 
 const MAX_ALLOWED_USERS_IN_PRIVATE_ROOM = 1
 
@@ -34,60 +29,13 @@ interface CreateRoomDialogProps {
     handleClose: () => void
 }
 
-type InitialFormValues = {
+export type InitialFormValues = {
     roomType: RoomType
     roomDisplayName: string
     participants: { username: User['username'] }[]
 }
 
-// Validation schema
-const roomValueValidationSchema: ObjectSchema<InitialFormValues> = object().shape({
-    roomType: string()
-        .default(RoomType.private)
-        .oneOf([RoomType.private, RoomType.group], 'room can only be of type group or private')
-        .required('This is a required value'),
-
-    participants: array()
-        .of(
-            object({
-                username: string()
-                    .required('Cannot be empty')
-                    .min(3, 'Need at least 3 characters')
-                    .max(16, 'maximum 16 characters allowed')
-                    .test(
-                        'username-validity-testk',
-                        'Username does not exist or is allowing requests',
-                        async username => {
-                            // TODO: check if user exists on DB
-                            return true
-                        }
-                    ),
-            })
-        )
-        .required('Cannot be empty')
-        .when('roomType', {
-            is: (type: RoomType) => type === RoomType.private,
-            then: schema => schema.length(1, 'Need at least one username'),
-        })
-        .test('uniqueness-test', 'Duplicate username detected', values => {
-            const usernames = values.map(({ username }) => username)
-            return usernames.length === new Set(usernames).size
-        })
-        .min(1, 'Need at least one username'),
-
-    roomDisplayName: string()
-        .default('')
-        .when('roomType', {
-            is: (type: RoomType) => type === RoomType.group,
-            then(schema) {
-                return schema.required().min(3, 'Min 3 characters needed').max(16, 'Max 16 characters allowed').trim()
-            },
-        }),
-})
-
-export const CreateRoomDialog = ({ dialogOpen, handleClose, roomDispatcher }: CreateRoomDialogProps) => {
-    const { username } = useContext(CredentialContext)
-
+export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogProps) => {
     const socket = useSocket()
 
     const {
@@ -104,8 +52,8 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose, roomDispatcher }: Cr
             roomType: RoomType.group,
             roomDisplayName: '',
             participants: [{ username: '' }],
-        },
-        resolver: yupResolver(roomValueValidationSchema),
+        } as InitialFormValues,
+        resolver: yupResolver(newRoomFormValidation),
     })
 
     const { fields, append, remove } = useFieldArray({ control, name: 'participants' })

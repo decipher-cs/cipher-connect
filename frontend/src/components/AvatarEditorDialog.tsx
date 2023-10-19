@@ -92,7 +92,6 @@ export const AvatarEditorDialog = (props: {
                             ]}
                         />
                     </Stack>
-                    {/* <AvatarEditor {...config} ref={props.editorRef} /> */}
                     <AvatarEditor {...config} ref={ref} />
                 </Stack>
             </DialogContent>

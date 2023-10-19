@@ -5,44 +5,29 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
-    DialogContentText,
     DialogTitle,
     IconButton,
-    Input,
-    InputBase,
     List,
     ListItem,
-    ListItemButton,
-    ListItemIcon,
-    ListItemSecondaryAction,
     ListItemText,
     ToggleButton,
     ToggleButtonGroup,
     Typography,
 } from '@mui/material'
-import { FormikConfig, useFormik } from 'formik'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
-import { useFetch } from '../hooks/useFetch'
 import { User, UserStatus, UserWithoutID } from '../types/prisma.client'
 import { Routes } from '../types/routes'
-import { SocketWithCustomEvents } from '../types/socket'
 import { StyledTextField } from './StyledTextField'
-import FileUploadRoundedIcon from '@mui/icons-material/FileUploadRounded'
-import { AvatarEditorDialog } from './AvatarEditorDialog'
-import AvatarEditor from 'react-avatar-editor'
 import { CloudUploadRounded, FaceRounded } from '@mui/icons-material'
 import { useSocket } from '../hooks/useSocket'
 import { useMutation } from '@tanstack/react-query'
-import axios from 'axios'
 import { SubmitHandler, useForm } from 'react-hook-form'
-import { object } from 'yup'
-import { useDialog } from '../hooks/useDialog'
 import { ImageEditorDialog } from './ImageEditorDialog'
 import { useImageEditor } from '../hooks/useImageEditor'
-import { yupResolver } from '@hookform/resolvers/yup'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { userProfileUpdationFormValidation } from '../schemaValidators/yupFormValidators'
-import { axiosServerInstance } from '../App'
+import { axiosServerInstance, queryClient } from '../App'
 
 interface ProfileSettingsDialogProps {
     readonly dialogOpen: boolean
@@ -51,33 +36,42 @@ interface ProfileSettingsDialogProps {
 }
 
 export type ProfileFormValues = {
-    displayName: UserWithoutID['displayName']
-    status: UserWithoutID['status']
-    avatar: File | Blob | undefined
-    // avatar: UserWithoutID['avatarPath']
+    displayName?: UserWithoutID['displayName']
+    status?: UserWithoutID['status']
+    avatar?: File
 }
 
 export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: ProfileSettingsDialogProps) => {
+    const { username } = useContext(CredentialContext)
+
     const socket = useSocket()
 
-    const { mutate: mutateProfile, data: updatedProfileData } = useMutation({
-        mutationKey: ['updateProfile'],
+    const { mutate: mutateProfile } = useMutation({
+        mutationKey: ['userProfile'],
         mutationFn: (formData: FormData) => axiosServerInstance.put(Routes.put.user, formData).then(res => res.data),
         onSuccess: data => {
+            queryClient.refetchQueries({ queryKey: ['userProfile'] })
+            console.log('successfully submitted form', data)
             // socket.emit('userProfileUpdated', data)
+            handleClose()
         },
     })
 
     const handleProfileSubmit: SubmitHandler<ProfileFormValues> = ({ displayName, avatar, status }) => {
-        console.log(displayName, avatar, status)
+        console.log('submitting', displayName, avatar, status)
 
         const fd = new FormData()
         if (displayName) fd.append('displayName', displayName)
         if (avatar) fd.append('avatar', avatar)
-        if (status) fd.append('status', status)
+        if (status && status !== userProfile.status) fd.append('status', status)
 
-        mutateProfile(fd)
-        return
+        let formLength = 0
+        fd.forEach(_ => formLength++)
+
+        if (formLength > 0) {
+            fd.append('username', username)
+            mutateProfile(fd)
+        }
     }
 
     const {
@@ -87,45 +81,41 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
         reset,
         formState: { errors, isSubmitting },
         setValue,
-        getValues,
     } = useForm({
+        resolver: zodResolver(userProfileUpdationFormValidation),
         defaultValues: {
-            displayName: userProfile.displayName,
             status: userProfile.status,
-            avatar: undefined,
-            // avatar: userProfile.avatarPath,
         } as ProfileFormValues,
-        // resolver: yupResolver(userProfileUpdationFormValidation),
     })
 
-    const { imageEditorProps, finalImage, handleOpen, originalImage, setOriginalImage } = useImageEditor(finalImage => {
-        if (finalImage?.file) setValue('avatar', finalImage?.file)
-    })
+    const { imageEditroDialogProps, status, handleOpen, editedImageData, setSourceImage, sourceImage } =
+        useImageEditor()
 
-    // console.log(watch())
+    useEffect(() => {
+        if (editedImageData?.file && status === 'successful') setValue('avatar', editedImageData.file)
+    }, [editedImageData?.file])
+
+    useEffect(() => {
+        // resets form data when form is closed
+        return () => {
+            reset()
+        }
+    }, [])
 
     return (
         <>
             <Dialog open={props.dialogOpen} onClose={handleClose} fullWidth>
                 <DialogTitle>Profile Settings</DialogTitle>
 
-                {originalImage && <ImageEditorDialog {...imageEditorProps} originalImgSource={originalImage} />}
+                {sourceImage ? <ImageEditorDialog {...imageEditroDialogProps} sourceImage={sourceImage} /> : null}
 
                 <DialogContent>
-                    <DialogContentText></DialogContentText>
                     <List component='form' onSubmit={() => handleSubmit(handleProfileSubmit)}>
-                        <ListItem>
+                        <ListItem sx={{ gap: 3 }}>
                             <ListItemText>Avatar</ListItemText>
 
-                            <Avatar src={finalImage?.url} sx={{ mr: 6 }} />
-
-                            <Button
-                                variant='outlined'
-                                size='small'
-                                component={'label'}
-                                startIcon={<CloudUploadRounded />}
-                            >
-                                Upload
+                            <IconButton component={'label'}>
+                                <Avatar src={editedImageData?.url} children={<CloudUploadRounded />} />
                                 <input
                                     type='file'
                                     accept='image/*'
@@ -133,17 +123,21 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
                                     onChange={e => {
                                         const file = e.target.files && e.target.files[0]
                                         if (file) {
-                                            setOriginalImage(file)
+                                            setSourceImage(file)
                                             handleOpen()
                                         }
                                     }}
                                 />
-                            </Button>
+                            </IconButton>
                         </ListItem>
 
                         <ListItem>
                             <ListItemText>Display Name</ListItemText>
-                            <StyledTextField size='small' {...register('displayName')} />
+                            <StyledTextField
+                                size='small'
+                                {...register('displayName')}
+                                placeholder={userProfile.displayName}
+                            />
                         </ListItem>
 
                         <ListItem>
@@ -153,9 +147,7 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
                                 size='small'
                                 value={watch('status')}
                                 {...register('status')}
-                                onChange={(e, value) => {
-                                    setValue('status', value)
-                                }}
+                                onChange={(_, value) => setValue('status', value)}
                             >
                                 <ToggleButton value={UserStatus.available}>{UserStatus.available}</ToggleButton>
                                 <ToggleButton value={UserStatus.dnd}>{UserStatus.dnd}</ToggleButton>
@@ -182,6 +174,7 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
                             disabled={isSubmitting}
                             type='submit'
                             onClick={() => handleSubmit(handleProfileSubmit)()}
+                            variant='contained'
                         >
                             Confirm
                         </Button>
