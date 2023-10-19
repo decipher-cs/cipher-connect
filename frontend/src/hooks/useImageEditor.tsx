@@ -1,44 +1,79 @@
-import { useRef, useState } from 'react'
+import { PropsOf } from '@emotion/react'
+import { useEffect, useRef, useState } from 'react'
 import AvatarEditor, { AvatarEditorProps } from 'react-avatar-editor'
+import { ImageEditorDialog } from '../components/ImageEditorDialog'
 import { useDialog } from './useDialog'
 
-// export const useImageEditor = (originalImgSource: AvatarEditorProps['image']) => {
-export const useImageEditor = () => {
+export const useImageEditor = (
+    onSuccess?: (finalImage: { canvasElement: HTMLCanvasElement; url: string; file: Blob | File }) => void
+) => {
     const dialogOptions = useDialog()
+
+    const [status, setStatus] = useState<'successful' | 'processing' | 'error' | 'uninitiated'>('uninitiated')
 
     const editorRef = useRef<AvatarEditor>(null)
 
-    const [originalImage, setOriginalImage] = useState<AvatarEditorProps['image']>()
+    const [sourceImage, setSourceImage] = useState<AvatarEditorProps['image']>()
 
-    const [editedImage, setEditedImage] = useState<File | Blob | string>()
+    const [editedImageData, setEditedImageData] = useState<{
+        canvasElement: HTMLCanvasElement
+        url: string
+        file: File
+    }>()
 
-    const getImageUrl = async (canvasElement: HTMLCanvasElement) => {
-        const dataUrl = canvasElement.toDataURL()
-        const result = await fetch(dataUrl)
-        const blob = await result.blob()
+    const handleOnEditConfirm = async (canvasElement: HTMLCanvasElement | undefined): Promise<void> => {
+        try {
+            if (canvasElement === undefined) throw new Error('image cannot be undefined')
 
-        return URL.createObjectURL(blob)
+            const result: typeof editedImageData = {
+                canvasElement,
+                url: await getImageAsUrl(canvasElement),
+                file: await getImageAsFile(canvasElement),
+            }
+
+            setEditedImageData(result)
+
+            setStatus('successful')
+        } catch (err) {
+            setStatus('error')
+            throw err
+        } finally {
+            setSourceImage(undefined)
+        }
     }
 
-    const onSuccess = async (canvasElement: HTMLCanvasElement | undefined): Promise<void> => {
-        if (canvasElement === undefined) return
-
-        setEditedImage(await getImageUrl(canvasElement))
+    const imageEditroDialogProps: Omit<PropsOf<typeof ImageEditorDialog>, 'sourceImage'> = {
+        handleClose: dialogOptions.handleClose,
+        dialogOpen: dialogOptions.dialogOpen,
+        editorRef,
+        handleOnEditConfirm,
     }
 
     return {
         ...dialogOptions,
-        imageEditorProps: {
-            handleClose: dialogOptions.handleClose,
-            dialogOpen: dialogOptions.dialogOpen,
-            originalImgSource: originalImage,
-            editorRef,
-            onSuccess,
-        },
+        imageEditroDialogProps,
         editorRef,
         onSuccess,
-        editedImage,
-        originalImage,
-        setOriginalImage,
+        status,
+        sourceImage,
+        setSourceImage,
+        editedImageData,
+        setEditedImageData,
     }
+}
+
+const getImageAsUrl = async (canvasElement: HTMLCanvasElement): Promise<string> => {
+    const dataUrl = canvasElement.toDataURL()
+    const result = await fetch(dataUrl)
+    const blob = await result.blob()
+
+    return URL.createObjectURL(blob)
+}
+
+const getImageAsFile = async (canvasElement: HTMLCanvasElement): Promise<File> => {
+    const dataUrl = canvasElement.toDataURL()
+    const result = await fetch(dataUrl)
+    const blob = await result.blob()
+
+    return new File([blob], 'avatar')
 }
