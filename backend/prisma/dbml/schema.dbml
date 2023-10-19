@@ -14,7 +14,7 @@ Table User {
   createTime DateTime [default: `now()`, not null]
   displayName String [not null]
   avatarPath String
-  status UserStatus [not null, default: 'offline']
+  status UserStatus [not null, default: 'available']
   refreshTokens RefreshToken [not null]
   message Message [not null]
   roomConfig RoomConfig [not null]
@@ -84,8 +84,8 @@ Table Message {
 }
 
 Enum UserStatus {
-  offline
-  online
+  available
+  dnd
   hidden
 }
 

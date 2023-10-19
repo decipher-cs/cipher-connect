@@ -18,8 +18,8 @@ model RefreshToken {
 }
 
 enum UserStatus {
-  offline
-  online
+  available
+  dnd
   hidden
 }
 
@@ -30,7 +30,7 @@ model User {
 
   displayName String     @db.VarChar(16)
   avatarPath  String?    @db.MediumText
-  status      UserStatus @default(offline)
+  status      UserStatus @default(available)
 
   refreshTokens RefreshToken[]
   message       Message[]
