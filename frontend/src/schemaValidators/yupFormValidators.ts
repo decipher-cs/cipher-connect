@@ -1,6 +1,8 @@
-import { object, string, number, ObjectSchema, array, boolean, InferType, addMethod } from 'yup'
+import { object, string, number, ObjectSchema, array, boolean, InferType, addMethod, mixed } from 'yup'
 import { InitialFormValues } from '../components/CreateRoomDialog'
-import { RoomType } from '../types/prisma.client'
+import { ProfileFormValues } from '../components/ProfileSettingsDialog'
+import { RoomType, UserStatus, UserWithoutID } from '../types/prisma.client'
+import { z } from 'zod'
 
 export const newRoomFormValidation: ObjectSchema<InitialFormValues> = object().shape({
     roomType: string()
@@ -46,4 +48,8 @@ export const newRoomFormValidation: ObjectSchema<InitialFormValues> = object().s
         }),
 })
 
-export const userProfileUpdationFormValidation = object().shape({})
+export const userProfileUpdationFormValidation: z.ZodType<ProfileFormValues> = z.object({
+    displayName: z.string().min(3).max(16).optional().or(z.literal('')),
+    status: z.union([z.literal(UserStatus.dnd), z.literal(UserStatus.available), z.literal(UserStatus.hidden)]),
+    avatar: z.instanceof(File).optional(),
+})
