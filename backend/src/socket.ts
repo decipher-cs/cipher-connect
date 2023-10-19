@@ -77,6 +77,7 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         socket.on('newRoomCreated', async room => {
             const participants = room.roomType === RoomType.private ? [room.participant] : room.participants
             participants.push(username)
+            console.log(room)
 
             try {
                 let roomId: string | undefined

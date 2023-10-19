@@ -1,7 +1,8 @@
 import { Room, User, UserRoom } from '@prisma/client'
 import { prisma } from '../server.js'
+import { UserWithoutID } from '../types.js'
 
-export const updateUser = async (username: string, user: Partial<User>) => {
+export const updateUser = async (username: string, user: Partial<UserWithoutID>) => {
     return await prisma.user.update({ where: { username }, data: { ...user } })
 }
 
