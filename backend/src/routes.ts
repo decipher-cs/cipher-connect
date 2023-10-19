@@ -92,7 +92,7 @@ export const initRoutes = (app: Express) => {
 
     app.put(routes.put.messageReadStatus + '/:roomId/:username', handleMessageReadStatusChange)
 
-    app.put(routes.put.user, handleUserProfileUpdation)
+    app.put(routes.put.user, avatar, handleUserProfileUpdation)
 
     app.delete(routes.delete.userRoom + '/:username/:roomId', handleUserLeavesRoom)
 
