@@ -1,21 +1,10 @@
-import {
-    Avatar,
-    Box,
-    Button,
-    CircularProgress,
-    Collapse,
-    Container,
-    Dialog,
-    Slide,
-    TextField,
-    Typography,
-} from '@mui/material'
+import { Box, CircularProgress, Collapse, Typography } from '@mui/material'
 import { useContext, useEffect, useReducer, useRef, useState } from 'react'
 import { ChatDisplaySection } from '../components/ChatDisplaySection'
 import { CredentialContext } from '../contexts/Credentials'
 import { PulseLoader } from 'react-spinners'
 import { RoomInfo } from '../components/RoomInfo'
-import { RoomDetails, RoomWithParticipants, User } from '../types/prisma.client'
+import { RoomDetails } from '../types/prisma.client'
 import { Sidebar } from '../components/Sidebar'
 import { MessageListActionType, messageListReducer } from '../reducer/messageListReducer'
 import { RoomActionType, roomReducer } from '../reducer/roomReducer'
@@ -24,8 +13,6 @@ import { RoomListSidebar } from '../components/RoomListSidebar'
 import { useSocket } from '../hooks/useSocket'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import axios from 'axios'
-import { ImageEditorDialog } from '../components/ImageEditorDialog'
-import { useImageEditor } from '../hooks/useImageEditor'
 
 export const Chat = () => {
     const [isLoading, setIsLoading] = useState(true)

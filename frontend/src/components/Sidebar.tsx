@@ -1,4 +1,3 @@
-import styled from '@emotion/styled'
 import {
     ChatBubbleRounded,
     ContactMailRounded,
@@ -9,9 +8,7 @@ import {
 import { Avatar, Box, ButtonGroup, CircularProgress, IconButton, Switch, SxProps, Tooltip } from '@mui/material'
 import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { GridLoader, MoonLoader } from 'react-spinners'
 import { CredentialContext } from '../contexts/Credentials'
-import { useFetch } from '../hooks/useFetch'
 import { useSocket } from '../hooks/useSocket'
 import { User, UserWithoutID } from '../types/prisma.client'
 import { Routes } from '../types/routes'
