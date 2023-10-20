@@ -6,20 +6,18 @@ import { PulseLoader } from 'react-spinners'
 import { RoomInfo } from '../components/RoomInfo'
 import { RoomDetails } from '../types/prisma.client'
 import { Sidebar } from '../components/Sidebar'
-import { MessageListActionType, messageListReducer } from '../reducer/messageListReducer'
 import { RoomActionType, roomReducer } from '../reducer/roomReducer'
 import { Routes } from '../types/routes'
 import { RoomListSidebar } from '../components/RoomListSidebar'
 import { useSocket } from '../hooks/useSocket'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import axios from 'axios'
+import { axiosServerInstance } from '../App'
 
 export const Chat = () => {
     const [isLoading, setIsLoading] = useState(true)
 
     const socket = useSocket()
-
-    const [messages, messageDispatcher] = useReducer(messageListReducer, [])
 
     const { username, isLoggedIn } = useContext(CredentialContext)
 
@@ -38,7 +36,7 @@ export const Chat = () => {
 
     const { mutate: mutateMessageReadStatus } = useMutation({
         mutationFn: (value: { roomId: string; messageStatus: boolean }) =>
-            axios
+            axiosServerInstance
                 .put(Routes.put.messageReadStatus + `/${value.roomId}/${username}`, {
                     hasUnreadMessages: value.messageStatus,
                 })
@@ -79,14 +77,6 @@ export const Chat = () => {
     }, [])
 
     useEffect(() => {
-        socket.on('message', messageFromServer => {
-            if (rooms.selectedRoom === null) return
-
-            if (rooms.joinedRooms[rooms.selectedRoom].roomId === messageFromServer.roomId) {
-                messageDispatcher({ type: MessageListActionType.add, newMessage: messageFromServer })
-            }
-        })
-
         socket.on('notification', roomId => {
             if (rooms.selectedRoom === null) return
 
@@ -107,7 +97,6 @@ export const Chat = () => {
         })
 
         return () => {
-            socket.removeListener('message')
             socket.removeListener('notification')
         }
     }, [rooms.selectedRoom])
@@ -122,7 +111,6 @@ export const Chat = () => {
                     height: '100svh',
                     maxWidth: '100vw',
                     alignContent: 'stretch',
-                    // overflow: 'hidden',
                 }}
             >
                 <Sidebar />
@@ -130,11 +118,7 @@ export const Chat = () => {
                 {fetchingRoomsInProgress === true ? (
                     <CircularProgress />
                 ) : (
-                    <RoomListSidebar
-                        rooms={rooms}
-                        roomDispatcher={roomDispatcher}
-                        messageListDispatcher={messageDispatcher}
-                    />
+                    <RoomListSidebar rooms={rooms} roomDispatcher={roomDispatcher} />
                 )}
 
                 {rooms.selectedRoom === null || rooms.joinedRooms[rooms.selectedRoom] === undefined ? (
@@ -160,8 +144,6 @@ export const Chat = () => {
                             <ChatDisplaySection
                                 currRoom={rooms.joinedRooms[rooms.selectedRoom]}
                                 setRoomInfoVisible={setRoomInfoVisible}
-                                chatMessageList={messages}
-                                messageListDispatcher={messageDispatcher}
                             />
                         </Box>
                         <Collapse

@@ -7,19 +7,29 @@ import { MessageListAction, MessageListActionType } from '../reducer/messageList
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { Message } from '../types/prisma.client'
 import { Routes } from '../types/routes'
+import { useQuery } from '@tanstack/react-query'
+import { axiosServerInstance } from '../App'
 
 interface RoomListItemProps {
     room: RoomsState['joinedRooms'][0]
     roomDispatcher: React.Dispatch<RoomActions>
     selectedRoomIndex: RoomsState['selectedRoom']
     roomIndex: number
-    messageListDispatcher: React.Dispatch<MessageListAction>
+    // messageListDispatcher: React.Dispatch<MessageListAction>
 }
 
 export const RoomListItem = memo((props: RoomListItemProps) => {
     const { username } = useContext(CredentialContext)
 
-    const { startFetching: initializeMessages } = useFetch<Message[]>(Routes.get.messages, true, props.room.roomId)
+    // const { startFetching: initializeMessages } = useFetch<Message[]>(Routes.get.messages, true, props.room.roomId)
+
+    // const { data: messages, refetch: fetchMessages } = useQuery({
+    //     queryKey: ['messages', props.room.roomId],
+    //     queryFn: () =>
+    //         axiosServerInstance.get<Message[]>(Routes.get.messages + '/' + props.room.roomId).then(res => res.data),
+    //     enabled: false,
+    // })
+    // console.log('messages:', props.roomIndex, props.selectedRoomIndex, messages)
 
     const { startFetching: changeMessageReadStatus } = useFetch<string>(
         Routes.put.messageReadStatus,
@@ -44,16 +54,25 @@ export const RoomListItem = memo((props: RoomListItemProps) => {
             divider
             onClick={async () => {
                 try {
-                    // if (props.roomIndex === props.selectedRoomIndex) return
+                    // console.log('msg:', props.roomIndex, props.selectedRoomIndex, messages)
+                    if (props.roomIndex === props.selectedRoomIndex) return
 
-                    const messages = await initializeMessages()
+                    // fetchMessages()
+
+                    // if (messages)
+                    //     props.messageListDispatcher({
+                    //         type: MessageListActionType.initializeMessages,
+                    //         newMessages: messages,
+                    //     })
 
                     props.roomDispatcher({ type: RoomActionType.changeRoom, newRoomIndex: props.roomIndex })
 
-                    props.messageListDispatcher({
-                        type: MessageListActionType.initializeMessages,
-                        newMessages: messages,
-                    })
+                    // const messages = await initializeMessages()
+                    //
+                    // props.messageListDispatcher({
+                    //     type: MessageListActionType.initializeMessages,
+                    //     newMessages: messages,
+                    // })
 
                     props.roomDispatcher({
                         type: RoomActionType.changeNotificationStatus,

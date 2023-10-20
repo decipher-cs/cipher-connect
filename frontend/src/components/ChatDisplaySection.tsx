@@ -1,5 +1,5 @@
 import { Box } from '@mui/material'
-import { useContext, useEffect, useRef } from 'react'
+import { useContext, useEffect, useReducer, useRef } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
 import React, { useState } from 'react'
 import { RoomWithParticipants, User } from '../types/prisma.client'
@@ -7,17 +7,17 @@ import { MessageTile } from './MessageTile'
 import { ChatInputBar } from './ChatInputBar'
 import { RoomBanner } from './RoomBanner'
 import { Message } from '../types/prisma.client'
-import { MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
+import { MessageListAction, MessageListActionType, messageListReducer } from '../reducer/messageListReducer'
 import { Routes } from '../types/routes'
 import { SocketWithCustomEvents, TypingStatus } from '../types/socket'
 import { RoomsState } from '../reducer/roomReducer'
 import { useSocket } from '../hooks/useSocket'
+import { useQuery } from '@tanstack/react-query'
+import { axiosServerInstance } from '../App'
 
 export interface ChatDisplaySectionProps {
-    chatMessageList: Message[]
     currRoom: RoomsState['joinedRooms'][0]
     setRoomInfoVisible: React.Dispatch<React.SetStateAction<boolean>>
-    messageListDispatcher: React.Dispatch<MessageListAction>
 }
 
 export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
@@ -25,8 +25,21 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
 
     const scrollToBottomRef = useRef<HTMLDivElement>(null)
 
+    const { data: serverMessages } = useQuery({
+        queryKey: ['messages', props.currRoom.roomId],
+        queryFn: () =>
+            axiosServerInstance.get<Message[]>(Routes.get.messages + `/${props.currRoom.roomId}`).then(res => res.data),
+    })
+
+    const [messages, messageDispatcher] = useReducer(messageListReducer, [])
+
+    useEffect(() => {
+        if (serverMessages)
+            messageDispatcher({ type: MessageListActionType.initializeMessages, newMessages: serverMessages })
+    }, [serverMessages])
+
     // TODO: cache this using usecallback or useMemo
-    const chatMessageList = props.chatMessageList.slice().sort((a, b) => {
+    const timeSortedMessages = messages.slice().sort((a, b) => {
         const aInMilliseconds = new Date(a.createdAt).valueOf()
         const bInMilliseconds = new Date(b.createdAt).valueOf()
         return aInMilliseconds - bInMilliseconds
@@ -39,7 +52,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     useEffect(() => {
         if (scrollToBottomRef.current === null) return
         scrollToBottomRef.current.scrollIntoView(true)
-    }, [props.chatMessageList])
+    }, [messages])
 
     useEffect(() => {
         socket.on('typingStatusChanged', (status, roomId, username) => {
@@ -62,6 +75,18 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         }
     }, [usersCurrentlyTyping])
 
+    useEffect(() => {
+        socket.on('message', messageFromServer => {
+            if (messageFromServer.roomId === props.currRoom.roomId) {
+                messageDispatcher({ type: MessageListActionType.add, newMessage: messageFromServer })
+            }
+        })
+
+        return () => {
+            socket.removeListener('message')
+        }
+    }, [])
+
     return (
         <>
             <RoomBanner setRoomInfoVisible={props.setRoomInfoVisible} room={props.currRoom} />
@@ -78,16 +103,15 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                     pb: 2,
                 }}
             >
-                {chatMessageList.map((message, i) => {
+                {timeSortedMessages.map((message, i) => {
                     return (
                         <MessageTile
                             key={i}
                             alignment={message.senderUsername === username ? 'right' : 'left'}
                             content={message.content}
                             // If newest message in the list, put ref on it to auto-scroll to bottom
-                            autoScrollToBottomRef={i === props.chatMessageList.length - 1 ? scrollToBottomRef : null}
+                            autoScrollToBottomRef={i === messages.length - 1 ? scrollToBottomRef : null}
                             contentType={message.contentType}
-                            // MIME={message.MIME}
                         />
                     )
                 })}
@@ -95,7 +119,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
             {usersCurrentlyTyping !== null && usersCurrentlyTyping.length > 0
                 ? usersCurrentlyTyping.join(', ') + ' typing...'
                 : null}
-            <ChatInputBar messageListDispatcher={props.messageListDispatcher} currRoom={props.currRoom} />
+            <ChatInputBar messageListDispatcher={messageDispatcher} currRoom={props.currRoom} />
         </>
     )
 }

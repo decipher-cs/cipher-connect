@@ -9,7 +9,6 @@ import { useDialog } from '../hooks/useDialog'
 import { useQuery } from '@tanstack/react-query'
 import { CredentialContext } from '../contexts/Credentials'
 import { Routes } from '../types/routes'
-import { DotLoader, GridLoader } from 'react-spinners'
 import { useSocket } from '../hooks/useSocket'
 import { RoomDetails } from '../types/prisma.client'
 import axios from 'axios'
@@ -17,10 +16,10 @@ import axios from 'axios'
 interface RoomListSidebar {
     roomDispatcher: React.Dispatch<RoomActions>
     rooms: RoomsState
-    messageListDispatcher: React.Dispatch<MessageListAction>
+    // messageListDispatcher: React.Dispatch<MessageListAction>
 }
 
-export const RoomListSidebar = ({ rooms, roomDispatcher, messageListDispatcher }: RoomListSidebar) => {
+export const RoomListSidebar = ({ rooms, roomDispatcher }: RoomListSidebar) => {
     const { handleClose, handleOpen, dialogOpen } = useDialog()
 
     const { username } = useContext(CredentialContext)
@@ -78,7 +77,7 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, messageListDispatcher }
                             selectedRoomIndex={rooms.selectedRoom}
                             room={room}
                             roomDispatcher={roomDispatcher}
-                            messageListDispatcher={messageListDispatcher}
+                            // messageListDispatcher={messageListDispatcher}
                         />
                     )
                 })}
