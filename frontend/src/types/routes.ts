@@ -4,8 +4,8 @@ export const Routes = {
     get: {
         messages: '/Messages',
         roomParticipants: '/room-participants',
-        userRooms: URL + '/user-rooms',
-        userRoom: URL + '/user-room',
+        userRooms: '/user-rooms',
+        userRoom: '/user-room',
         users: '/users',
         user: '/user',
         isUsernameValid: '/is-username-valid',

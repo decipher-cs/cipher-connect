@@ -14,6 +14,7 @@ import { RoomsState } from '../reducer/roomReducer'
 import { useSocket } from '../hooks/useSocket'
 import { useQuery } from '@tanstack/react-query'
 import { axiosServerInstance } from '../App'
+import { PulseLoader } from 'react-spinners'
 
 export interface ChatDisplaySectionProps {
     currRoom: RoomsState['joinedRooms'][0]
@@ -56,6 +57,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
 
     useEffect(() => {
         socket.on('typingStatusChanged', (status, roomId, username) => {
+            if (roomId !== props.currRoom.roomId) return
             if (status === TypingStatus.typing) {
                 setUsersCurrentlyTyping(p => {
                     if (p === null) return [username]
@@ -73,7 +75,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         return () => {
             socket.removeListener('typingStatusChanged')
         }
-    }, [usersCurrentlyTyping])
+    }, [usersCurrentlyTyping, props.currRoom.roomId])
 
     useEffect(() => {
         socket.on('message', messageFromServer => {
@@ -85,7 +87,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         return () => {
             socket.removeListener('message')
         }
-    }, [])
+    }, [props.currRoom.roomId])
 
     return (
         <>
@@ -116,9 +118,11 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                     )
                 })}
             </Box>
-            {usersCurrentlyTyping !== null && usersCurrentlyTyping.length > 0
-                ? usersCurrentlyTyping.join(', ') + ' typing...'
-                : null}
+            {usersCurrentlyTyping !== null && usersCurrentlyTyping.length > 0 ? (
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2 }}>
+                    {usersCurrentlyTyping.join(', ') + ' typing'} <PulseLoader size={3} />
+                </Box>
+            ) : null}
             <ChatInputBar messageListDispatcher={messageDispatcher} currRoom={props.currRoom} />
         </>
     )

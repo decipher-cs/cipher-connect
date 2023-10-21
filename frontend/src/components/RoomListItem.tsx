@@ -1,41 +1,25 @@
 import { Avatar, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
 import MarkUnreadChatAltIcon from '@mui/icons-material/MarkUnreadChatAlt'
-import React, { memo, useContext, useState } from 'react'
+import React, { memo, useContext, useEffect, useState } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
-import { useFetch } from '../hooks/useFetch'
 import { MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { Message } from '../types/prisma.client'
 import { Routes } from '../types/routes'
-import { useQuery } from '@tanstack/react-query'
+import { UseMutateFunction, useMutation, useQuery } from '@tanstack/react-query'
 import { axiosServerInstance } from '../App'
+import { useSocket } from '../hooks/useSocket'
 
 interface RoomListItemProps {
     room: RoomsState['joinedRooms'][0]
     roomDispatcher: React.Dispatch<RoomActions>
     selectedRoomIndex: RoomsState['selectedRoom']
     roomIndex: number
-    // messageListDispatcher: React.Dispatch<MessageListAction>
+    mutateMessageReadStatus: UseMutateFunction<any, unknown, { roomId: string; messageStatus: boolean }, unknown>
 }
 
 export const RoomListItem = memo((props: RoomListItemProps) => {
     const { username } = useContext(CredentialContext)
-
-    // const { startFetching: initializeMessages } = useFetch<Message[]>(Routes.get.messages, true, props.room.roomId)
-
-    // const { data: messages, refetch: fetchMessages } = useQuery({
-    //     queryKey: ['messages', props.room.roomId],
-    //     queryFn: () =>
-    //         axiosServerInstance.get<Message[]>(Routes.get.messages + '/' + props.room.roomId).then(res => res.data),
-    //     enabled: false,
-    // })
-    // console.log('messages:', props.roomIndex, props.selectedRoomIndex, messages)
-
-    const { startFetching: changeMessageReadStatus } = useFetch<string>(
-        Routes.put.messageReadStatus,
-        true,
-        props.room.roomId + '/' + username
-    )
 
     const [displayName, setDiplayName] = useState(() => {
         return props.room.roomType === 'private' && props.room.roomAvatar === null
@@ -54,25 +38,9 @@ export const RoomListItem = memo((props: RoomListItemProps) => {
             divider
             onClick={async () => {
                 try {
-                    // console.log('msg:', props.roomIndex, props.selectedRoomIndex, messages)
                     if (props.roomIndex === props.selectedRoomIndex) return
 
-                    // fetchMessages()
-
-                    // if (messages)
-                    //     props.messageListDispatcher({
-                    //         type: MessageListActionType.initializeMessages,
-                    //         newMessages: messages,
-                    //     })
-
                     props.roomDispatcher({ type: RoomActionType.changeRoom, newRoomIndex: props.roomIndex })
-
-                    // const messages = await initializeMessages()
-                    //
-                    // props.messageListDispatcher({
-                    //     type: MessageListActionType.initializeMessages,
-                    //     newMessages: messages,
-                    // })
 
                     props.roomDispatcher({
                         type: RoomActionType.changeNotificationStatus,
@@ -80,14 +48,8 @@ export const RoomListItem = memo((props: RoomListItemProps) => {
                         unreadMessages: false,
                     })
 
-                    const res = await changeMessageReadStatus({
-                        method: 'put',
-                        body: JSON.stringify({ hasUnreadMessages: false }),
-                        headers: {
-                            Accept: 'application/json',
-                            'Content-Type': 'application/json',
-                        },
-                    })
+                    if (props.room.hasUnreadMessages === true)
+                        props.mutateMessageReadStatus({ roomId: props.room.roomId, messageStatus: false })
                 } catch (error) {
                     throw new Error('Error during room selection')
                 }

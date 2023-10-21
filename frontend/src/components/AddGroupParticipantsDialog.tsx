@@ -44,13 +44,14 @@ import { EditableText } from './EditableText'
 import { Balancer } from 'react-wrap-balancer'
 import { AvatarEditorDialog } from './AvatarEditorDialog'
 import AvatarEditor from 'react-avatar-editor'
-import { useFetch } from '../hooks/useFetch'
 import { Routes } from '../types/routes'
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { ConfirmationDialog } from './ConfirmationDialog'
 import { CredentialContext } from '../contexts/Credentials'
 import { useFormik, FormikErrors } from 'formik'
 import { useSocket } from '../hooks/useSocket'
+import { useQuery } from '@tanstack/react-query'
+import { axiosServerInstance } from '../App'
 
 export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRooms'][0] }) => {
     const { username } = useContext(CredentialContext)
@@ -61,7 +62,16 @@ export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRoom
 
     const socket = useSocket()
 
-    const { startFetching: varifyUsername } = useFetch<boolean>(Routes.get.isUsernameValid, true)
+    // const { startFetching: varifyUsername } = useFetch<boolean>(Routes.get.isUsernameValid, true)
+
+    const queryFunction = async () => {
+        return axiosServerInstance.get(Routes.get.isUsernameValid)
+    }
+
+    const { data: usernameIsValid, isLoading } = useQuery({
+        queryKey: ['varifyUsername'],
+        queryFn: queryFunction,
+    })
 
     const handleSubmit = async ({ usersToBeAdded }: { usersToBeAdded: string[] }) => {
         socket.emit('userJoinedRoom', props.room.roomId, usersToBeAdded)
@@ -73,9 +83,11 @@ export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRoom
                 if (username.length < 3) return 'Min length is 3 characters'
                 if (username.length > 16) return 'Max length is 16 characters, i think...'
 
-                const valid = await varifyUsername(undefined, [username])
+                // const valid = await varifyUsername(undefined, [username])
+                // const valid = await queryFunction()
 
-                return valid === true ? undefined : 'Invalid Username'
+                return true
+                // return valid === true ? undefined : 'Invalid Username'
             })
         )
         for (const err of errors) {

@@ -4,15 +4,10 @@ import { ChatDisplaySection } from '../components/ChatDisplaySection'
 import { CredentialContext } from '../contexts/Credentials'
 import { PulseLoader } from 'react-spinners'
 import { RoomInfo } from '../components/RoomInfo'
-import { RoomDetails } from '../types/prisma.client'
 import { Sidebar } from '../components/Sidebar'
 import { RoomActionType, roomReducer } from '../reducer/roomReducer'
-import { Routes } from '../types/routes'
 import { RoomListSidebar } from '../components/RoomListSidebar'
 import { useSocket } from '../hooks/useSocket'
-import { useQuery, useMutation } from '@tanstack/react-query'
-import axios from 'axios'
-import { axiosServerInstance } from '../App'
 
 export const Chat = () => {
     const [isLoading, setIsLoading] = useState(true)
@@ -21,27 +16,9 @@ export const Chat = () => {
 
     const { username, isLoggedIn } = useContext(CredentialContext)
 
-    const { data: fetchedRooms, isLoading: fetchingRoomsInProgress } = useQuery({
-        queryKey: ['initializeRooms'],
-        queryFn: () => axios.get<RoomDetails[]>(Routes.get.userRooms + `/${username}`).then(res => res.data),
-    })
-
     const [rooms, roomDispatcher] = useReducer(roomReducer, { selectedRoom: null, joinedRooms: [] })
 
-    useEffect(() => {
-        fetchedRooms && roomDispatcher({ type: RoomActionType.initializeRoom, rooms: fetchedRooms })
-    }, [fetchedRooms])
-
     const [roomInfoVisible, setRoomInfoVisible] = useState(false)
-
-    const { mutate: mutateMessageReadStatus } = useMutation({
-        mutationFn: (value: { roomId: string; messageStatus: boolean }) =>
-            axiosServerInstance
-                .put(Routes.put.messageReadStatus + `/${value.roomId}/${username}`, {
-                    hasUnreadMessages: value.messageStatus,
-                })
-                .then(res => res.data),
-    })
 
     useEffect(() => {
         if (socket.connected === false && isLoggedIn === true) {
@@ -52,7 +29,6 @@ export const Chat = () => {
         setIsLoading(false)
 
         socket.on('userLeftRoom', (staleUsername, roomId) => {
-            console.log(username, staleUsername, roomId)
             if (username === staleUsername) {
                 // TODO: maybe this should direclty be after the onClick leave room and not here. event staying close to action
                 roomDispatcher({ type: RoomActionType.removeRoom, roomId })
@@ -76,31 +52,6 @@ export const Chat = () => {
         }
     }, [])
 
-    useEffect(() => {
-        socket.on('notification', roomId => {
-            if (rooms.selectedRoom === null) return
-
-            if (rooms.joinedRooms[rooms.selectedRoom].roomId !== roomId) {
-                roomDispatcher({
-                    type: RoomActionType.changeNotificationStatus,
-                    roomId: roomId,
-                    unreadMessages: true,
-                })
-            } else {
-                roomDispatcher({
-                    type: RoomActionType.changeNotificationStatus,
-                    roomId: roomId,
-                    unreadMessages: false,
-                })
-                mutateMessageReadStatus({ roomId, messageStatus: false })
-            }
-        })
-
-        return () => {
-            socket.removeListener('notification')
-        }
-    }, [rooms.selectedRoom])
-
     if (isLoading) return <PulseLoader color='#36d7b7' />
 
     return (
@@ -115,11 +66,7 @@ export const Chat = () => {
             >
                 <Sidebar />
 
-                {fetchingRoomsInProgress === true ? (
-                    <CircularProgress />
-                ) : (
-                    <RoomListSidebar rooms={rooms} roomDispatcher={roomDispatcher} />
-                )}
+                <RoomListSidebar rooms={rooms} roomDispatcher={roomDispatcher} />
 
                 {rooms.selectedRoom === null || rooms.joinedRooms[rooms.selectedRoom] === undefined ? (
                     <Box sx={{ display: 'grid', flex: 1, placeContent: 'center' }}>

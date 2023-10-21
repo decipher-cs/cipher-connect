@@ -15,20 +15,17 @@ import {
     ListItemText,
 } from '@mui/material'
 import { ForwardedRef, forwardRef, Ref, useContext, useRef, useState } from 'react'
-import {
-    CancelRounded,
-    InfoRounded,
-    NotificationsRounded,
-} from '@mui/icons-material'
+import { CancelRounded, InfoRounded, NotificationsRounded } from '@mui/icons-material'
 import { Balancer } from 'react-wrap-balancer'
 import { AvatarEditorDialog } from './AvatarEditorDialog'
-import { useFetch } from '../hooks/useFetch'
 import { Routes } from '../types/routes'
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { ConfirmationDialog } from './ConfirmationDialog'
 import { CredentialContext } from '../contexts/Credentials'
 import { AddGroupParticipantsDialog } from './AddGroupParticipantsDialog'
 import { useSocket } from '../hooks/useSocket'
+import { useMutation } from '@tanstack/react-query'
+import { axiosServerInstance } from '../App'
 
 interface RoomInfoProps {
     room: RoomsState['joinedRooms'][0]
@@ -59,7 +56,16 @@ export const RoomInfo = (props: RoomInfoProps) => {
 
     const [selectedImage, setSelectedImage] = useState<File | null>(null)
 
-    const { startFetching: uploadAvater } = useFetch<string>(Routes.post.avatar, true)
+    const { mutateAsync: uploadAvatar } = useMutation({
+        mutationKey: ['uploadAvatar'],
+        mutationFn: (data: FormData) =>
+            axiosServerInstance.post<string>(Routes.post.avatar, data).then(res => res.data),
+    })
+
+    const { mutateAsync: deleteRoom } = useMutation({
+        mutationKey: ['uploadAvatar'],
+        mutationFn: () => axiosServerInstance.delete(Routes.delete.room).then(res => res.data),
+    })
 
     const handleImageUpload = async (newAvatar: File) => {
         if (!newAvatar) return
@@ -71,7 +77,7 @@ export const RoomInfo = (props: RoomInfoProps) => {
         fd.append('avatar', newAvatar)
         fd.append('roomId', roomId)
 
-        const newPath = await uploadAvater({ body: fd, method: 'POST' })
+        const newPath = await uploadAvatar(fd)
 
         props.roomDispatcher({
             type: RoomActionType.alterRoomProperties,
@@ -81,15 +87,6 @@ export const RoomInfo = (props: RoomInfoProps) => {
 
         socket.emit('roomUpdated', { roomAvatar: newPath })
     }
-
-    const { startFetching: deleteRoom } = useFetch(
-        Routes.delete.room,
-        true,
-        `${props.room.roomId}`,
-        undefined,
-        () => {},
-        'delete'
-    )
 
     return (
         <Box

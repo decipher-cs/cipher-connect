@@ -1,4 +1,4 @@
-import { Box, Button, IconButton, List, Typography } from '@mui/material'
+import { Box, Button, CircularProgress, IconButton, List, Typography } from '@mui/material'
 import { useContext, useEffect, useState } from 'react'
 import { AddToPhotosRounded, BorderColorRounded } from '@mui/icons-material'
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
@@ -6,17 +6,17 @@ import { RoomListItem } from './RoomListItem'
 import { MessageListAction } from '../reducer/messageListReducer'
 import { CreateRoomDialog } from './CreateRoomDialog'
 import { useDialog } from '../hooks/useDialog'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { CredentialContext } from '../contexts/Credentials'
 import { Routes } from '../types/routes'
 import { useSocket } from '../hooks/useSocket'
 import { RoomDetails } from '../types/prisma.client'
 import axios from 'axios'
+import { axiosServerInstance } from '../App'
 
 interface RoomListSidebar {
     roomDispatcher: React.Dispatch<RoomActions>
     rooms: RoomsState
-    // messageListDispatcher: React.Dispatch<MessageListAction>
 }
 
 export const RoomListSidebar = ({ rooms, roomDispatcher }: RoomListSidebar) => {
@@ -26,21 +26,57 @@ export const RoomListSidebar = ({ rooms, roomDispatcher }: RoomListSidebar) => {
 
     const socket = useSocket()
 
-    const [newRoomId, setNewRoomId] = useState<string>()
+    const {
+        data: fetchedRooms,
+        isLoading: fetchingRoomsInProgress,
+        refetch: syncRoomsWithServer,
+    } = useQuery({
+        queryKey: ['rooms', ...rooms.joinedRooms],
+        queryFn: () =>
+            axiosServerInstance.get<RoomDetails[]>(Routes.get.userRooms + `/${username}`).then(res => res.data),
+    })
 
-    const { data: newRoom } = useQuery({
-        queryKey: ['getRoomDetails', newRoomId],
-        queryFn: () => axios.get<RoomDetails>(Routes.get.userRoom + `/${username}/${newRoomId}`).then(res => res.data),
-        enabled: newRoomId !== undefined,
+    const { mutate: mutateMessageReadStatus } = useMutation({
+        mutationFn: (value: { roomId: string; messageStatus: boolean }) =>
+            axiosServerInstance
+                .put(Routes.put.messageReadStatus + `/${value.roomId}/${username}`, {
+                    hasUnreadMessages: value.messageStatus,
+                })
+                .then(res => res.data),
     })
 
     useEffect(() => {
-        newRoom && roomDispatcher({ type: RoomActionType.addRoom, room: newRoom })
-    }, [newRoom])
+        if (fetchedRooms) roomDispatcher({ type: RoomActionType.initializeRoom, rooms: fetchedRooms })
+    }, [fetchedRooms])
+
+    useEffect(() => {
+        socket.on('notification', roomId => {
+            if (rooms.selectedRoom === null) return
+
+            if (rooms.joinedRooms[rooms.selectedRoom].roomId !== roomId) {
+                roomDispatcher({
+                    type: RoomActionType.changeNotificationStatus,
+                    roomId: roomId,
+                    unreadMessages: true,
+                })
+            } else {
+                roomDispatcher({
+                    type: RoomActionType.changeNotificationStatus,
+                    roomId: roomId,
+                    unreadMessages: false,
+                })
+                mutateMessageReadStatus({ roomId, messageStatus: false })
+            }
+        })
+
+        return () => {
+            socket.removeListener('notification')
+        }
+    }, [rooms.selectedRoom])
 
     useEffect(() => {
         socket.on('newRoomCreated', async roomId => {
-            setNewRoomId(roomId)
+            syncRoomsWithServer()
         })
         return () => {
             socket.removeListener('newRoomCreated')
@@ -68,20 +104,24 @@ export const RoomListSidebar = ({ rooms, roomDispatcher }: RoomListSidebar) => {
 
             <CreateRoomDialog dialogOpen={dialogOpen} roomDispatcher={roomDispatcher} handleClose={handleClose} />
 
-            <List sx={{ overflowY: 'auto' }}>
-                {rooms.joinedRooms.map((room, i) => {
-                    return (
-                        <RoomListItem
-                            key={room.roomId}
-                            roomIndex={i}
-                            selectedRoomIndex={rooms.selectedRoom}
-                            room={room}
-                            roomDispatcher={roomDispatcher}
-                            // messageListDispatcher={messageListDispatcher}
-                        />
-                    )
-                })}
-            </List>
+            {fetchingRoomsInProgress === true ? (
+                <CircularProgress />
+            ) : (
+                <List sx={{ overflowY: 'auto' }}>
+                    {rooms.joinedRooms.map((room, i) => {
+                        return (
+                            <RoomListItem
+                                key={room.roomId}
+                                roomIndex={i}
+                                selectedRoomIndex={rooms.selectedRoom}
+                                room={room}
+                                roomDispatcher={roomDispatcher}
+                                mutateMessageReadStatus={mutateMessageReadStatus}
+                            />
+                        )
+                    })}
+                </List>
+            )}
         </Box>
     )
 }

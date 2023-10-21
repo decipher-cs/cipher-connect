@@ -17,7 +17,7 @@ import { StyledTextField } from './StyledTextField'
 import { RoomActions } from '../reducer/roomReducer'
 import { useSocket } from '../hooks/useSocket'
 import { ButtonSwitch } from './styled/ButtonSwitch'
-import { useFieldArray, useForm } from 'react-hook-form'
+import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { newRoomFormValidation } from '../schemaValidators/yupFormValidators'
 
@@ -58,8 +58,9 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
 
     const { fields, append, remove } = useFieldArray({ control, name: 'participants' })
 
-    const handleFormSubmit = () => {
+    const handleFormSubmit: SubmitHandler<InitialFormValues> = () => {
         const usernames = getValues('participants').map(({ username }) => username)
+
         if (getValues('roomType') === RoomType.private) {
             socket.emit('newRoomCreated', { roomType: RoomType.private, participant: usernames[0] })
         } else if (getValues('roomType') === RoomType.group) {
@@ -118,7 +119,7 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
                         {fields.map((username, i) => (
                             <ListItem
                                 key={username.id}
-                                prefix='hello world'
+                                prefix='foobar_remove_c325s'
                                 secondaryAction={
                                     <>
                                         <IconButton edge='end'>

@@ -1,22 +1,7 @@
 import AvatarEditor from 'react-avatar-editor'
 
-import React, { Ref, useRef, useState } from 'react'
-import {
-    AvatarClassKey,
-    AvatarProps,
-    Box,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    Slider,
-    Stack,
-    Typography,
-} from '@mui/material'
-import { useFetch } from '../hooks/useFetch'
-import { Routes } from '../types/routes'
-import { SocketWithCustomEvents } from '../types/socket'
+import { useRef, useState } from 'react'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Slider, Stack, Typography } from '@mui/material'
 
 export const AvatarEditorDialog = (props: {
     open: boolean

@@ -10,9 +10,10 @@ import { CredentialContext } from '../contexts/Credentials'
 import { MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
 import { RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { Routes } from '../types/routes'
-import { useFetch } from '../hooks/useFetch'
 import filetypeinfo, { filetypeextension, filetypemime, filetypename } from 'magic-bytes.js'
 import { useSocket } from '../hooks/useSocket'
+import { useMutation } from '@tanstack/react-query'
+import { axiosServerInstance } from '../App'
 
 const mimeToFileType = (mime: string) => {
     return mime.split('/')[0]
@@ -34,7 +35,10 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
 
     const audioRecorder = useAudioRecorder()
 
-    const deliverMessage = useFetch<string>(Routes.post.media, true)
+    const { mutateAsync: uploadMedia, data } = useMutation({
+        mutationKey: ['uploadMedia'],
+        mutationFn: (fd: FormData) => axiosServerInstance.post<string>(Routes.post.media, fd).then(res => res.data),
+    })
 
     const socket = useSocket()
 
@@ -56,7 +60,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
             const formData = new FormData()
             formData.append('userUpload', content)
             try {
-                content = await deliverMessage.startFetching({ method: 'POST', body: formData })
+                content = await uploadMedia(formData)
             } catch (error) {
                 // TODO: notify user of error
                 throw new Error('something wrong')
