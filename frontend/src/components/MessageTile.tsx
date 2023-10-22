@@ -1,65 +1,69 @@
 import { Download, Preview, SmsFailedRounded } from '@mui/icons-material'
-import { Avatar, Dialog, IconButton, Paper, Skeleton, Typography } from '@mui/material'
+import { Avatar, Box, Dialog, IconButton, Paper, Skeleton, Typography } from '@mui/material'
 import { filetypeextension } from 'magic-bytes.js'
 import { useEffect, useState } from 'react'
+import { useDialog } from '../hooks/useDialog'
 import { Message, MessageContentType } from '../types/prisma.client'
+import { MediaPreview } from './MediaPreview'
 
-export const MessageTile = (
-    props: {
-        alignment: 'left' | 'right'
-        autoScrollToBottomRef: React.RefObject<HTMLDivElement> | null
-    } & Pick<Message, 'contentType' | 'content'>
-) => {
+export type MessageTileProps = {
+    alignment: 'left' | 'right'
+    autoScrollToBottomRef: React.RefObject<HTMLDivElement> | null
+} & Pick<Message, 'contentType' | 'content'>
+
+export const MessageTile = ({ alignment, autoScrollToBottomRef, content, contentType }: MessageTileProps) => {
     const [showDialog, setShowDialog] = useState(false)
 
-    if (props.content.length <= 0) return null
+    const { handleOpen, handleClose, dialogOpen } = useDialog()
 
-    if (props.contentType === MessageContentType.text)
+    if (content === undefined || content === null) return null
+
+    if (contentType === MessageContentType.text)
         return (
             <Paper
                 sx={{
-                    borderRadius: props.alignment === 'left' ? '0px 45px 45px 45px' : '45px 0px 45px 45px',
+                    borderRadius: alignment === 'left' ? '0px 45px 45px 45px' : '45px 0px 45px 45px',
                     px: 4,
                     py: 3,
-                    justifySelf: props.alignment === 'left' ? 'flex-start' : 'flex-end',
+                    justifySelf: alignment === 'left' ? 'flex-start' : 'flex-end',
                     width: 'fit-content',
                     maxWidth: '80%',
                     backgroundImage: 'linear-gradient(45deg,#3023AE 0%,#FF0099 100%)',
                 }}
-                ref={props.autoScrollToBottomRef}
+                ref={autoScrollToBottomRef}
             >
-                <Typography sx={{ overflowWrap: 'break-word', color: 'white' }}>{props.content}</Typography>
+                <Typography sx={{ overflowWrap: 'break-word', color: 'white' }}>{content}</Typography>
             </Paper>
         )
     else {
         return (
             <Paper
-                style={{
-                    justifySelf: props.alignment === 'left' ? 'flex-start' : 'flex-end',
-                    maxWidth: '80%',
-                    aspectRatio: '3/4',
-                    height: '30svh',
+                sx={{
+                    justifySelf: alignment === 'left' ? 'flex-start' : 'flex-end',
+                    height: 'fit-content',
+                    width: 'fit-content',
+                    // maxWidth: '80%',
+                    // aspectRatio: '3/4',
+                    // height: '30svh',
 
-                    backgroundImage: 'linear-gradient(45deg,#3023AE 0%,#FF0099 100%)',
-                    display: 'grid',
-                    placeContent: 'center',
+                    // backgroundImage: 'linear-gradient(45deg,#3023AE 0%,#FF0099 100%)',
+                    // display: 'grid',
+                    // placeContent: 'center',
+                    background: 'transparent',
+                    boxShadow: 'none',
                 }}
-                ref={props.autoScrollToBottomRef}
+                ref={autoScrollToBottomRef}
                 onClick={() => setShowDialog(true)}
             >
                 {/* TODO: new component for previeing // <Preview/> */}
-                {/* <Dialog fullscreen open={showDialog} onClick={() => setShowDialog(false)}> */}
-                {/* </Dialog> */}
-                <Content content={props.content} contentType={props.contentType} /* MIME={props.MIME} */ />
+                <MediaDisplay content={content} contentType={contentType} /* MIME={MIME} */ />
             </Paper>
         )
     }
 }
 
-const Content = ({ content, contentType }: Pick<Message, 'contentType' | 'content'>) => {
+const MediaDisplay = ({ content, contentType }: Pick<MessageTileProps, 'contentType' | 'content'>) => {
     // TODO: set a  Loader/ skeletor/ spinner
-
-    // content is the full path to the file on the server storage. Ex: folderName/randomFileBytes, media/aj3qfeq2rf3a32f3th5
 
     // TODO: put a placeholder/ broken for missing content
 
@@ -73,7 +77,7 @@ const Content = ({ content, contentType }: Pick<Message, 'contentType' | 'conten
 
     switch (contentType) {
         case MessageContentType.audio:
-            return <audio controls src={mediaSrc} />
+            return <Box component='audio' controls src={mediaSrc} />
 
         // TODO: a new component for Type = file
         // File should open in new tab as preview
@@ -96,12 +100,18 @@ const Content = ({ content, contentType }: Pick<Message, 'contentType' | 'conten
         case MessageContentType.image:
             return (
                 <>
-                    <img
+                    <Box
+                        component='img'
                         src={mediaSrc}
                         loading='lazy'
-                        style={{
+                        sx={{
                             maxHeight: '30svh',
                             maxWidth: '100%',
+                            border: 'solid white 8px',
+                            borderRadius: '20px',
+                            ':hover': {
+                                // TODO: backdrop and icon with fullscreen button
+                            },
                         }}
                     />
                 </>
