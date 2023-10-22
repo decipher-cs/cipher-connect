@@ -2,9 +2,7 @@ import { Download, Preview, SmsFailedRounded } from '@mui/icons-material'
 import { Avatar, Dialog, IconButton, Paper, Skeleton, Typography } from '@mui/material'
 import { filetypeextension } from 'magic-bytes.js'
 import { useEffect, useState } from 'react'
-import { PulseLoader } from 'react-spinners'
 import { Message, MessageContentType } from '../types/prisma.client'
-import { Routes } from '../types/routes'
 
 export const MessageTile = (
     props: {

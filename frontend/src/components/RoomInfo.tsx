@@ -14,7 +14,7 @@ import {
     ListItemAvatar,
     ListItemText,
 } from '@mui/material'
-import { ForwardedRef, forwardRef, Ref, useContext, useRef, useState } from 'react'
+import { ForwardedRef, forwardRef, Ref, useContext, useEffect, useRef, useState } from 'react'
 import { CancelRounded, InfoRounded, NotificationsRounded } from '@mui/icons-material'
 import { Balancer } from 'react-wrap-balancer'
 import { AvatarEditorDialog } from './AvatarEditorDialog'
@@ -26,35 +26,26 @@ import { AddGroupParticipantsDialog } from './AddGroupParticipantsDialog'
 import { useSocket } from '../hooks/useSocket'
 import { useMutation } from '@tanstack/react-query'
 import { axiosServerInstance } from '../App'
+import { useImageEditor } from '../hooks/useImageEditor'
+import { ImageEditorDialog } from './ImageEditorDialog'
+import { useDialog } from '../hooks/useDialog'
 
 interface RoomInfoProps {
     room: RoomsState['joinedRooms'][0]
-    setRoomInfoVisible: React.Dispatch<React.SetStateAction<boolean>>
+    handleToggleRoomInfoSidebar: () => void
     roomDispatcher: (value: RoomActions) => void
 }
 
-export const RoomInfo = (props: RoomInfoProps) => {
-    const { username } = useContext(CredentialContext)
-
-    const [openLeaveGroupDialog, setOpenLeaveGroupDialog] = useState(false)
-
-    const toggleLeaveGroupDialog = () => setOpenLeaveGroupDialog(p => !p)
-
-    const [openDeleteGroupDialog, setOpenDeleteGroupDialog] = useState(false)
-
-    const toggleDeleteGroupDialog = () => setOpenDeleteGroupDialog(p => !p)
-
-    const roomType = props.room.roomType
-
+export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ...props }: RoomInfoProps) => {
     const socket = useSocket()
 
-    const roomAvatar = props.room.roomAvatar ? import.meta.env.VITE_AVATAR_STORAGE_URL + props.room.roomAvatar : ''
+    const { imageEditroDialogProps, sourceImage, setSourceImage, handleOpen, editedImageData } = useImageEditor()
 
-    const [openAvatarEditor, setOpenAvatarEditor] = useState(false)
+    const { handleToggle: toggleLeaveGroupDialog, dialogOpen: openLeaveGroupDialog } = useDialog()
 
-    const handleAvatarEditorToggle = () => setOpenAvatarEditor(p => !p)
+    const { handleToggle: toggleDeleteGroupDialog, dialogOpen: openDeleteGroupDialog } = useDialog()
 
-    const [selectedImage, setSelectedImage] = useState<File | null>(null)
+    const roomAvatar = room.roomAvatar ? import.meta.env.VITE_AVATAR_STORAGE_URL + room.roomAvatar : ''
 
     const { mutateAsync: uploadAvatar } = useMutation({
         mutationKey: ['uploadAvatar'],
@@ -65,12 +56,15 @@ export const RoomInfo = (props: RoomInfoProps) => {
     const { mutateAsync: deleteRoom } = useMutation({
         mutationKey: ['uploadAvatar'],
         mutationFn: () => axiosServerInstance.delete(Routes.delete.room).then(res => res.data),
+        onSuccess: () => {
+            // invalidate query  some query and cause a refetch
+        },
     })
 
     const handleImageUpload = async (newAvatar: File) => {
         if (!newAvatar) return
 
-        const roomId = props.room.roomId
+        const roomId = room.roomId
 
         const fd = new FormData()
 
@@ -79,7 +73,7 @@ export const RoomInfo = (props: RoomInfoProps) => {
 
         const newPath = await uploadAvatar(fd)
 
-        props.roomDispatcher({
+        roomDispatcher({
             type: RoomActionType.alterRoomProperties,
             roomId,
             newRoomProperties: { roomAvatar: newPath },
@@ -87,6 +81,12 @@ export const RoomInfo = (props: RoomInfoProps) => {
 
         socket.emit('roomUpdated', { roomAvatar: newPath })
     }
+
+    useEffect(() => {
+        if (editedImageData?.file) {
+            handleImageUpload(editedImageData?.file)
+        }
+    }, [editedImageData?.file])
 
     return (
         <Box
@@ -106,27 +106,14 @@ export const RoomInfo = (props: RoomInfoProps) => {
 
                 <Typography sx={{ justifySelf: 'flex-start' }}>Room Info</Typography>
 
-                <IconButton
-                    onClick={() => props.setRoomInfoVisible(false)}
-                    sx={{ justifySelf: 'flex-end', ml: 'auto' }}
-                >
+                <IconButton onClick={handleToggleRoomInfoSidebar} sx={{ justifySelf: 'flex-end', ml: 'auto' }}>
                     <CancelRounded />
                 </IconButton>
             </Stack>
 
-            {props.room.roomType === 'group' ? (
+            {room.roomType === 'group' ? (
                 <>
-                    {selectedImage && (
-                        <AvatarEditorDialog
-                            imgSrc={selectedImage}
-                            handleClose={handleAvatarEditorToggle}
-                            open={openAvatarEditor}
-                            handleSubmit={file => {
-                                setSelectedImage(null)
-                                file && handleImageUpload(file)
-                            }}
-                        />
-                    )}
+                    {sourceImage ? <ImageEditorDialog {...imageEditroDialogProps} sourceImage={sourceImage} /> : null}
                     <Tooltip title='Click to change image'>
                         <IconButton component='label' sx={{ justifySelf: 'center', alignSelf: 'center' }}>
                             <Avatar src={roomAvatar} sx={{ height: 86, width: 86 }} />
@@ -137,15 +124,15 @@ export const RoomInfo = (props: RoomInfoProps) => {
                                 hidden
                                 onChange={e => {
                                     if (!e.target.files || e.target.files.length <= 0) return
-                                    handleAvatarEditorToggle()
-                                    setSelectedImage(e.target.files[0])
+                                    setSourceImage(e.target.files[0])
+                                    handleOpen()
                                 }}
                             />
                         </IconButton>
                     </Tooltip>
 
                     <Typography align='center' variant='h6'>
-                        {props.room.roomDisplayName}
+                        {room.roomDisplayName}
                     </Typography>
 
                     {/* <EditableText text={roomName} setText={setRoomName} /> */}
@@ -172,12 +159,12 @@ export const RoomInfo = (props: RoomInfoProps) => {
             <Divider />
 
             <Stack direction='row' sx={{ alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                <Typography noWrap>Members ({props.room.participants.length})</Typography>
-                {roomType === 'group' ? <AddGroupParticipantsDialog room={props.room} /> : null}
+                <Typography noWrap>Members ({room.participants.length})</Typography>
+                {room.roomType === 'group' ? <AddGroupParticipantsDialog room={room} /> : null}
             </Stack>
 
             <List dense sx={{ maxHeight: '220px', overflow: 'auto' }}>
-                {props.room.participants.map(({ username }, i) => (
+                {room.participants.map(({ username }, i) => (
                     <ListItem key={i}>
                         <ListItemAvatar>
                             <Avatar sizes='14px' sx={{ height: '24px', width: '24px' }} src='' />
@@ -187,9 +174,9 @@ export const RoomInfo = (props: RoomInfoProps) => {
                 ))}
             </List>
 
-            {props.room.roomType === 'group' ? (
+            {room.roomType === 'group' ? (
                 <ButtonGroup size='small' variant='text' fullWidth>
-                    <Button onClick={toggleDeleteGroupDialog} disabled={props.room.isAdmin === false}>
+                    <Button onClick={toggleDeleteGroupDialog} disabled={room.isAdmin === false}>
                         Delete Group
                     </Button>
                     <Button onClick={toggleLeaveGroupDialog}>Leave Group</Button>
@@ -199,14 +186,14 @@ export const RoomInfo = (props: RoomInfoProps) => {
                 openDialog={openLeaveGroupDialog}
                 toggleConfirmationDialog={toggleLeaveGroupDialog}
                 onAccept={() => {
-                    socket.emit('userLeftRoom', props.room.roomId)
+                    socket.emit('userLeftRoom', room.roomId)
                 }}
             />
             <ConfirmationDialog
                 openDialog={openDeleteGroupDialog}
                 toggleConfirmationDialog={toggleDeleteGroupDialog}
                 onAccept={() => {
-                    socket.emit('roomDeleted', props.room.roomId)
+                    socket.emit('roomDeleted', room.roomId)
                 }}
             />
         </Box>

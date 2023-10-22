@@ -18,7 +18,7 @@ import { PulseLoader } from 'react-spinners'
 
 export interface ChatDisplaySectionProps {
     currRoom: RoomsState['joinedRooms'][0]
-    setRoomInfoVisible: React.Dispatch<React.SetStateAction<boolean>>
+    toggleRoomInfoSidebar: () => void
 }
 
 export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
@@ -91,7 +91,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
 
     return (
         <>
-            <RoomBanner setRoomInfoVisible={props.setRoomInfoVisible} room={props.currRoom} />
+            <RoomBanner toggleRoomInfoSidebar={props.toggleRoomInfoSidebar} room={props.currRoom} />
             <Box
                 sx={{
                     display: 'grid',

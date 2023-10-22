@@ -7,10 +7,7 @@ import SearchIcon from '@mui/icons-material/Search'
 import { CredentialContext } from '../contexts/Credentials'
 import { RoomsState } from '../reducer/roomReducer'
 
-export const RoomBanner = (props: {
-    setRoomInfoVisible: React.Dispatch<React.SetStateAction<boolean>>
-    room: RoomsState['joinedRooms'][0]
-}) => {
+export const RoomBanner = (props: { toggleRoomInfoSidebar: () => void; room: RoomsState['joinedRooms'][0] }) => {
     const { username } = useContext(CredentialContext)
 
     const [searchFieldVisible, setSearchFieldVisible] = useState(false)
@@ -60,7 +57,7 @@ export const RoomBanner = (props: {
                     <SearchIcon />
                 </IconButton>
 
-                <IconButton onClick={() => props.setRoomInfoVisible(prev => !prev)}>
+                <IconButton onClick={props.toggleRoomInfoSidebar}>
                     <ChevronRightRounded />
                 </IconButton>
             </ButtonGroup>

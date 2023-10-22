@@ -1,4 +1,4 @@
-import { Box, CircularProgress, Collapse, Typography } from '@mui/material'
+import { Box, Collapse, Typography } from '@mui/material'
 import { useContext, useEffect, useReducer, useRef, useState } from 'react'
 import { ChatDisplaySection } from '../components/ChatDisplaySection'
 import { CredentialContext } from '../contexts/Credentials'
@@ -8,6 +8,7 @@ import { Sidebar } from '../components/Sidebar'
 import { RoomActionType, roomReducer } from '../reducer/roomReducer'
 import { RoomListSidebar } from '../components/RoomListSidebar'
 import { useSocket } from '../hooks/useSocket'
+import { useDialog } from '../hooks/useDialog'
 
 export const Chat = () => {
     const [isLoading, setIsLoading] = useState(true)
@@ -18,7 +19,7 @@ export const Chat = () => {
 
     const [rooms, roomDispatcher] = useReducer(roomReducer, { selectedRoom: null, joinedRooms: [] })
 
-    const [roomInfoVisible, setRoomInfoVisible] = useState(false)
+    const { dialogOpen: roomInfoSidebarOpen, handleToggle: toggleRoomInfoSidebar } = useDialog()
 
     useEffect(() => {
         if (socket.connected === false && isLoggedIn === true) {
@@ -90,18 +91,18 @@ export const Chat = () => {
                         >
                             <ChatDisplaySection
                                 currRoom={rooms.joinedRooms[rooms.selectedRoom]}
-                                setRoomInfoVisible={setRoomInfoVisible}
+                                toggleRoomInfoSidebar={toggleRoomInfoSidebar}
                             />
                         </Box>
                         <Collapse
-                            in={roomInfoVisible}
+                            in={roomInfoSidebarOpen}
                             orientation='horizontal'
                             sx={{ minHeight: '100%', flexShrink: 0, overflowY: 'scroll' }}
                             component={Box}
                         >
                             <RoomInfo
                                 room={rooms.joinedRooms[rooms.selectedRoom]}
-                                setRoomInfoVisible={setRoomInfoVisible}
+                                handleToggleRoomInfoSidebar={toggleRoomInfoSidebar}
                                 roomDispatcher={roomDispatcher}
                             />
                         </Collapse>
