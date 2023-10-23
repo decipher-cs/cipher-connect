@@ -40,15 +40,15 @@ export const MessageTile = ({ alignment, autoScrollToBottomRef, content, content
             <Paper
                 sx={{
                     justifySelf: alignment === 'left' ? 'flex-start' : 'flex-end',
-                    height: 'fit-content',
-                    width: 'fit-content',
+                    // height: 'fit-content',
+                    // width: '200px',
                     // maxWidth: '80%',
                     // aspectRatio: '3/4',
                     // height: '30svh',
 
-                    // backgroundImage: 'linear-gradient(45deg,#3023AE 0%,#FF0099 100%)',
-                    // display: 'grid',
-                    // placeContent: 'center',
+                    backgroundImage: 'linear-gradient(45deg,#3023AE 0%,#FF0099 100%)',
+                    display: 'flex',
+                    placeContent: 'center',
                     background: 'transparent',
                     boxShadow: 'none',
                 }}
@@ -84,18 +84,41 @@ const MediaDisplay = ({ content, contentType }: Pick<MessageTileProps, 'contentT
         // generate a thumnail of the file contents
         case MessageContentType.file:
             return (
-                <>
+                <Box
+                    sx={{
+                        border: 'solid white 8px',
+                        aspectRatio: '2/3',
+                        width: '200px',
+                        display: 'grid',
+                        placeContent: 'center',
+                    }}
+                >
                     <IconButton href={mediaSrc} target='_blank'>
                         <Download />
                     </IconButton>
                     <IconButton href={mediaSrc} target='_blank'>
                         <Preview />
                     </IconButton>
-                </>
+                </Box>
             )
 
         case MessageContentType.video:
-            return <video src={mediaSrc} controls style={{ maxHeight: '30svh' }} />
+            return (
+                <Box
+                    component='video'
+                    src={mediaSrc}
+                    controls
+                    sx={{
+                        // maxHeight: '45svh',
+                        // maxWidth: '60%',
+                        maxHeight: '40svh',
+                        maxWidth: '100%',
+
+                        border: 'solid white 8px',
+                        borderRadius: '20px',
+                    }}
+                />
+            )
 
         case MessageContentType.image:
             return (
