@@ -9,10 +9,11 @@ import { reqLogger } from './middleware/logs.js'
 import { corsWithOptions } from './config/corsOptions.js'
 import multer from 'multer'
 import { PrismaClient } from '@prisma/client'
+import { createUploadthingExpressHandler } from 'uploadthing/express'
 
 dotenv.config()
 
-const PORT = process.env.PORT || process.env.DEV_PORT
+const PORT = process.env.PORT
 const app = express()
 const server = http.createServer(app)
 const io = new Server(server, { cors: { origin: process.env.CLIENT_URL } })

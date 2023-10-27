@@ -23,7 +23,9 @@
         "file-type": "^18.5.0",
         "jsonwebtoken": "^9.0.0",
         "socket.io": "^4.6.1",
-        "typescript": "^5.0.4"
+        "typescript": "^5.0.4",
+        "uploadthing": "^5.7.2",
+        "zod": "^3.22.4"
     },
     "devDependencies": {
         "@types/cookie-parser": "^1.4.3",
