@@ -6,7 +6,7 @@ A fullstack messaging app built with sockets. WIP
 
 ## Demo
 
-Deplyed on netlify: [--not yet deplyed--]()
+Deplyed on [netlify](https://taupe-mandazi-7fa3f4.netlify.app/)
 
 <!-- ![]() -->
 
@@ -21,6 +21,9 @@ Deplyed on netlify: [--not yet deplyed--]()
 
 ## Built With
 
+- mySQL database hosted on [https://dash.filess.io/](filess.io)
+- Client hosted on [netlify](https://www.netlify.com/)
+- Server hosted on [render](https://render.com/)
 - [tsc-watch](https://www.npmjs.com/package/tsc-watch)
 - Typescript-React for the frontend
 - Nodejs for backend
