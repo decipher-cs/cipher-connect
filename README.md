@@ -21,7 +21,7 @@ Deplyed on [netlify](https://taupe-mandazi-7fa3f4.netlify.app/)
 
 ## Built With
 
-- mySQL database hosted on [https://dash.filess.io/](filess.io)
+- mySQL database hosted on [filess.io](https://dash.filess.io/)
 - Client hosted on [netlify](https://www.netlify.com/)
 - Server hosted on [render](https://render.com/)
 - [tsc-watch](https://www.npmjs.com/package/tsc-watch)
