@@ -32,7 +32,7 @@ Deplyed on [netlify](https://taupe-mandazi-7fa3f4.netlify.app/)
 - Express for handling routes
 - mySQL for database
 - Prisma as an ORM
-- [Formik](https://formik.org/) for handling forms
+- [React-Hook-Form](https://react-hook-form.com/) for handling forms
 - Vite for managing development and production ecosystem
 
 
