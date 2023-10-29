@@ -1,5 +1,6 @@
 import { Download, Preview, SmsFailedRounded } from '@mui/icons-material'
-import { Avatar, Box, Dialog, IconButton, Paper, Skeleton, Typography } from '@mui/material'
+import { Avatar, Box, Dialog, IconButton, Paper, Skeleton, SxProps, Theme, Typography } from '@mui/material'
+import axios from 'axios'
 import { filetypeextension } from 'magic-bytes.js'
 import { useEffect, useState } from 'react'
 import { useDialog } from '../hooks/useDialog'
@@ -36,44 +37,60 @@ export const MessageTile = ({ alignment, autoScrollToBottomRef, content, content
             </Paper>
         )
     else {
-        return (
-            <Paper
-                sx={{
-                    justifySelf: alignment === 'left' ? 'flex-start' : 'flex-end',
-                    // height: 'fit-content',
-                    // width: '200px',
-                    // maxWidth: '80%',
-                    // aspectRatio: '3/4',
-                    // height: '30svh',
-
-                    backgroundImage: 'linear-gradient(45deg,#3023AE 0%,#FF0099 100%)',
-                    display: 'flex',
-                    placeContent: 'center',
-                    background: 'transparent',
-                    boxShadow: 'none',
-                }}
-                ref={autoScrollToBottomRef}
-                onClick={() => setShowDialog(true)}
-            >
-                {/* TODO: new component for previeing // <Preview/> */}
-                <MediaDisplay content={content} contentType={contentType} /* MIME={MIME} */ />
-            </Paper>
-        )
+        return <MediaDisplay content={content} contentType={contentType} alignment={alignment} />
     }
 }
 
-const MediaDisplay = ({ content, contentType }: Pick<MessageTileProps, 'contentType' | 'content'>) => {
-    // TODO: set a  Loader/ skeletor/ spinner
-
-    // TODO: put a placeholder/ broken for missing content
-
-    // if (!MIME || !content) return <SmsFailedRounded />
-    if (!content) return <SmsFailedRounded />
-
+const MediaDisplay = ({
+    alignment,
+    content,
+    contentType,
+}: Pick<MessageTileProps, 'contentType' | 'content'> & { alignment: 'left' | 'right' }) => {
     // TODO: append file extension and MIME on explicit download. Put a download button.
     // const file = new File([fetchMedia.data], crypto.randomUUID() + extension, { type: MIME })
+    // console.log(file)
 
+    // TODO: set a  Loader/ skeletor/ spinner while media is being sourced
     const mediaSrc = import.meta.env.VITE_MEDIA_STORAGE_URL + content
+    // console.log(mediaSrc)
+    // axios
+    //     .get(mediaSrc, {
+    //         withCredentials: true
+    //     })
+    //     .then(data => {
+    //         console.log(data)
+    //         // return data.arrayBuffer()
+    //     })
+    // .then(ab => {
+    //     const fo = new Uint8Array(ab)
+    //     console.log('expesion:', filetypeextension(fo))
+    // })
+
+    const commonStyle: SxProps<Theme> = {
+        borderRadius: alignment === 'left' ? '0px 45px 45px 45px' : '45px 0px 45px 45px',
+        justifySelf: alignment === 'left' ? 'flex-start' : 'flex-end',
+        background: 'transparent',
+        width: 'fit-content',
+        maxWidth: '80%',
+    }
+
+    if (!content)
+        return (
+            <Box
+                sx={{
+                    borderRadius: alignment === 'left' ? '0px 45px 45px 45px' : '45px 0px 45px 45px',
+                    justifySelf: alignment === 'left' ? 'flex-start' : 'flex-end',
+                    px: 4,
+                    py: 3,
+                    aspectRatio: '2/1',
+                    backgroundImage: 'linear-gradient(45deg,#3023AE 0%,#FF0099 100%)',
+                    display: 'flex',
+                    placeContent: 'center',
+                }}
+            >
+                <SmsFailedRounded fontSize='large' />
+            </Box>
+        )
 
     switch (contentType) {
         case MessageContentType.audio:
@@ -86,11 +103,14 @@ const MediaDisplay = ({ content, contentType }: Pick<MessageTileProps, 'contentT
             return (
                 <Box
                     sx={{
+                        ...commonStyle,
                         border: 'solid white 8px',
-                        aspectRatio: '2/3',
+                        aspectRatio: '2/1',
                         width: '200px',
-                        display: 'grid',
+                        display: 'flex',
+                        placeItems: 'center',
                         placeContent: 'center',
+                        // borderRadius: '20px',
                     }}
                 >
                     <IconButton href={mediaSrc} target='_blank'>
@@ -109,8 +129,7 @@ const MediaDisplay = ({ content, contentType }: Pick<MessageTileProps, 'contentT
                     src={mediaSrc}
                     controls
                     sx={{
-                        // maxHeight: '45svh',
-                        // maxWidth: '60%',
+                        ...commonStyle,
                         maxHeight: '40svh',
                         maxWidth: '100%',
 
@@ -128,6 +147,7 @@ const MediaDisplay = ({ content, contentType }: Pick<MessageTileProps, 'contentT
                         src={mediaSrc}
                         loading='lazy'
                         sx={{
+                            ...commonStyle,
                             maxHeight: '30svh',
                             maxWidth: '100%',
                             border: 'solid white 8px',
