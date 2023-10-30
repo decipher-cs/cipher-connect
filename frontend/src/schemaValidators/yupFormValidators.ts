@@ -3,6 +3,7 @@ import { InitialFormValues } from '../components/CreateRoomDialog'
 import { ProfileFormValues } from '../components/ProfileSettingsDialog'
 import { RoomType, UserStatus, UserWithoutID } from '../types/prisma.client'
 import { z } from 'zod'
+import validator from 'validator'
 
 export const newRoomFormValidation: ObjectSchema<InitialFormValues> = object().shape({
     roomType: string()
@@ -52,4 +53,11 @@ export const userProfileUpdationFormValidation: z.ZodType<ProfileFormValues> = z
     displayName: z.string().min(3).max(16).optional().or(z.literal('')),
     status: z.union([z.literal(UserStatus.dnd), z.literal(UserStatus.available), z.literal(UserStatus.hidden)]),
     avatar: z.instanceof(File).optional(),
+})
+
+export const loginAndSignupValidation = z.object({
+    username: z.string().min(3).max(16).trim().refine(validator.isAlphanumeric),
+    password: import.meta.env.PROD
+        ? z.string().min(8).max(50).refine(validator.isStrongPassword)
+        : z.string().min(8).max(50),
 })

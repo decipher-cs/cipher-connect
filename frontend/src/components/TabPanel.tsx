@@ -4,12 +4,12 @@ interface TabPanelProps {
     children?: React.ReactNode
     index: number
     value: number
-    handleSubmit: (e?: React.FormEvent<HTMLFormElement> | undefined) => void
-    handleFormReset: React.MouseEventHandler<HTMLButtonElement> | undefined
+    handleSubmit: React.FormEventHandler<HTMLFormElement>
+    handleFormReset: React.MouseEventHandler<HTMLButtonElement>
 }
 
 export const TabPanel = (props: TabPanelProps) => {
-    const { children, value, index, handleSubmit, handleFormReset, ...other } = props
+    const { children, value, index, handleSubmit, handleFormReset } = props
 
     return (
         <>
@@ -21,7 +21,6 @@ export const TabPanel = (props: TabPanelProps) => {
                     sx={{ display: 'flex', flexDirection: 'column', placeItems: 'center', gap: 2, marginTop: 4 }}
                     maxWidth='sm'
                     onSubmit={handleSubmit}
-                    {...other}
                 >
                     {children}
 

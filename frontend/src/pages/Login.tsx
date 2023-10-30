@@ -1,31 +1,14 @@
-import { Tab, Tabs, TextField } from '@mui/material'
+import { Tab, Tabs, TextField, Typography } from '@mui/material'
 import { useContext, useState } from 'react'
 import { TabPanel } from '../components/TabPanel'
 import { useFormik } from 'formik'
 import { CredentialContext } from '../contexts/Credentials'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { StyledTextField } from '../components/StyledTextField'
-
-// Formik uses this regex criteria to validate the input string
-const validate = (values: { username: string; password: string }) => {
-    const errors: any = {}
-
-    const onlyAlphanumericAndSpecialRegex = /[^\w!@#$%^&*]/
-
-    if (RegExp(onlyAlphanumericAndSpecialRegex).test(values.username) === true) {
-        errors.username = 'username can only contain alphanumeric and !@#$%^&*'
-    } else if (values.username.length > 16 || values.username.length < 3) {
-        errors.username = 'Username length must be between 3 and 16 characters'
-    }
-
-    if (RegExp(onlyAlphanumericAndSpecialRegex).test(values.password) === true) {
-        errors.password = 'Password can only contain alphanumeric and !@#$%^&*'
-    } else if (values.password.length > 50 || values.password.length < 8) {
-        errors.password = 'Password length must be between 10 and 50 characters'
-    }
-
-    return errors
-}
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { loginAndSignupValidation } from '../schemaValidators/yupFormValidators'
+import { z } from 'zod'
 
 export const Login = () => {
     const { isLoggedIn, handleCredentialChange } = useContext(CredentialContext)
@@ -38,7 +21,7 @@ export const Login = () => {
 
     const selectedTab = isLogin === true ? 0 : 1
 
-    const formikFetchOnSubmit = async (values: { username: string; password: string }) => {
+    const handleUserLogin = async (values: { username: string; password: string }) => {
         const username = values.username
         const password = values.password
 
@@ -66,13 +49,17 @@ export const Login = () => {
         }
     }
 
-    const formik = useFormik({
-        initialValues: {
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors },
+    } = useForm<z.infer<typeof loginAndSignupValidation>>({
+        resolver: zodResolver(loginAndSignupValidation),
+        defaultValues: {
             username: import.meta.env.DEV === true ? 'password' : '',
             password: import.meta.env.DEV === true ? 'password' : '',
         },
-        validate,
-        onSubmit: formikFetchOnSubmit,
     })
 
     if (isLoggedIn === true) {
@@ -93,22 +80,22 @@ export const Login = () => {
                             key={i}
                             value={selectedTab}
                             index={i}
-                            handleSubmit={formik.handleSubmit}
-                            handleFormReset={formik.handleReset}
+                            handleSubmit={handleSubmit(handleUserLogin)}
+                            handleFormReset={() => reset()}
                         >
                             <StyledTextField
                                 label='username'
                                 fullWidth
-                                error={formik.errors.username !== undefined && formik.touched.username}
-                                helperText={formik.touched.username && formik.errors.username}
-                                {...formik.getFieldProps('username')}
+                                error={errors.username !== undefined}
+                                helperText={errors?.username?.message ?? ''}
+                                {...register('username')}
                             />
                             <StyledTextField
                                 label='password'
                                 fullWidth
-                                helperText={formik.touched.password && formik.errors.password}
-                                error={formik.errors.password !== undefined && formik.touched.password}
-                                {...formik.getFieldProps('password')}
+                                error={errors.password !== undefined}
+                                helperText={errors?.password?.message ?? ''}
+                                {...register('password')}
                             />
                         </TabPanel>
                     )
