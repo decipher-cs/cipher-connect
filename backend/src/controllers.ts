@@ -135,7 +135,6 @@ export const renewAccessToken = async (req: Request, res: Response) => {
 
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decode) => {
         if (err === null) {
-            console.log('decoded str is:', decode)
             const newAccessToken = createAccessToken({ username })
             res.json(newAccessToken)
             return
@@ -442,4 +441,7 @@ export const handleAvatarChange = async (req: Request, res: Response) => {
         res.sendStatus(400)
     }
 }
-export const test = async (req: Request, res: Response) => {}
+export const test = async (req: Request, res: Response) => {
+    console.log('test point hit')
+    res.sendStatus(200)
+}
