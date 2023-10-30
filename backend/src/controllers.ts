@@ -16,8 +16,10 @@ import {
 import { addRefreshToken, createGroup, createNewUser, createPrivateRoom } from './models/create.js'
 import { deleteRefreshToken, deleteRoom, deleteUserRoom } from './models/delete.js'
 import { updateMessageReadStatus, updateRoom, updateRoomParticipants, updateUser } from './models/update.js'
-import { User } from '@prisma/client'
 import { RoomDetails, UserWithoutID } from './types.js'
+import { createUploadthing, FileRouter, createServerHandler, UTApi } from 'uploadthing/server'
+
+const utapi = new UTApi()
 
 interface LoginCredentials {
     username: string
@@ -157,11 +159,15 @@ export const storeMediaToFS = async (req: Request, res: Response) => {
         res.sendStatus(400)
         return
     }
+
     const { filename }: Express.Multer.File = req.file
+    console.log(filename)
+    // utapi.uploadFilesFromUrl('http://localhost:8080/public/media/' + filename)
 
     res.json(filename)
     return
 }
+
 export const storeAvatarToFS = async (req: Request, res: Response) => {
     const { username, roomId } = req.body
 
@@ -365,12 +371,23 @@ export const handleMessageReadStatusChange = async (req: Request, res: Response)
 export const handleUserProfileUpdation = async (req: Request, res: Response) => {
     const { status, displayName, username }: Partial<Pick<UserWithoutID, 'displayName' | 'username' | 'status'>> =
         req.body
-    const { filename } = req.file ?? { filename: undefined }
+    const { buffer } = req.file ?? { buffer: undefined }
+    let avatarPath: string | undefined
 
     try {
         if (!username) throw new Error('No username provided while updating profile')
 
-        await updateUser(username, { displayName, status, avatarPath: filename })
+        if (buffer) {
+            const blob = new Blob([buffer])
+
+            const { data, error } = await utapi.uploadFiles(blob)
+
+            if (error || !data) throw new Error('Error uploading file')
+
+            avatarPath = data.url
+        }
+
+        await updateUser(username, { displayName, status, avatarPath })
 
         res.sendStatus(200)
     } catch (err) {
@@ -379,7 +396,50 @@ export const handleUserProfileUpdation = async (req: Request, res: Response) => 
     }
 }
 
-export const test = async (req: Request, res: Response) => {
-    console.log(req.body)
-    res.send(200)
+export const handleMediaUpload = async (req: Request, res: Response) => {
+    try {
+        if (!req.file) throw new Error('no file to upload')
+
+        const { buffer, mimetype, originalname, size } = req.file
+
+        if (!buffer) throw new Error('empty buffer for file')
+
+        const blob = new Blob([buffer], { type: mimetype })
+
+        const { data, error } = await utapi.uploadFiles(blob, { mimetype, name: originalname })
+
+        if (error || !data) throw new Error('Error uploading file')
+
+        res.send(data.url)
+    } catch (err) {
+        res.sendStatus(400)
+        throw err
+    }
 }
+
+export const handleAvatarChange = async (req: Request, res: Response) => {
+    const { username, roomId } = req.body
+
+    try {
+        if (!req.file) throw new Error('no file to upload')
+
+        const { buffer, mimetype, originalname, size } = req.file
+
+        if (!buffer) throw new Error('empty buffer for file')
+
+        const blob = new Blob([buffer], { type: mimetype })
+
+        const { data, error } = await utapi.uploadFiles(blob, { mimetype, name: originalname })
+
+        if (error || !data) throw new Error('Error uploading file')
+
+        if (username) await updateUser(username, { avatarPath: data.url })
+        else if (roomId) await updateRoom(roomId, { roomAvatar: data.url })
+        else throw new Error()
+
+        res.json(data.url)
+    } catch (err) {
+        res.sendStatus(400)
+    }
+}
+export const test = async (req: Request, res: Response) => {}
