@@ -23,8 +23,10 @@ import {
     handleNewParticipants,
     handleMessageReadStatusChange,
     handleUserProfileUpdation,
+    handleMediaUpload,
+    handleAvatarChange,
 } from './controllers.js'
-import { avatar, media } from './server.js'
+import { media } from './server.js'
 
 // To be used for type safety on the client side
 const routes = {
@@ -80,9 +82,9 @@ export const initRoutes = (app: Express) => {
 
     app.get(routes.get.isUsernameValid + '/:username', handleUserExistsCheck)
 
-    app.post(routes.post.media, media, storeMediaToFS)
+    app.post(routes.post.media, media, handleMediaUpload)
 
-    app.post(routes.post.avatar, avatar, storeAvatarToFS)
+    app.post(routes.post.avatar, media, handleAvatarChange)
 
     app.post(routes.post.privateRoom, handlePrivateRoomCreation)
 
@@ -92,7 +94,7 @@ export const initRoutes = (app: Express) => {
 
     app.put(routes.put.messageReadStatus + '/:roomId/:username', handleMessageReadStatusChange)
 
-    app.put(routes.put.user, avatar, handleUserProfileUpdation)
+    app.put(routes.put.user, media, handleUserProfileUpdation)
 
     app.delete(routes.delete.userRoom + '/:username/:roomId', handleUserLeavesRoom)
 
