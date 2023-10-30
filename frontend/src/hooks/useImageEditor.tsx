@@ -75,5 +75,5 @@ const getImageAsFile = async (canvasElement: HTMLCanvasElement): Promise<File> =
     const result = await fetch(dataUrl)
     const blob = await result.blob()
 
-    return new File([blob], 'avatar')
+    return new File([blob], 'upload')
 }

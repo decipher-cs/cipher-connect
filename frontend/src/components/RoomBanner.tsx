@@ -18,10 +18,7 @@ export const RoomBanner = (props: { toggleRoomInfoSidebar: () => void; room: Roo
     const displayName =
         props.room.roomType === 'private' ? privateRoomCompanion?.displayName : props.room.roomDisplayName
 
-    const imgSrc =
-        props.room.roomType === 'private'
-            ? privateRoomCompanion?.avatarPath
-            : import.meta.env.VITE_AVATAR_STORAGE_URL + props.room.roomAvatar
+    const imgSrc = props.room.roomType === 'private' ? privateRoomCompanion?.avatarPath : props.room.roomAvatar
 
     return (
         <Box

@@ -21,17 +21,22 @@ interface RoomListItemProps {
 export const RoomListItem = memo((props: RoomListItemProps) => {
     const { username } = useContext(CredentialContext)
 
-    const [displayName, setDiplayName] = useState(() => {
+    const displayName = (() => {
         return props.room.roomType === 'private' && props.room.roomAvatar === null
             ? props.room.participants.filter(p => p.username !== username)[0]?.username
             : props.room.roomDisplayName
-    })
+    })()
 
-    const displayImage =
-        props.room.roomType === 'group'
-            ? import.meta.env.VITE_AVATAR_STORAGE_URL + props.room.roomAvatar
-            : import.meta.env.VITE_AVATAR_STORAGE_URL +
-              props.room.participants.find(p => p.username === displayName)?.avatarPath
+    const displayImage = (() => {
+        if (props.room.roomType === 'group' && props.room.roomAvatar) return props.room.roomAvatar
+
+        const otherMember = props.room.participants.find(p => p.username === displayName)
+
+        if (props.room.roomType === 'private' && otherMember?.avatarPath) {
+            return otherMember.avatarPath
+        }
+        return undefined
+    })()
 
     return (
         <ListItemButton
@@ -58,7 +63,7 @@ export const RoomListItem = memo((props: RoomListItemProps) => {
         >
             <ListItem disableGutters disablePadding>
                 <ListItemIcon>
-                    <Avatar src={displayImage ? displayImage : ''} />
+                    <Avatar src={displayImage} />
                 </ListItemIcon>
 
                 {/*TODO: Manage text overflow using primartyTextProps*/}

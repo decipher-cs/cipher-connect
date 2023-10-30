@@ -35,17 +35,14 @@ export const Sidebar = (props: SidebarProps) => {
 
     if (!userProfile) return <CircularProgress />
 
-    const avatarURL =
-        userProfile.avatarPath !== null && userProfile.avatarPath !== undefined
-            ? import.meta.env.VITE_AVATAR_STORAGE_URL + userProfile.avatarPath
-            : undefined
+    const avatarURL = userProfile.avatarPath
 
     return (
         <Box sx={{ display: 'grid', justifyItems: 'center' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Tooltip title='Profile'>
                     <IconButton sx={{ justifySelf: 'center' }} onClick={handleOpen}>
-                        <Avatar src={avatarURL} />
+                        <Avatar src={avatarURL ?? ''} />
                     </IconButton>
                 </Tooltip>
 

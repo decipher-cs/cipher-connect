@@ -51,7 +51,7 @@ const MediaDisplay = ({
     // console.log(file)
 
     // TODO: set a  Loader/ skeletor/ spinner while media is being sourced
-    const mediaSrc = import.meta.env.VITE_MEDIA_STORAGE_URL + content
+    const mediaSrc = content
     // console.log(mediaSrc)
     // axios
     //     .get(mediaSrc, {

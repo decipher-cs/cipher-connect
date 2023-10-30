@@ -58,7 +58,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
 
         if (typeof content !== 'string') {
             const formData = new FormData()
-            formData.append('userUpload', content)
+            formData.append('upload', content)
             try {
                 content = await uploadMedia(formData)
             } catch (error) {
@@ -88,7 +88,9 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
         type: Exclude<MessageContentType, MessageContentType.text>
     ) => {
         if (fileList === null || fileList.length <= 0) return
+
         setMenuAnchor(null) // closes the open menu
+
         for (let file of fileList) {
             const u8Array = new Uint8Array(await file.arrayBuffer())
 
@@ -100,6 +102,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
             if (mimeToFileType(mime) !== mimeToFileType(file.type)) return
 
             file = new File([file], crypto.randomUUID() + extension, { type: mime })
+            console.log(file)
 
             // TODO: preview file before uploading to server.
             handleMessageDelivery({

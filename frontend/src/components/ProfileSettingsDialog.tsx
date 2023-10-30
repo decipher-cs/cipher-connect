@@ -48,10 +48,12 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
 
     const { mutate: mutateProfile } = useMutation({
         mutationKey: ['userProfile'],
+        //TODO:use axios.formToJSON instead of formData
         mutationFn: (formData: FormData) => axiosServerInstance.put(Routes.put.user, formData).then(res => res.data),
         onSuccess: data => {
             queryClient.refetchQueries({ queryKey: ['userProfile'] })
             console.log('successfully submitted form', data)
+            // TODO: alert other users
             // socket.emit('userProfileUpdated', data)
             handleClose()
         },
@@ -62,7 +64,7 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
 
         const fd = new FormData()
         if (displayName) fd.append('displayName', displayName)
-        if (avatar) fd.append('avatar', avatar)
+        if (avatar) fd.append('upload', avatar)
         if (status && status !== userProfile.status) fd.append('status', status)
 
         let formLength = 0

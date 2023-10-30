@@ -14,14 +14,12 @@ import {
     ListItemAvatar,
     ListItemText,
 } from '@mui/material'
-import { ForwardedRef, forwardRef, Ref, useContext, useEffect, useRef, useState } from 'react'
+import { useEffect } from 'react'
 import { CancelRounded, InfoRounded, NotificationsRounded } from '@mui/icons-material'
 import { Balancer } from 'react-wrap-balancer'
-import { AvatarEditorDialog } from './AvatarEditorDialog'
 import { Routes } from '../types/routes'
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { ConfirmationDialog } from './ConfirmationDialog'
-import { CredentialContext } from '../contexts/Credentials'
 import { AddGroupParticipantsDialog } from './AddGroupParticipantsDialog'
 import { useSocket } from '../hooks/useSocket'
 import { useMutation } from '@tanstack/react-query'
@@ -44,8 +42,6 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
     const { handleToggle: toggleLeaveGroupDialog, dialogOpen: openLeaveGroupDialog } = useDialog()
 
     const { handleToggle: toggleDeleteGroupDialog, dialogOpen: openDeleteGroupDialog } = useDialog()
-
-    const roomAvatar = room.roomAvatar ? import.meta.env.VITE_AVATAR_STORAGE_URL + room.roomAvatar : ''
 
     const { mutateAsync: uploadAvatar } = useMutation({
         mutationKey: ['uploadAvatar'],
@@ -116,7 +112,7 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
                     {sourceImage ? <ImageEditorDialog {...imageEditroDialogProps} sourceImage={sourceImage} /> : null}
                     <Tooltip title='Click to change image'>
                         <IconButton component='label' sx={{ justifySelf: 'center', alignSelf: 'center' }}>
-                            <Avatar src={roomAvatar} sx={{ height: 86, width: 86 }} />
+                            <Avatar src={room.roomAvatar ?? ''} sx={{ height: 86, width: 86 }} />
 
                             <input
                                 type='file'

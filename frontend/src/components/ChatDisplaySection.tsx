@@ -108,7 +108,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                 {timeSortedMessages.map((message, i) => {
                     return (
                         <MessageTile
-                            key={i}
+                            key={message.key}
                             alignment={message.senderUsername === username ? 'right' : 'left'}
                             content={message.content}
                             // If newest message in the list, put ref on it to auto-scroll to bottom
