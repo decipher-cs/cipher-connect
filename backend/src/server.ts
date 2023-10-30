@@ -21,7 +21,7 @@ export const prisma = new PrismaClient()
 export const media = multer().single('upload')
 
 // middleware //
-if (app.settings.env === 'production') app.use(reqLogger) // only run this code if app is running in production.
+// if (app.settings.env === 'production') app.use(reqLogger) // only run this code if app is running in production.
 
 app.use(corsWithOptions())
 app.use(cookieParser())
