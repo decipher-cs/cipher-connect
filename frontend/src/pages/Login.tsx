@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { loginAndSignupValidation } from '../schemaValidators/yupFormValidators'
 import { z } from 'zod'
+import { axiosServerInstance } from '../App'
 
 export const Login = () => {
     const { isLoggedIn, handleCredentialChange } = useContext(CredentialContext)
@@ -25,27 +26,11 @@ export const Login = () => {
         const username = values.username
         const password = values.password
 
-        const URL = import.meta.env.VITE_SERVER_URL
+        const response = await axiosServerInstance.post(formType, { username, password })
 
-        const response = await fetch(`${URL}/${formType}`, {
-            body: JSON.stringify({ username, password }),
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-        })
-        const responseType = response.statusText
-
-        switch (responseType) {
-            case 'OK':
-                handleCredentialChange({ username, isLoggedIn: true })
-                navigate('/chat')
-                break
-
-            default:
-                break
+        if (response.status === 200) {
+            handleCredentialChange({ username, isLoggedIn: true })
+            navigate('/chat')
         }
     }
 

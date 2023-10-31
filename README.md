@@ -6,8 +6,8 @@ A fullstack messaging app built with sockets. WIP
 
 ## Demo
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/7d934d22-f49b-4a03-92cc-82d05d21ac4b/deploy-status)](https://app.netlify.com/sites/taupe-mandazi-7fa3f4/deploys)
 Deplyed on [netlify](https://taupe-mandazi-7fa3f4.netlify.app/)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/7d934d22-f49b-4a03-92cc-82d05d21ac4b/deploy-status)](https://app.netlify.com/sites/taupe-mandazi-7fa3f4/deploys)
 
 <!-- ![]() -->
 
@@ -22,7 +22,7 @@ Deplyed on [netlify](https://taupe-mandazi-7fa3f4.netlify.app/)
 
 ## Built With
 
-- mySQL database hosted on [filess.io](https://dash.filess.io/)
+- mySQL database hosted on [aiven.io](https://aiven.io/)
 - Client hosted on [netlify](https://www.netlify.com/)
 - Server hosted on [render](https://render.com/)
 - [tsc-watch](https://www.npmjs.com/package/tsc-watch)

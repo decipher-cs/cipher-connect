@@ -24,19 +24,10 @@ const TempUsernameDisplay = () => {
         if (username === null) return
 
         const varifyUser = async () => {
-            const URL = import.meta.env.VITE_SERVER_URL + ApiRoutes.varifyRefreshToken
+            const response = await axiosServerInstance.post(ApiRoutes.varifyRefreshToken, { username })
 
-            const response = await fetch(URL, {
-                body: JSON.stringify({ username }),
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                },
-            })
             if (response.statusText === 'OK') {
-                const verifiedUsername: { username: string } = await response.json()
+                const verifiedUsername: { username: string } = response.data
                 handleCredentialChange({ username: verifiedUsername.username, isLoggedIn: true })
             }
         }
@@ -51,6 +42,7 @@ export const queryClient = new QueryClient()
 
 export const axiosServerInstance = axios.create({
     baseURL: import.meta.env.VITE_SERVER_URL,
+    withCredentials: true,
 })
 
 const App = () => {

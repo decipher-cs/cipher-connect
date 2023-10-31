@@ -1,5 +1,6 @@
 import { useContext, useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
+import { axiosServerInstance } from '../App'
 import { CredentialContext } from '../contexts/Credentials'
 
 export const Logout = () => {
@@ -10,15 +11,7 @@ export const Logout = () => {
 
     useEffect(() => {
         if (isLoggedIn === true) {
-            fetch(`${URL}/logout`, {
-                body: JSON.stringify({ username }),
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                },
-            })
+            axiosServerInstance.post('/logout', { username })
             logUserOut()
         }
     }, [])
