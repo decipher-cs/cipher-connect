@@ -1,4 +1,12 @@
-import { styled, Switch } from '@mui/material'
+import { styled, Switch, SxProps, Theme } from '@mui/material'
+import { useContext, useState } from 'react'
+import { ThemeContext } from '../contexts/ThemeModeContextProvider'
+
+export const ThemeToggleSwitch = (props: { sx: SxProps<Theme> }) => {
+    const { toggleTheme } = useContext(ThemeContext)
+
+    return <DarkModeToggleSwitch sx={props.sx} onClick={toggleTheme} />
+}
 
 export const DarkModeToggleSwitch = styled(Switch)(({ theme }) => ({
     width: 62,

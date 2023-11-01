@@ -1,7 +1,7 @@
 import { blue, pink, red } from '@mui/material/colors'
 import { createTheme } from '@mui/material'
 
-export const lightMod = createTheme({
+export const lightTheme= createTheme({
     palette: {
         primary: {
             main: blue[600],

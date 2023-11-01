@@ -12,12 +12,12 @@ import { CredentialContext } from '../contexts/Credentials'
 import { useSocket } from '../hooks/useSocket'
 import { User, UserWithoutID } from '../types/prisma.client'
 import { Routes } from '../types/routes'
-import { DarkModeToggleSwitch } from './DarkModeToggleSwitch'
 import { ProfileSettingsDialog } from './ProfileSettingsDialog'
 import { useQuery, useMutation, useQueries } from '@tanstack/react-query'
 import axios from 'axios'
 import { useDialog } from '../hooks/useDialog'
 import { axiosServerInstance } from '../App'
+import { ThemeToggleSwitch } from './ThemeToggleSwitch'
 
 interface SidebarProps {}
 
@@ -76,7 +76,7 @@ export const Sidebar = (props: SidebarProps) => {
                     <LogoutRounded />
                 </IconButton>
             </ButtonGroup>
-            <DarkModeToggleSwitch sx={{ alignSelf: 'flex-end' }} />
+            <ThemeToggleSwitch sx={{ alignSelf: 'flex-end' }} />
         </Box>
     )
 }

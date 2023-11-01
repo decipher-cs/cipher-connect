@@ -1,5 +1,5 @@
-import { CssBaseline, ThemeProvider, Typography } from '@mui/material'
-import { useContext, useEffect } from 'react'
+import { createTheme, CssBaseline, ThemeProvider } from '@mui/material'
+import { useContext, useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { RequireAuth } from './components/RequireAuth'
 import { CredentialContext, CredentialContextProvider } from './contexts/Credentials'
@@ -7,13 +7,14 @@ import { Chat } from './pages/Chat'
 import { About } from './pages/About'
 import { Login } from './pages/Login'
 import { Logout } from './pages/Logout'
-import { lightMod } from './theme/customThemes/lightModTheme'
 import { Routes as ApiRoutes } from './types/routes'
 import { SocketContextProvider } from './contexts/Socket'
-import { socket } from './socket'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import axios from 'axios'
+import { useThemeToggle } from './hooks/useThemeToggle'
+import { darkTheme } from './theme/darkTheme'
+import { ThemeContext } from './contexts/ThemeModeContextProvider'
 
 const TempUsernameDisplay = () => {
     const { username, handleCredentialChange, isLoggedIn } = useContext(CredentialContext)
@@ -46,8 +47,10 @@ export const axiosServerInstance = axios.create({
 })
 
 const App = () => {
+    const { theme } = useContext(ThemeContext)
+
     return (
-        <ThemeProvider theme={lightMod}>
+        <ThemeProvider theme={theme}>
             <CssBaseline>
                 <QueryClientProvider client={queryClient}>
                     <ReactQueryDevtools />
