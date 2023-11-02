@@ -1,4 +1,4 @@
-import { Box, Button, Container } from '@mui/material'
+import { Box, Button, CircularProgress, Container, IconButton, Typography } from '@mui/material'
 
 interface TabPanelProps {
     children?: React.ReactNode
@@ -6,6 +6,7 @@ interface TabPanelProps {
     value: number
     handleSubmit: React.FormEventHandler<HTMLFormElement>
     handleFormReset: React.MouseEventHandler<HTMLButtonElement>
+    isSubmitting: boolean
 }
 
 export const TabPanel = (props: TabPanelProps) => {
@@ -25,11 +26,17 @@ export const TabPanel = (props: TabPanelProps) => {
                     {children}
 
                     <Box display='inline-flex' gap={3}>
-                        <Button type='reset' variant='contained' onClick={handleFormReset}>
+                        <Button
+                            type='reset'
+                            variant='contained'
+                            onClick={handleFormReset}
+                            disabled={props.isSubmitting}
+                        >
                             reset
                         </Button>
-                        <Button type='submit' variant='contained'>
+                        <Button type='submit' variant='contained' disabled={props.isSubmitting}>
                             submit
+                            {props.isSubmitting ? <CircularProgress sx={{ position: 'absolute' }} size={28} /> : null}
                         </Button>
                     </Box>
                 </Container>

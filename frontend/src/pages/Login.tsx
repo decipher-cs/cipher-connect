@@ -1,15 +1,14 @@
-import { Tab, Tabs, TextField, Typography } from '@mui/material'
+import { Box, Button, CircularProgress, Container, Tab, Tabs } from '@mui/material'
 import { useContext, useState } from 'react'
-import { TabPanel } from '../components/TabPanel'
-import { useFormik } from 'formik'
 import { CredentialContext } from '../contexts/Credentials'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { StyledTextField } from '../components/StyledTextField'
-import { useForm } from 'react-hook-form'
+import { SubmitHandler, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { loginAndSignupValidation } from '../schemaValidators/yupFormValidators'
 import { z } from 'zod'
 import { axiosServerInstance } from '../App'
+import { AxiosError } from 'axios'
 
 export const Login = () => {
     const { isLoggedIn, handleCredentialChange } = useContext(CredentialContext)
@@ -22,30 +21,33 @@ export const Login = () => {
 
     const selectedTab = isLogin === true ? 0 : 1
 
-    const handleUserLogin = async (values: { username: string; password: string }) => {
-        const username = values.username
-        const password = values.password
-
-        const response = await axiosServerInstance.post(formType, { username, password })
-
-        if (response.status === 200) {
-            handleCredentialChange({ username, isLoggedIn: true })
-            navigate('/chat')
-        }
-    }
-
     const {
         register,
         handleSubmit,
         reset,
-        formState: { errors },
+        setError,
+        formState: { errors, isSubmitting },
     } = useForm<z.infer<typeof loginAndSignupValidation>>({
-        resolver: zodResolver(loginAndSignupValidation),
         defaultValues: {
             username: import.meta.env.DEV === true ? 'password' : '',
             password: import.meta.env.DEV === true ? 'password' : '',
         },
+        resolver: zodResolver(loginAndSignupValidation),
     })
+
+    const handleUserLogin: SubmitHandler<z.infer<typeof loginAndSignupValidation>> = async ({ username, password }) => {
+        try {
+            const response = await axiosServerInstance.post(formType, { username: 'faewfaewfafwe', password: 'fewaef' })
+            if (response.status === 200) {
+                handleCredentialChange({ username, isLoggedIn: true })
+                navigate('/chat')
+            }
+        } catch (error) {
+            if (error instanceof AxiosError && error?.response?.status === 401) {
+                setError('root', { message: 'Invalid username or password' })
+            } else setError('root', { message: 'Unknown Error' })
+        }
+    }
 
     if (isLoggedIn === true) {
         return <Navigate to='/chat' replace />
@@ -61,28 +63,61 @@ export const Login = () => {
                 .fill('')
                 .map((_, i) => {
                     return (
-                        <TabPanel
-                            key={i}
-                            value={selectedTab}
-                            index={i}
-                            handleSubmit={handleSubmit(handleUserLogin)}
-                            handleFormReset={() => reset()}
-                        >
-                            <StyledTextField
-                                label='username'
-                                fullWidth
-                                error={errors.username !== undefined}
-                                helperText={errors?.username?.message ?? ''}
-                                {...register('username')}
-                            />
-                            <StyledTextField
-                                label='password'
-                                fullWidth
-                                error={errors.password !== undefined}
-                                helperText={errors?.password?.message ?? ''}
-                                {...register('password')}
-                            />
-                        </TabPanel>
+                        <div key={i}>
+                            {selectedTab === i ? (
+                                <Container
+                                    component='form'
+                                    role='tabpanel'
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        placeItems: 'center',
+                                        gap: 2,
+                                        marginTop: 4,
+                                    }}
+                                    maxWidth='sm'
+                                    onSubmit={handleSubmit(handleUserLogin)}
+                                >
+                                    <StyledTextField
+                                        label='username'
+                                        fullWidth
+                                        error={errors.username !== undefined}
+                                        helperText={errors?.username?.message ?? ''}
+                                        {...register('username')}
+                                    />
+                                    <StyledTextField
+                                        label='password'
+                                        fullWidth
+                                        error={errors.password !== undefined}
+                                        helperText={errors?.password?.message ?? ''}
+                                        {...register('password')}
+                                    />
+
+                                    {errors.root?.message ? (
+                                        <Box color={theme => theme.palette.error.main}>{errors.root.message}</Box>
+                                    ) : (
+                                        <br />
+                                    )}
+
+                                    <Box display='inline-flex' gap={3}>
+                                        <Button
+                                            type='reset'
+                                            variant='contained'
+                                            onClick={() => reset()}
+                                            disabled={isSubmitting}
+                                        >
+                                            reset
+                                        </Button>
+                                        <Button type='submit' variant='contained' disabled={isSubmitting}>
+                                            submit
+                                            {isSubmitting ? (
+                                                <CircularProgress sx={{ position: 'absolute' }} size={28} />
+                                            ) : null}
+                                        </Button>
+                                    </Box>
+                                </Container>
+                            ) : null}
+                        </div>
                     )
                 })}
         </>
