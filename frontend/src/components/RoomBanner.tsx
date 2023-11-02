@@ -29,7 +29,7 @@ export const RoomBanner = (props: { toggleRoomInfoSidebar: () => void; room: Roo
                 top: '0px',
 
                 // From https://css.glass //
-                background: 'rgba(255, 255, 255, 0.50)',
+                // background: 'rgba(255, 255, 255, 0.50)',
                 backdropFilter: 'blur(10px)',
                 webkitBackdropFilter: 'blur(20px)',
 

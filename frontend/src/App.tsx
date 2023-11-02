@@ -12,8 +12,6 @@ import { SocketContextProvider } from './contexts/Socket'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import axios from 'axios'
-import { useThemeToggle } from './hooks/useThemeToggle'
-import { darkTheme } from './theme/darkTheme'
 import { ThemeContext } from './contexts/ThemeModeContextProvider'
 
 const TempUsernameDisplay = () => {
@@ -53,7 +51,6 @@ const App = () => {
         <ThemeProvider theme={theme}>
             <CssBaseline>
                 <QueryClientProvider client={queryClient}>
-                    <ReactQueryDevtools />
                     <CredentialContextProvider>
                         <BrowserRouter>
                             <TempUsernameDisplay />

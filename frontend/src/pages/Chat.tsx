@@ -85,7 +85,10 @@ export const Chat = () => {
                                 flexBasis: '100%',
                                 flexShrink: 1,
                                 display: 'grid',
-                                background: 'linear-gradient(45deg, #e1eec3, #f05053)',
+                                background: theme =>
+                                    theme.palette.mode === 'dark'
+                                        ? theme.palette.background.default
+                                        : 'linear-gradient(45deg, #e1eec3, #f05053)',
                                 gridTemplateRows: '1fr auto',
                             }}
                         >

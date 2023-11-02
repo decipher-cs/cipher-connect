@@ -135,7 +135,10 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
         <>
             <StyledTextField
                 sx={{
-                    backgroundColor: 'white',
+                    background: theme =>
+                        theme.palette.mode === 'dark'
+                            ? theme.palette.background.default
+                            : theme.palette.primary.contrastText,
                     width: '80%',
                     justifySelf: 'center',
                     mb: 1,
