@@ -37,7 +37,7 @@ export const Login = () => {
 
     const handleUserLogin: SubmitHandler<z.infer<typeof loginAndSignupValidation>> = async ({ username, password }) => {
         try {
-            const response = await axiosServerInstance.post(formType, { username: 'faewfaewfafwe', password: 'fewaef' })
+            const response = await axiosServerInstance.post(formType, { username, password })
             if (response.status === 200) {
                 handleCredentialChange({ username, isLoggedIn: true })
                 navigate('/chat')
