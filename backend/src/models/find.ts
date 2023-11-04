@@ -63,7 +63,7 @@ export const getUsers = async (usernames: string[]): Promise<UserWithoutID[] | n
     })
 }
 
-export const checkIfUserExists = async (username: User['username']): Promise<any> => {
+export const checkIfUserExists = async (username: User['username']): Promise<boolean> => {
     const user = await prisma.user.count({ where: { username } })
     return user === 1
 }

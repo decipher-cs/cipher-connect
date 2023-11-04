@@ -1,137 +1,96 @@
 import {
-    Avatar,
-    TextField,
-    Box,
-    Icon,
-    Typography,
     IconButton,
     Button,
-    Drawer,
-    InputAdornment,
-    Divider,
-    Stack,
-    Tooltip,
-    Switch,
     ButtonGroup,
-    List,
-    ListItem,
-    ListItemAvatar,
-    ListItemText,
-    Collapse,
     Dialog,
     DialogActions,
     DialogTitle,
     DialogContent,
     CircularProgress,
 } from '@mui/material'
-import AddIcon from '@mui/icons-material/Add'
-import { SocketWithCustomEvents } from '../types/socket'
-import { ForwardedRef, forwardRef, Ref, useContext, useRef, useState } from 'react'
-import {
-    ArrowForwardRounded,
-    CancelRounded,
-    DeleteRounded,
-    DoneAllRounded,
-    InfoRounded,
-    NotificationsRounded,
-    PersonAddRounded,
-    RemoveRounded,
-    SearchSharp,
-    SettingsRemoteSharp,
-} from '@mui/icons-material'
+import { useContext, useRef, useState } from 'react'
+import { CloseRounded, DeleteRounded, DoneAllRounded, PersonAddRounded } from '@mui/icons-material'
 import { StyledTextField } from './StyledTextField'
-import { EditableText } from './EditableText'
-import { Balancer } from 'react-wrap-balancer'
-import { AvatarEditorDialog } from './AvatarEditorDialog'
-import AvatarEditor from 'react-avatar-editor'
 import { Routes } from '../types/routes'
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
-import { ConfirmationDialog } from './ConfirmationDialog'
 import { CredentialContext } from '../contexts/Credentials'
 import { useFormik, FormikErrors } from 'formik'
 import { useSocket } from '../hooks/useSocket'
 import { useQuery } from '@tanstack/react-query'
 import { axiosServerInstance } from '../App'
+import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useDialog } from '../hooks/useDialog'
+import { userListValidation } from '../schemaValidators/yupFormValidators'
+import { z } from 'zod'
+
+type UserList = z.infer<typeof userListValidation>
 
 export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRooms'][0] }) => {
-    const { username } = useContext(CredentialContext)
-
-    const [isOpen, setIsOpen] = useState(false)
-
-    const handleClose = () => setIsOpen(false)
+    const { dialogOpen, handleClose, handleOpen } = useDialog()
 
     const socket = useSocket()
 
-    // const { startFetching: varifyUsername } = useFetch<boolean>(Routes.get.isUsernameValid, true)
-
-    const queryFunction = async () => {
-        return axiosServerInstance.get(Routes.get.isUsernameValid)
-    }
-
-    const { data: usernameIsValid, isLoading } = useQuery({
-        queryKey: ['varifyUsername'],
-        queryFn: queryFunction,
+    const {
+        handleSubmit,
+        formState: { errors, isSubmitting, isValidating, isDirty },
+        control,
+        register,
+        reset,
+    } = useForm<UserList>({
+        defaultValues: {
+            usernames: [{ username: '' }],
+        },
+        resolver: zodResolver(userListValidation),
     })
 
-    const handleSubmit = async ({ usersToBeAdded }: { usersToBeAdded: string[] }) => {
-        socket.emit('userJoinedRoom', props.room.roomId, usersToBeAdded)
+    const { append, remove, fields } = useFieldArray({ name: 'usernames', control })
+
+    const submitUserList: SubmitHandler<UserList> = ({ usernames }) => {
+        const uniqueUsers = new Set(usernames.map(({ username }) => username))
+        const usernameArray = Array.from(uniqueUsers)
+        socket.emit('userJoinedRoom', props.room.roomId, usernameArray)
     }
-
-    const handleValidation = async ({ usersToBeAdded }: { usersToBeAdded: string[] }) => {
-        const errors = await Promise.all(
-            usersToBeAdded.map(async username => {
-                if (username.length < 3) return 'Min length is 3 characters'
-                if (username.length > 16) return 'Max length is 16 characters, i think...'
-
-                // const valid = await varifyUsername(undefined, [username])
-                // const valid = await queryFunction()
-
-                return true
-                // return valid === true ? undefined : 'Invalid Username'
-            })
-        )
-        for (const err of errors) {
-            if (err !== undefined) return { usersToBeAdded: errors }
-        }
-        return undefined
-    }
-
-    const { setFieldValue, getFieldProps, errors, isValidating, dirty, touched, values, isSubmitting, submitForm } =
-        useFormik({
-            initialValues: { usersToBeAdded: [''] },
-            onSubmit: handleSubmit,
-            validate: handleValidation,
-        })
-
-    const handleAddTextField = () => setFieldValue('usersToBeAdded', [...values.usersToBeAdded, ''])
-    const handleRemoveTextField = (index: number) =>
-        setFieldValue('usersToBeAdded', [...values.usersToBeAdded.filter((_, i) => i !== index)])
 
     return (
         <>
-            <IconButton onClick={() => setIsOpen(true)}>
+            <IconButton onClick={handleOpen}>
                 <PersonAddRounded />
             </IconButton>
-            <Dialog open={isOpen} onClose={handleClose} fullWidth>
-                <DialogTitle>Add members to group</DialogTitle>
-
-                <Button onClick={handleAddTextField}>Add</Button>
+            <Dialog open={dialogOpen} onClose={handleClose} fullWidth>
+                <DialogTitle>
+                    Add members to group
+                    <Button onClick={() => append({ username: '' })}>Add More</Button>
+                </DialogTitle>
 
                 <DialogContent>
-                    {values.usersToBeAdded.map((value, i) => (
+                    {fields.map((field, i) => (
                         <StyledTextField
-                            key={i}
+                            key={field.id}
                             size='small'
                             sx={{ width: '100%' }}
-                            {...getFieldProps(`usersToBeAdded.${i}`)}
+                            {...register(`usernames.${i}.username` as const)}
                             placeholder='Add User'
-                            error={errors.usersToBeAdded !== undefined && errors.usersToBeAdded[i] !== undefined}
-                            helperText={errors.usersToBeAdded && errors.usersToBeAdded[i]}
+                            error={
+                                errors.usernames !== undefined && errors.usernames[i]?.username?.message !== undefined
+                            }
+                            helperText={
+                                errors.usernames &&
+                                errors.usernames[i]?.username &&
+                                errors.usernames[i]?.username?.message
+                            }
                             InputProps={{
                                 endAdornment: (
                                     <>
-                                        {isValidating ? <CircularProgress size={'1rem'} /> : <DoneAllRounded />}
-                                        <IconButton onClick={() => handleRemoveTextField(i)}>
+                                        {isDirty &&
+                                            (isValidating ? (
+                                                <CircularProgress size={'1rem'} />
+                                            ) : errors?.usernames?.[i] ? (
+                                                <CloseRounded color='error' />
+                                            ) : (
+                                                <DoneAllRounded color='success' />
+                                            ))}
+                                        <IconButton onClick={() => remove(i)}>
                                             <DeleteRounded />
                                         </IconButton>
                                     </>
@@ -140,19 +99,22 @@ export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRoom
                         />
                     ))}
                 </DialogContent>
-
                 <DialogActions>
                     <ButtonGroup>
-                        <Button onClick={handleClose}>Cancel</Button>
                         <Button
-                            disabled={isSubmitting}
-                            onClick={async () => {
-                                try {
-                                    await submitForm()
-                                    // handleClose()
-                                } catch (error) {
-                                    throw error
-                                }
+                            onClick={() => {
+                                handleClose()
+                                reset()
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type='submit'
+                            variant='contained'
+                            disabled={isSubmitting || isValidating}
+                            onClick={() => {
+                                handleSubmit(submitUserList)().then(() => handleClose())
                             }}
                         >
                             Confirm

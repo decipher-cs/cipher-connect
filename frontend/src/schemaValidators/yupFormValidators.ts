@@ -4,6 +4,8 @@ import { ProfileFormValues } from '../components/ProfileSettingsDialog'
 import { RoomType, UserStatus, UserWithoutID } from '../types/prisma.client'
 import { z } from 'zod'
 import validator from 'validator'
+import { axiosServerInstance } from '../App'
+import { Routes } from '../types/routes'
 
 export const newRoomFormValidation: ObjectSchema<InitialFormValues> = object().shape({
     roomType: string()
@@ -60,4 +62,30 @@ export const loginAndSignupValidation = z.object({
     password: import.meta.env.PROD
         ? z.string().min(8).max(50).refine(validator.isStrongPassword)
         : z.string().min(8).max(50),
+})
+
+export const userListValidation = z.object({
+    usernames: z
+        .object({
+            username: z
+                .string()
+                .min(3)
+                .max(16)
+                .refine(
+                    async username => {
+                        if (username.length < 3) return false
+                        try {
+                            const response = await axiosServerInstance.get<boolean>(
+                                Routes.get.isUsernameValid + '/' + username
+                            )
+                            return response.data
+                        } catch (err) {
+                            return false
+                        }
+                    },
+                    { message: 'Invalid username' }
+                ),
+        })
+        .array()
+        .nonempty(),
 })
