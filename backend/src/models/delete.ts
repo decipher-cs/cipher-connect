@@ -1,4 +1,4 @@
-import { Room, User } from '@prisma/client'
+import { Message, Room, User } from '@prisma/client'
 import { prisma } from '../server.js'
 
 export const deleteAllUsers = async () => {
@@ -50,4 +50,15 @@ export const deleteUserRoom = async (username: User['username'], roomId: Room['r
         },
     })
     return removedUserRoom
+}
+
+export const deleteMessage = async (messageKey: Message['key']): Promise<boolean> => {
+    try {
+        await prisma.message.delete({ where: { key: messageKey }, select: { key: true } })
+        return true
+    } catch (err: any) {
+        if ('code' in err && err?.code === 'P2025') return true
+        console.log(err)
+        return false
+    }
 }

@@ -53,7 +53,7 @@ const routes = {
     delete: {
         userRoom: '/user-room',
         room: '/room',
-    },
+   },
     login: '/login',
     signup: '/signup',
     renewtoken: '/renewtoken',

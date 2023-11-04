@@ -19,7 +19,7 @@ import {
 import { addMessageToDB, createGroup, createPrivateRoom } from './models/create.js'
 import { updateMessageReadStatus, updateUser } from './models/update.js'
 import { updateRoomParticipants } from './models/update.js'
-import { deleteRoom, deleteUserRoom } from './models/delete.js'
+import { deleteMessage, deleteRoom, deleteUserRoom } from './models/delete.js'
 
 export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>) => {
     // Set socket.data.username on socket
@@ -92,6 +92,12 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
                 }
             } catch (err) {
                 console.log(err)
+            }
+        })
+
+        socket.on('messageDeleted', async (messageKey, roomId) => {
+            if ((await deleteMessage(messageKey)) === true) {
+                io.to(roomId).emit('messageDeleted', messageKey, roomId)
             }
         })
 
