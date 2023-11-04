@@ -1,5 +1,3 @@
-const URL = import.meta.env.VITE_SERVER_URL
-
 export const Routes = {
     get: {
         messages: '/Messages',
@@ -31,6 +29,3 @@ export const Routes = {
     logout: '/logout',
     varifyRefreshToken: '/varify-refresh-token',
 } as const
-
-// TODO: create a function that prefixes URL to default routes
-// without manually prefixing it every time at all the places.

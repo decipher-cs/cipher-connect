@@ -20,7 +20,7 @@ export type MessageListAction =
       }
     | {
           type: MessageListActionType.remove
-          index: number
+          messageKey: Message['key']
       }
     | {
           type: MessageListActionType.edit
@@ -44,7 +44,7 @@ export const messageListReducer: React.Reducer<MessageArray, MessageListAction> 
             break
 
         case MessageListActionType.remove:
-            messageList.splice(action.index)
+            messageList = messageList.filter(({ key }) => key !== action.messageKey)
             break
 
         case MessageListActionType.edit:

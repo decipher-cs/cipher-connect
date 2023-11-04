@@ -78,6 +78,18 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     }, [usersCurrentlyTyping, props.currRoom.roomId])
 
     useEffect(() => {
+        socket.on('messageDeleted', (messageKey, roomId) => {
+            if (props.currRoom.roomId === roomId) {
+                messageDispatcher({ type: MessageListActionType.remove, messageKey })
+            }
+        })
+
+        return () => {
+            socket.removeListener('messageDeleted')
+        }
+    }, [props.currRoom.roomId])
+
+    useEffect(() => {
         socket.on('message', messageFromServer => {
             if (messageFromServer.roomId === props.currRoom.roomId) {
                 messageDispatcher({ type: MessageListActionType.add, newMessage: messageFromServer })
@@ -109,6 +121,8 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                     return (
                         <MessageTile
                             key={message.key}
+                            messageKey={message.key}
+                            roomId={message.roomId}
                             alignment={message.senderUsername === username ? 'right' : 'left'}
                             content={message.content}
                             // If newest message in the list, put ref on it to auto-scroll to bottom

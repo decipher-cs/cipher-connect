@@ -1,7 +1,6 @@
 import { ChevronRightRounded } from '@mui/icons-material'
 import { Avatar, Box, ButtonGroup, Collapse, IconButton, Typography } from '@mui/material'
 import { useContext, useState } from 'react'
-import { RoomWithParticipants } from '../types/prisma.client'
 import { StyledTextField } from './StyledTextField'
 import SearchIcon from '@mui/icons-material/Search'
 import { CredentialContext } from '../contexts/Credentials'
