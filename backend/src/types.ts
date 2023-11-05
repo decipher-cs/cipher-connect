@@ -42,6 +42,12 @@ export interface ServerToClientEvents {
     roomDeleted: (roomId: Room['roomId']) => void
     typingStatusChanged: (status: TypingStatus, roomId: Room['roomId'], username: User['username']) => void
     messageDeleted: (messageKey: Message['key'], roomId: Room['roomId']) => void
+    textMessageUpdated: (
+        messageKey: Message['key'],
+        messageContent: Message['content'],
+        roomId: Room['roomId'],
+        editedAt: Date
+    ) => void
 }
 
 // for io.on()
@@ -59,6 +65,7 @@ export interface ClientToServerEvents {
     roomDeleted: (roomId: Room['roomId']) => void
     typingStatusChanged: (status: TypingStatus, roomId: Room['roomId'], username: User['username']) => void
     messageDeleted: (messageKey: Message['key'], roomId: Room['roomId']) => void
+    textMessageUpdated: (messageKey: Message['key'], messageContent: Message['content'], roomId: Room['roomId']) => void
 }
 
 export interface SocketData {

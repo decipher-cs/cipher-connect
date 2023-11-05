@@ -17,7 +17,7 @@ import {
     getUsers,
 } from './models/find.js'
 import { addMessageToDB, createGroup, createPrivateRoom } from './models/create.js'
-import { updateMessageReadStatus, updateUser } from './models/update.js'
+import { updateMessageReadStatus, updateTextMessageContent, updateUser } from './models/update.js'
 import { updateRoomParticipants } from './models/update.js'
 import { deleteMessage, deleteRoom, deleteUserRoom } from './models/delete.js'
 
@@ -98,6 +98,13 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         socket.on('messageDeleted', async (messageKey, roomId) => {
             if ((await deleteMessage(messageKey)) === true) {
                 io.to(roomId).emit('messageDeleted', messageKey, roomId)
+            }
+        })
+
+        socket.on('textMessageUpdated', async (key, content, roomId) => {
+            const editedAt = await updateTextMessageContent(key, content)
+            if (editedAt) {
+                io.to(roomId).emit('textMessageUpdated', key, content, roomId, editedAt)
             }
         })
 
