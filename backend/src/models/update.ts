@@ -1,4 +1,4 @@
-import { Room, User, UserRoom } from '@prisma/client'
+import { Message, Room, User, UserRoom } from '@prisma/client'
 import { prisma } from '../server.js'
 import { UserWithoutID } from '../types.js'
 
@@ -58,11 +58,22 @@ export const updateMessageReadStatus = async (
         },
         data: { hasUnreadMessages },
     })
-    // await prisma.userRoom.updateMany({
-    //     where: {
-    //         roomId,
-    //         username: { in: usernames },
-    //     },
-    //     data: { hasUnreadMessages },
-    // })
+}
+
+export const updateTextMessageContent = async (
+    key: Message['key'],
+    content: Message['content']
+): Promise<Date | null> => {
+    try {
+        const { editedAt } = await prisma.message.update({
+            where: { key },
+            data: { content },
+            select: { editedAt: true },
+        })
+        return editedAt
+    } catch (err: any) {
+        console.log('error while updating message content.', err)
+        if ('code' in err && err?.code === 'P2025') return null
+        return null
+    }
 }
