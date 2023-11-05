@@ -1,11 +1,14 @@
 import {
     DeleteRounded,
     Download,
+    ArrowForwardRounded,
     EditRounded,
     ForwardRounded,
     MoreHorizRounded,
     Preview,
     SmsFailedRounded,
+    EditOffRounded,
+    ArrowDropDownRounded,
 } from '@mui/icons-material'
 import {
     Avatar,
@@ -13,6 +16,7 @@ import {
     ButtonGroup,
     Dialog,
     IconButton,
+    InputAdornment,
     Paper,
     Popover,
     Skeleton,
@@ -27,6 +31,7 @@ import { useDialog } from '../hooks/useDialog'
 import { useSocket } from '../hooks/useSocket'
 import { Message, MessageContentType, Room } from '../types/prisma.client'
 import { MediaPreview } from './MediaPreview'
+import { StyledTextField } from './StyledTextField'
 
 export type MessageTileProps = {
     alignment: 'left' | 'right'
@@ -46,9 +51,20 @@ export const MessageTile = ({
 
     const handleClickOnPopoverAnchor = (e: MouseEvent<HTMLButtonElement>) => setPopoverAnchor(e.currentTarget)
 
+    const socket = useSocket()
+
     const isPopoverOpen = Boolean(popoverAnchor)
 
     const closePopover = () => setPopoverAnchor(null)
+
+    const [textEditModeEnabled, setTextEditMode] = useState(false)
+
+    const [editableInputValue, setEditableInputValue] = useState(content)
+
+    const handleTextEditConfirm = () => {
+        socket.emit('textMessageUpdated', messageKey, editableInputValue.trim(), roomId)
+        setTextEditMode(false)
+    }
 
     if (content === undefined || content === null) return null
 
@@ -64,8 +80,11 @@ export const MessageTile = ({
                     position: 'relative',
                 }}
             >
-                <IconButton sx={{ position: 'absolute', left: '0px', top: '0px' }} onClick={handleClickOnPopoverAnchor}>
-                    <MoreHorizRounded />
+                <IconButton
+                    sx={{ position: 'absolute', right: '0px', top: '0px' }}
+                    onClick={handleClickOnPopoverAnchor}
+                >
+                    <ArrowDropDownRounded />
                 </IconButton>
 
                 <MessageTilePopover
@@ -74,11 +93,32 @@ export const MessageTile = ({
                     anchor={popoverAnchor}
                     messageId={messageKey}
                     roomId={roomId}
+                    textEditModeEnabled={textEditModeEnabled}
+                    toggleEditMode={() => setTextEditMode(p => !p)}
+                    contentType={contentType}
                 />
 
                 {contentType === MessageContentType.text ? (
                     <Paper sx={{ px: 4, py: 3, background: 'transparent' }} ref={autoScrollToBottomRef}>
-                        <Typography sx={{ overflowWrap: 'break-word', color: 'white' }}>{content}</Typography>
+                        {textEditModeEnabled ? (
+                            <StyledTextField
+                                value={editableInputValue}
+                                multiline
+                                onChange={e => setEditableInputValue(e.target.value)}
+                                onKeyDown={handleTextEditConfirm}
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position='end'>
+                                            <IconButton onClick={handleTextEditConfirm}>
+                                                <ArrowForwardRounded />
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
+                            />
+                        ) : (
+                            <Typography sx={{ overflowWrap: 'break-word', color: 'white' }}>{content}</Typography>
+                        )}
                     </Paper>
                 ) : (
                     <MediaDisplay content={content} contentType={contentType} />
@@ -195,18 +235,22 @@ export const MessageTilePopover = ({
     anchor,
     messageId,
     roomId,
+    textEditModeEnabled,
+    toggleEditMode,
+    contentType,
 }: {
     open: boolean
     handleClose: () => void
     anchor: Element | null
     messageId: Message['roomId']
     roomId: Room['roomId']
+    textEditModeEnabled: boolean
+    toggleEditMode: () => void
+    contentType: Message['contentType']
 }) => {
     const socket = useSocket()
 
     const handleMessageDelete = () => socket.emit('messageDeleted', messageId, roomId)
-
-    const handleMessageEdit = () => {}
 
     const handleMessageForward = () => {}
 
@@ -228,12 +272,16 @@ export const MessageTilePopover = ({
                 <IconButton onClick={handleMessageDelete}>
                     <DeleteRounded />
                 </IconButton>
-                <IconButton>
-                    <EditRounded />
-                </IconButton>
-                <IconButton>
-                    <ForwardRounded />
-                </IconButton>
+
+                {contentType === MessageContentType.text ? (
+                    <IconButton onClick={toggleEditMode}>
+                        {textEditModeEnabled ? <EditOffRounded /> : <EditRounded />}
+                    </IconButton>
+                ) : null}
+
+                {/* <IconButton> */}
+                {/*     <ForwardRounded /> */}
+                {/* </IconButton> */}
             </ButtonGroup>
         </Popover>
     )

@@ -24,7 +24,7 @@ export type MessageListAction =
       }
     | {
           type: MessageListActionType.edit
-          payload: Pick<Message, 'editedAt' | 'content'> & { index: number }
+          updatedMessage: Pick<Message, 'editedAt' | 'content' | 'key'>
       }
 
 export const messageListReducer: React.Reducer<MessageArray, MessageListAction> = (state, action) => {
@@ -48,9 +48,12 @@ export const messageListReducer: React.Reducer<MessageArray, MessageListAction> 
             break
 
         case MessageListActionType.edit:
-            // TODO: make sure content type is the same as before
-            messageList[action.payload.index].editedAt = new Date()
-            messageList[action.payload.index].content = action.payload.content
+            messageList.forEach(message => {
+                if (message.key === action.updatedMessage.key) {
+                    message.content = action.updatedMessage.content
+                    message.editedAt = action.updatedMessage.editedAt
+                }
+            })
             break
 
         default:

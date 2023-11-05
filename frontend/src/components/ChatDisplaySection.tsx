@@ -101,6 +101,18 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         }
     }, [props.currRoom.roomId])
 
+    useEffect(() => {
+        socket.on('textMessageUpdated', (key, content, roomId, editedAt) => {
+            if (roomId === props.currRoom.roomId) {
+                messageDispatcher({ type: MessageListActionType.edit, updatedMessage: { content, key, editedAt } })
+            }
+        })
+
+        return () => {
+            socket.removeListener('textMessageUpdated')
+        }
+    }, [props.currRoom.roomId])
+
     return (
         <>
             <RoomBanner toggleRoomInfoSidebar={props.toggleRoomInfoSidebar} room={props.currRoom} />
