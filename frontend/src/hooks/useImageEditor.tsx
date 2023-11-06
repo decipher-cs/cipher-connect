@@ -21,6 +21,14 @@ export const useImageEditor = (
         file: File
     }>()
 
+    useEffect(() => {
+        return () => {
+            setStatus('uninitiated')
+            setSourceImage(undefined)
+            setEditedImageData(undefined)
+        }
+    }, [])
+
     const handleOnEditConfirm = async (canvasElement: HTMLCanvasElement | undefined): Promise<void> => {
         try {
             if (canvasElement === undefined) throw new Error('image cannot be undefined')

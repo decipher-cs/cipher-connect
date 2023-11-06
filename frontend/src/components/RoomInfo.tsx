@@ -16,7 +16,6 @@ import {
 } from '@mui/material'
 import { useContext, useEffect, useState } from 'react'
 import { CancelRounded, InfoRounded, NotificationsRounded } from '@mui/icons-material'
-import { Balancer } from 'react-wrap-balancer'
 import { Routes } from '../types/routes'
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { ConfirmationDialog } from './ConfirmationDialog'
@@ -96,7 +95,7 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
 
         const fd = new FormData()
 
-        fd.append('avatar', newAvatar)
+        fd.append('upload', newAvatar)
         fd.append('roomId', roomId)
 
         const newPath = await uploadAvatar(fd)
@@ -142,6 +141,7 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
             {room.roomType === 'group' ? (
                 <>
                     {sourceImage ? <ImageEditorDialog {...imageEditroDialogProps} sourceImage={sourceImage} /> : null}
+
                     <Tooltip title='Click to change image'>
                         <IconButton component='label' sx={{ justifySelf: 'center', alignSelf: 'center' }}>
                             <Avatar src={room.roomAvatar ?? ''} sx={{ height: 86, width: 86 }} />

@@ -93,9 +93,7 @@ export const roomReducer: React.Reducer<RoomsState, RoomActions> = (state, actio
         case RoomActionType.removeParticipants:
             room.joinedRooms.forEach(r => {
                 if (r.roomId === action.roomId) {
-                    console.log('before', r.participants)
                     r.participants = r.participants.filter(user => user.username !== action.username)
-                    console.log('after', r.participants)
                 }
             })
             break

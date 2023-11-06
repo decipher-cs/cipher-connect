@@ -102,7 +102,6 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
             if (mimeToFileType(mime) !== mimeToFileType(file.type)) return
 
             file = new File([file], crypto.randomUUID() + extension, { type: mime })
-            console.log(file)
 
             // TODO: preview file before uploading to server.
             handleMessageDelivery({

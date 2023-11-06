@@ -52,7 +52,6 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
         mutationFn: (formData: FormData) => axiosServerInstance.put(Routes.put.user, formData).then(res => res.data),
         onSuccess: data => {
             queryClient.refetchQueries({ queryKey: ['userProfile'] })
-            console.log('successfully submitted form', data)
             // TODO: alert other users
             // socket.emit('userProfileUpdated', data)
             handleClose()
@@ -60,8 +59,6 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
     })
 
     const handleProfileSubmit: SubmitHandler<ProfileFormValues> = ({ displayName, avatar, status }) => {
-        console.log('submitting', displayName, avatar, status)
-
         const fd = new FormData()
         if (displayName) fd.append('displayName', displayName)
         if (avatar) fd.append('upload', avatar)
