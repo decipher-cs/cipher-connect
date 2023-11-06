@@ -18,6 +18,7 @@ export const Routes = {
     put: {
         messageReadStatus: '/message-read-status',
         user: '/user',
+        roomConfig: '/room-config',
     },
     delete: {
         userRoom: '/user-room',
