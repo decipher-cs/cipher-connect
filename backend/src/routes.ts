@@ -4,12 +4,9 @@ import {
     loginUser,
     logoutUser,
     renewAccessToken,
-    // returnUserSettings,
     varifyRefreshToken,
     fetchRoomPariticpants,
     fetchMessages,
-    storeMediaToFS,
-    storeAvatarToFS,
     returnUsers,
     returnUser,
     test,
@@ -25,6 +22,7 @@ import {
     handleUserProfileUpdation,
     handleMediaUpload,
     handleAvatarChange,
+    handleRoomConfigChange,
 } from './controllers.js'
 import { media } from './server.js'
 
@@ -49,11 +47,12 @@ const routes = {
     put: {
         messageReadStatus: '/message-read-status',
         user: '/user',
+        roomConfig: '/room-config',
     },
     delete: {
         userRoom: '/user-room',
         room: '/room',
-   },
+    },
     login: '/login',
     signup: '/signup',
     renewtoken: '/renewtoken',
@@ -95,6 +94,8 @@ export const initRoutes = (app: Express) => {
     app.put(routes.put.messageReadStatus + '/:roomId/:username', handleMessageReadStatusChange)
 
     app.put(routes.put.user, media, handleUserProfileUpdation)
+
+    app.put(routes.put.roomConfig, handleRoomConfigChange)
 
     app.delete(routes.delete.userRoom + '/:username/:roomId', handleUserLeavesRoom)
 

@@ -1,4 +1,4 @@
-import { Message, Room, User, UserRoom } from '@prisma/client'
+import { Message, Room, RoomConfig, User, UserRoom } from '@prisma/client'
 import { prisma } from '../server.js'
 import { UserWithoutID } from '../types.js'
 
@@ -11,6 +11,26 @@ export const updateRoom = async (roomId: string, room: Partial<Room>) => {
         where: { roomId },
         data: { ...room },
     })
+}
+
+export const updateRoomConfig = async (
+    roomId: Room['roomId'],
+    username: User['username'],
+    newConfig: Partial<Pick<RoomConfig, 'isHidden' | 'isBlocked' | 'isNotificationMuted'>>
+): Promise<Partial<RoomConfig>> => {
+    const changedConfig = await prisma.roomConfig.update({
+        where: { username_roomId: { roomId, username } },
+        data: { ...newConfig },
+        select: {
+            username: true,
+            roomId: true,
+            isHidden: newConfig.isHidden !== undefined,
+            isNotificationMuted: newConfig.isNotificationMuted !== undefined,
+            isBlocked: newConfig.isBlocked !== undefined,
+        },
+    })
+
+    return changedConfig
 }
 
 export const updateRoomImage = async (roomId: string, pathToImg: string) => {

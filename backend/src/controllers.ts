@@ -15,9 +15,16 @@ import {
 } from './models/find.js'
 import { addRefreshToken, createGroup, createNewUser, createPrivateRoom } from './models/create.js'
 import { deleteRefreshToken, deleteRoom, deleteUserRoom } from './models/delete.js'
-import { updateMessageReadStatus, updateRoom, updateRoomParticipants, updateUser } from './models/update.js'
+import {
+    updateMessageReadStatus,
+    updateRoom,
+    updateRoomConfig,
+    updateRoomParticipants,
+    updateUser,
+} from './models/update.js'
 import { RoomDetails, UserWithoutID } from './types.js'
 import { createUploadthing, FileRouter, createServerHandler, UTApi } from 'uploadthing/server'
+import { RoomConfig } from '@prisma/client'
 
 const utapi = new UTApi()
 
@@ -441,6 +448,14 @@ export const handleAvatarChange = async (req: Request, res: Response) => {
         res.sendStatus(400)
     }
 }
+
+export const handleRoomConfigChange = async (req: Request, res: Response) => {
+    const { username, roomId, ...newConfig }: RoomConfig = req.body
+
+    const changedConfig = await updateRoomConfig(roomId, username, newConfig)
+    res.json(changedConfig)
+}
+
 export const test = async (req: Request, res: Response) => {
     console.log('test point hit')
     res.sendStatus(200)
