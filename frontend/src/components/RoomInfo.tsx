@@ -14,7 +14,7 @@ import {
     ListItemAvatar,
     ListItemText,
 } from '@mui/material'
-import { useEffect } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { CancelRounded, InfoRounded, NotificationsRounded } from '@mui/icons-material'
 import { Balancer } from 'react-wrap-balancer'
 import { Routes } from '../types/routes'
@@ -27,6 +27,8 @@ import { axiosServerInstance } from '../App'
 import { useImageEditor } from '../hooks/useImageEditor'
 import { ImageEditorDialog } from './ImageEditorDialog'
 import { useDialog } from '../hooks/useDialog'
+import { RoomConfig } from '../types/prisma.client'
+import { CredentialContext } from '../contexts/Credentials'
 
 interface RoomInfoProps {
     room: RoomsState['joinedRooms'][0]
@@ -35,6 +37,8 @@ interface RoomInfoProps {
 }
 
 export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ...props }: RoomInfoProps) => {
+    const { username } = useContext(CredentialContext)
+
     const socket = useSocket()
 
     const { imageEditroDialogProps, sourceImage, setSourceImage, handleOpen, editedImageData } = useImageEditor()
@@ -54,6 +58,34 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
         mutationFn: () => axiosServerInstance.delete(Routes.delete.room).then(res => res.data),
         onSuccess: () => {
             // invalidate query  some query and cause a refetch
+        },
+    })
+
+    const { mutateAsync: changeNotificationSetting, data: changedRoomConfig } = useMutation({
+        mutationFn: (newConfig: Partial<Pick<RoomConfig, 'isNotificationMuted' | 'isHidden' | 'hasUnreadMessages'>>) =>
+            axiosServerInstance
+                .put<Partial<RoomConfig>>(Routes.put.roomConfig, {
+                    username,
+                    roomId: room.roomId,
+                    ...newConfig,
+                } satisfies Partial<RoomConfig>)
+                .then(res => res.data),
+        onMutate: changedConfig => {
+            if (changedConfig.isNotificationMuted !== undefined) {
+                roomDispatcher({
+                    type: RoomActionType.changeRoomConfig,
+                    roomId: room.roomId,
+                    newConfig: { isNotificationMuted: changedConfig.isNotificationMuted },
+                })
+            }
+        },
+        onSuccess: changedConfig => {
+            if (changedConfig.isNotificationMuted !== undefined)
+                roomDispatcher({
+                    type: RoomActionType.changeRoomConfig,
+                    roomId: room.roomId,
+                    newConfig: { isNotificationMuted: changedConfig.isNotificationMuted },
+                })
         },
     })
 
@@ -130,17 +162,6 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
                     <Typography align='center' variant='h6'>
                         {room.roomDisplayName}
                     </Typography>
-
-                    {/* <EditableText text={roomName} setText={setRoomName} /> */}
-                    <Box sx={{ height: 'fit-content', overflowY: 'auto' }}>
-                        <Typography>Description:</Typography>
-                        <Typography variant='body2' paragraph>
-                            <Balancer>
-                                Reprehenderit nostrud nostrud ipsum Lorem est aliquip amet voluptate vvoluptate dolor
-                                minim null aoluptate dolor minim nullavoluptate dolor minim null
-                            </Balancer>
-                        </Typography>
-                    </Box>
                 </>
             ) : null}
 
@@ -148,8 +169,14 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
 
             <Stack direction='row' alignItems='center'>
                 <NotificationsRounded />
-                Notifications
-                <Switch sx={{ ml: 'auto' }} />
+                Mute Notifications
+                <Switch
+                    sx={{ ml: 'auto' }}
+                    checked={room.isNotificationMuted}
+                    onChange={(_, checked) => {
+                        changeNotificationSetting({ isNotificationMuted: checked })
+                    }}
+                />
             </Stack>
 
             <Divider />

@@ -1,4 +1,4 @@
-import { Box, Collapse, Typography } from '@mui/material'
+import { Box, Collapse, Switch, Typography } from '@mui/material'
 import { useContext, useEffect, useReducer, useRef, useState } from 'react'
 import { ChatDisplaySection } from '../components/ChatDisplaySection'
 import { CredentialContext } from '../contexts/Credentials'

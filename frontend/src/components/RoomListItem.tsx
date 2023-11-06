@@ -70,7 +70,9 @@ export const RoomListItem = memo((props: RoomListItemProps) => {
                 <ListItemText primary={displayName} secondary={props.room.roomType} />
             </ListItem>
 
-            {props.room.hasUnreadMessages === true ? <MarkUnreadChatAltIcon /> : null}
+            {props.room.hasUnreadMessages === true && props.room.isNotificationMuted === false ? (
+                <MarkUnreadChatAltIcon />
+            ) : null}
         </ListItemButton>
     )
 })
