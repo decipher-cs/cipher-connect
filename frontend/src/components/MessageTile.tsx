@@ -3,40 +3,23 @@ import {
     Download,
     ArrowForwardRounded,
     EditRounded,
-    ForwardRounded,
-    MoreHorizRounded,
     Preview,
     SmsFailedRounded,
     EditOffRounded,
     ArrowDropDownRounded,
 } from '@mui/icons-material'
-import {
-    Avatar,
-    Box,
-    ButtonGroup,
-    Dialog,
-    IconButton,
-    InputAdornment,
-    Paper,
-    Popover,
-    Skeleton,
-    SxProps,
-    Theme,
-    Typography,
-} from '@mui/material'
-import axios from 'axios'
-import { filetypeextension } from 'magic-bytes.js'
-import { MouseEvent, useEffect, useState } from 'react'
-import { useDialog } from '../hooks/useDialog'
+import { Box, ButtonGroup, IconButton, InputAdornment, Paper, Popover, SxProps, Theme, Typography } from '@mui/material'
+import { MouseEvent, useContext, useState } from 'react'
+import { CredentialContext } from '../contexts/Credentials'
 import { useSocket } from '../hooks/useSocket'
 import { Message, MessageContentType, Room } from '../types/prisma.client'
-import { MediaPreview } from './MediaPreview'
 import { StyledTextField } from './StyledTextField'
 
 export type MessageTileProps = {
     alignment: 'left' | 'right'
     autoScrollToBottomRef: React.RefObject<HTMLDivElement> | null
     messageKey: Message['key']
+    sender: Message['senderUsername']
 } & Pick<Message, 'contentType' | 'content' | 'roomId'>
 
 export const MessageTile = ({
@@ -46,7 +29,10 @@ export const MessageTile = ({
     content,
     contentType,
     roomId,
+    sender,
 }: MessageTileProps) => {
+    const { username } = useContext(CredentialContext)
+
     const [popoverAnchor, setPopoverAnchor] = useState<HTMLButtonElement | null>(null)
 
     const handleClickOnPopoverAnchor = (e: MouseEvent<HTMLButtonElement>) => setPopoverAnchor(e.currentTarget)
@@ -80,23 +66,27 @@ export const MessageTile = ({
                     position: 'relative',
                 }}
             >
-                <IconButton
-                    sx={{ position: 'absolute', right: '0px', top: '0px' }}
-                    onClick={handleClickOnPopoverAnchor}
-                >
-                    <ArrowDropDownRounded />
-                </IconButton>
+                {sender === username ? (
+                    <>
+                        <IconButton
+                            sx={{ position: 'absolute', right: '0px', top: '0px' }}
+                            onClick={handleClickOnPopoverAnchor}
+                        >
+                            <ArrowDropDownRounded />
+                        </IconButton>
 
-                <MessageTilePopover
-                    open={isPopoverOpen}
-                    handleClose={closePopover}
-                    anchor={popoverAnchor}
-                    messageId={messageKey}
-                    roomId={roomId}
-                    textEditModeEnabled={textEditModeEnabled}
-                    toggleEditMode={() => setTextEditMode(p => !p)}
-                    contentType={contentType}
-                />
+                        <MessageTilePopover
+                            open={isPopoverOpen}
+                            handleClose={closePopover}
+                            anchor={popoverAnchor}
+                            messageId={messageKey}
+                            roomId={roomId}
+                            textEditModeEnabled={textEditModeEnabled}
+                            toggleEditMode={() => setTextEditMode(p => !p)}
+                            contentType={contentType}
+                        />
+                    </>
+                ) : null}
 
                 {contentType === MessageContentType.text ? (
                     <Paper sx={{ px: 4, py: 3, background: 'transparent' }} ref={autoScrollToBottomRef}>

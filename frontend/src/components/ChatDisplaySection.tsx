@@ -133,6 +133,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                     return (
                         <MessageTile
                             key={message.key}
+                            sender={message.senderUsername}
                             messageKey={message.key}
                             roomId={message.roomId}
                             alignment={message.senderUsername === username ? 'right' : 'left'}
