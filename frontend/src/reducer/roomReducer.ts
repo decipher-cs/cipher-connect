@@ -1,4 +1,4 @@
-import { Room } from '../types/prisma.client'
+import { Room, RoomConfig } from '../types/prisma.client'
 import { RoomDetails, RoomWithParticipants } from '../types/prisma.client'
 
 export type RoomsState = {
@@ -16,6 +16,7 @@ export enum RoomActionType {
     changeRoom = 'changeRoom',
     alterRoomProperties = 'alterRoomProperties',
     changeNotificationStatus = 'changeNotificationStatus',
+    changeRoomConfig = 'changeRoomConfig',
 }
 
 export type RoomActions =
@@ -58,6 +59,11 @@ export type RoomActions =
           type: RoomActionType.changeNotificationStatus
           roomId: RoomsState['joinedRooms'][0]['roomId']
           unreadMessages: boolean
+      }
+    | {
+          type: RoomActionType.changeRoomConfig
+          roomId: RoomsState['joinedRooms'][0]['roomId']
+          newConfig: Partial<Pick<RoomConfig, 'isNotificationMuted' | 'isHidden' | 'hasUnreadMessages'>>
       }
 
 export const roomReducer: React.Reducer<RoomsState, RoomActions> = (state, action) => {
@@ -121,6 +127,14 @@ export const roomReducer: React.Reducer<RoomsState, RoomActions> = (state, actio
                 ...room.joinedRooms[room.selectedRoom],
                 ...action.newRoomProperties,
             }
+            break
+
+        case RoomActionType.changeRoomConfig:
+            room.joinedRooms.forEach((roomDetail, i) => {
+                if (roomDetail.roomId === action.roomId && action.newConfig.isNotificationMuted !== undefined) {
+                    room.joinedRooms[i] = { ...roomDetail, isNotificationMuted: action.newConfig.isNotificationMuted }
+                }
+            })
             break
 
         default:
