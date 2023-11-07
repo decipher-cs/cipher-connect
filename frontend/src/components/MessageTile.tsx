@@ -95,7 +95,7 @@ export const MessageTile = ({
                                 value={editableInputValue}
                                 multiline
                                 onChange={e => setEditableInputValue(e.target.value)}
-                                onKeyDown={handleTextEditConfirm}
+                                onKeyDown={e => (e.key === 'enter' ? handleTextEditConfirm : null)}
                                 InputProps={{
                                     endAdornment: (
                                         <InputAdornment position='end'>
