@@ -8,30 +8,38 @@ import {
     EditOffRounded,
     ArrowDropDownRounded,
 } from '@mui/icons-material'
-import { Box, ButtonGroup, IconButton, InputAdornment, Paper, Popover, SxProps, Theme, Typography } from '@mui/material'
+import {
+    Avatar,
+    Box,
+    ButtonGroup,
+    IconButton,
+    InputAdornment,
+    Paper,
+    Popover,
+    SxProps,
+    Theme,
+    Typography,
+} from '@mui/material'
 import { MouseEvent, useContext, useState } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
 import { useSocket } from '../hooks/useSocket'
-import { Message, MessageContentType, Room } from '../types/prisma.client'
+import { Message, MessageContentType, Room, User, UserWithoutID } from '../types/prisma.client'
 import { StyledTextField } from './StyledTextField'
 
 export type MessageTileProps = {
-    alignment: 'left' | 'right'
     autoScrollToBottomRef: React.RefObject<HTMLDivElement> | null
-    messageKey: Message['key']
-    sender: Message['senderUsername']
-} & Pick<Message, 'contentType' | 'content' | 'roomId'>
+    message: Message
+    user: UserWithoutID
+}
 
 export const MessageTile = ({
-    alignment,
-    messageKey,
     autoScrollToBottomRef,
-    content,
-    contentType,
-    roomId,
-    sender,
+    user,
+    message: { roomId, contentType, content, key: messageKey, senderUsername, createdAt, editedAt },
 }: MessageTileProps) => {
     const { username } = useContext(CredentialContext)
+
+    const alignment: 'left' | 'right' = senderUsername === username ? 'right' : 'left'
 
     const [popoverAnchor, setPopoverAnchor] = useState<HTMLButtonElement | null>(null)
 
@@ -56,6 +64,12 @@ export const MessageTile = ({
 
     return (
         <>
+            {senderUsername !== username ? (
+                <Box sx={{ display: 'flex', placeItems: 'center', gap: 2 }}>
+                    <Avatar src={user.avatarPath ?? ''} />
+                    {user.username}
+                </Box>
+            ) : null}
             <Box
                 sx={{
                     borderRadius: alignment === 'left' ? '0px 45px 45px 45px' : '45px 0px 45px 45px',
@@ -66,7 +80,7 @@ export const MessageTile = ({
                     position: 'relative',
                 }}
             >
-                {sender === username ? (
+                {senderUsername === username ? (
                     <>
                         <IconButton
                             sx={{ position: 'absolute', right: '0px', top: '0px' }}
@@ -87,7 +101,6 @@ export const MessageTile = ({
                         />
                     </>
                 ) : null}
-
                 {contentType === MessageContentType.text ? (
                     <Paper sx={{ px: 4, py: 3, background: 'transparent' }} ref={autoScrollToBottomRef}>
                         {textEditModeEnabled ? (
@@ -118,7 +131,7 @@ export const MessageTile = ({
     )
 }
 
-const MediaDisplay = ({ content, contentType }: Pick<MessageTileProps, 'contentType' | 'content'>) => {
+const MediaDisplay = ({ content, contentType }: Pick<Message, 'contentType' | 'content'>) => {
     // TODO: append file extension and MIME on explicit download. Put a download button.
     // TODO: set a  Loader/ skeletor/ spinner while media is being sourced
     const mediaSrc = content

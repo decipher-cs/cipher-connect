@@ -9,6 +9,7 @@ import { loginAndSignupValidation } from '../schemaValidators/yupFormValidators'
 import { z } from 'zod'
 import { axiosServerInstance } from '../App'
 import { AxiosError } from 'axios'
+import { ButtonWithLoader } from '../components/ButtonWithLoader'
 
 export const Login = () => {
     const { isLoggedIn, handleCredentialChange } = useContext(CredentialContext)
@@ -108,12 +109,14 @@ export const Login = () => {
                                         >
                                             reset
                                         </Button>
-                                        <Button type='submit' variant='contained' disabled={isSubmitting}>
+                                        <ButtonWithLoader
+                                            showLoader={isSubmitting}
+                                            type='submit'
+                                            variant='contained'
+                                            disabled={isSubmitting}
+                                        >
                                             submit
-                                            {isSubmitting ? (
-                                                <CircularProgress sx={{ position: 'absolute' }} size={28} />
-                                            ) : null}
-                                        </Button>
+                                        </ButtonWithLoader>
                                     </Box>
                                 </Container>
                             ) : null}

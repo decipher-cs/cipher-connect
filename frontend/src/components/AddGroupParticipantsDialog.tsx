@@ -23,6 +23,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useDialog } from '../hooks/useDialog'
 import { userListValidation } from '../schemaValidators/yupFormValidators'
 import { z } from 'zod'
+import { ButtonWithLoader } from './ButtonWithLoader'
 
 type UserList = z.infer<typeof userListValidation>
 
@@ -109,7 +110,8 @@ export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRoom
                         >
                             Cancel
                         </Button>
-                        <Button
+                        <ButtonWithLoader
+                            showLoader={isSubmitting}
                             type='submit'
                             variant='contained'
                             disabled={isSubmitting || isValidating}
@@ -118,7 +120,7 @@ export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRoom
                             }}
                         >
                             Confirm
-                        </Button>
+                        </ButtonWithLoader>
                     </ButtonGroup>
                 </DialogActions>
             </Dialog>

@@ -20,6 +20,7 @@ import { ButtonSwitch } from './styled/ButtonSwitch'
 import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { newRoomFormValidation } from '../schemaValidators/yupFormValidators'
+import { ButtonWithLoader } from './ButtonWithLoader'
 
 const MAX_ALLOWED_USERS_IN_PRIVATE_ROOM = 1
 
@@ -43,7 +44,7 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
         handleSubmit,
         watch,
         reset,
-        formState: { errors },
+        formState: { errors, isValidating, isSubmitting },
         control,
         setValue,
         getValues,
@@ -159,6 +160,14 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
                         <Button variant='contained' type='submit'>
                             Submit
                         </Button>
+                        <ButtonWithLoader
+                            showLoader={isSubmitting}
+                            type='submit'
+                            variant='contained'
+                            disabled={isSubmitting || isValidating}
+                        >
+                            submit
+                        </ButtonWithLoader>
                     </ButtonGroup>
                 </DialogActions>
             </form>

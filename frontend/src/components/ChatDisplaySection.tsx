@@ -133,14 +133,14 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                     return (
                         <MessageTile
                             key={message.key}
-                            sender={message.senderUsername}
-                            messageKey={message.key}
-                            roomId={message.roomId}
-                            alignment={message.senderUsername === username ? 'right' : 'left'}
-                            content={message.content}
+                            message={message}
+                            user={
+                                props.currRoom.participants.filter(
+                                    ({ username }) => username === message.senderUsername
+                                )[0]
+                            }
                             // If newest message in the list, put ref on it to auto-scroll to bottom
                             autoScrollToBottomRef={i === messages.length - 1 ? scrollToBottomRef : null}
-                            contentType={message.contentType}
                         />
                     )
                 })}

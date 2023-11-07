@@ -28,6 +28,7 @@ import { useImageEditor } from '../hooks/useImageEditor'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { userProfileUpdationFormValidation } from '../schemaValidators/yupFormValidators'
 import { axiosServerInstance, queryClient } from '../App'
+import { ButtonWithLoader } from './ButtonWithLoader'
 
 interface ProfileSettingsDialogProps {
     readonly dialogOpen: boolean
@@ -46,7 +47,7 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
 
     const socket = useSocket()
 
-    const { mutate: mutateProfile } = useMutation({
+    const { mutateAsync: mutateProfile } = useMutation({
         mutationKey: ['userProfile'],
         //TODO:use axios.formToJSON instead of formData
         mutationFn: (formData: FormData) => axiosServerInstance.put(Routes.put.user, formData).then(res => res.data),
@@ -54,11 +55,10 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
             queryClient.refetchQueries({ queryKey: ['userProfile'] })
             // TODO: alert other users
             // socket.emit('userProfileUpdated', data)
-            handleClose()
         },
     })
 
-    const handleProfileSubmit: SubmitHandler<ProfileFormValues> = ({ displayName, avatar, status }) => {
+    const handleProfileSubmit: SubmitHandler<ProfileFormValues> = async ({ displayName, avatar, status }) => {
         const fd = new FormData()
         if (displayName) fd.append('displayName', displayName)
         if (avatar) fd.append('upload', avatar)
@@ -69,8 +69,9 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
 
         if (formLength > 0) {
             fd.append('username', username)
-            mutateProfile(fd)
+            await mutateProfile(fd)
         }
+        handleClose()
     }
 
     const {
@@ -78,7 +79,7 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
         handleSubmit,
         watch,
         reset,
-        formState: { errors, isSubmitting },
+        formState: { errors, isSubmitting, isValidating },
         setValue,
     } = useForm({
         resolver: zodResolver(userProfileUpdationFormValidation),
@@ -166,17 +167,18 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
                     </List>
                 </DialogContent>
                 <DialogActions>
-                    <ButtonGroup variant='outlined'>
+                    <ButtonGroup variant='outlined' disabled={isSubmitting}>
                         <Button onClick={handleClose}>Cancel</Button>
                         <Button onClick={() => reset()}>reset</Button>
-                        <Button
-                            disabled={isSubmitting}
+                        <ButtonWithLoader
+                            showLoader={isSubmitting}
                             type='submit'
-                            onClick={() => handleSubmit(handleProfileSubmit)()}
                             variant='contained'
+                            disabled={isSubmitting || isValidating}
+                            onClick={() => handleSubmit(handleProfileSubmit)()}
                         >
                             Confirm
-                        </Button>
+                        </ButtonWithLoader>
                     </ButtonGroup>
                 </DialogActions>
             </Dialog>
