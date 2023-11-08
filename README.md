@@ -1,15 +1,17 @@
-![WIP](./assets/wip_app_logo.png)
 # Cipher-Connect
 
-A fullstack messaging app built with sockets. WIP
+> App is **Work In Progress**
+
+A **multimedia messaging app** built with sockets, react, node and mySQL.
+
+[![design source](./assets/design_source.jpg)](https://dribbble.com/shots/18945888-Messenger-Mobile-Web-Application-Light-Mode/attachments/14116324?mode=media)
 
 
 ## Demo
 
 Deplyed on [netlify](https://taupe-mandazi-7fa3f4.netlify.app/)
-[![Netlify Status](https://api.netlify.com/api/v1/badges/7d934d22-f49b-4a03-92cc-82d05d21ac4b/deploy-status)](https://app.netlify.com/sites/taupe-mandazi-7fa3f4/deploys)
 
-<!-- ![]() -->
+[![Netlify Status](https://api.netlify.com/api/v1/badges/7d934d22-f49b-4a03-92cc-82d05d21ac4b/deploy-status)](https://app.netlify.com/sites/taupe-mandazi-7fa3f4/deploys)
 
 
 ## Features
@@ -22,7 +24,7 @@ Deplyed on [netlify](https://taupe-mandazi-7fa3f4.netlify.app/)
 
 ## Built With
 
-- mySQL database hosted on [aiven.io](https://aiven.io/)
+- Database: mySQL. Hosted on [aiven.io](https://aiven.io/)
 - Client hosted on [netlify](https://www.netlify.com/)
 - Server hosted on [render](https://render.com/)
 - [tsc-watch](https://www.npmjs.com/package/tsc-watch)
@@ -42,8 +44,10 @@ Deplyed on [netlify](https://taupe-mandazi-7fa3f4.netlify.app/)
 - Error handling
 - Routing
 - User authentication
-- Building forms with Formik
+- Building forms with react-hook-form
 - Error boundries
+- Custom Hooks
+- React-query
 
 
 ## Installation
@@ -58,15 +62,11 @@ Install my-project with yarn
   yarn preview # For production preview
   yarn dev # For development preview
 ```
-    
-## Screenshots
 
-![App Screenshot](./frontend/public/)
 
 ## Design
 
-[Mohammad Hashemi](https://dribbble.com/shots/18945888-Messenger-Mobile-Web-Application-Light-Mode/attachments/14116324?mode=media) from [dribble](https://dribbble.com/)
-![design source](./assets/design_source.jpg)
+[Mohammad Hashemi](https://dribbble.com/shots/18945888-Messenger-Mobile-Web-Application-Light-Mode/attachments/14116324?mode=media) from [dribble](https://dribbble.com/shots/18945888-Messenger-Mobile-Web-Application-Light-Mode/attachments/14116324?mode=media)
 
 ## Acknowledgements
  - [Blog Explaining DBML Generator](https://notiz.dev/blog/prisma-dbml-generator)
