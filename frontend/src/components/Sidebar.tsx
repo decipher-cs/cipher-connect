@@ -60,21 +60,29 @@ export const Sidebar = (props: SidebarProps) => {
             <ProfileSettingsDialog dialogOpen={dialogOpen} handleClose={handleClose} userProfile={userProfile} />
 
             <ButtonGroup orientation='vertical' sx={{ alignSelf: 'center' }}>
-                <IconButton onClick={() => navigate('/chat')}>
-                    <ChatBubbleRounded />
-                </IconButton>
+                <Tooltip title='chat'>
+                    <IconButton onClick={() => navigate('/chat')}>
+                        <ChatBubbleRounded />
+                    </IconButton>
+                </Tooltip>
 
-                <IconButton onClick={handleOpen}>
-                    <SettingsSuggestRounded />
-                </IconButton>
+                <Tooltip title='settings'>
+                    <IconButton onClick={handleOpen}>
+                        <SettingsSuggestRounded />
+                    </IconButton>
+                </Tooltip>
 
-                <IconButton onClick={() => navigate('/about')}>
-                    <ContactMailRounded />
-                </IconButton>
+                <Tooltip title='about'>
+                    <IconButton onClick={() => navigate('/about')}>
+                        <ContactMailRounded />
+                    </IconButton>
+                </Tooltip>
 
-                <IconButton onClick={() => navigate('/logout')}>
-                    <LogoutRounded />
-                </IconButton>
+                <Tooltip title='logout'>
+                    <IconButton onClick={() => navigate('/logout')}>
+                        <LogoutRounded />
+                    </IconButton>
+                </Tooltip>
             </ButtonGroup>
             <ThemeToggleSwitch sx={{ alignSelf: 'flex-end' }} />
         </Box>
