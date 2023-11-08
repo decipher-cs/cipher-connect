@@ -66,7 +66,7 @@ export const MessageTile = ({
         <>
             {senderUsername !== username ? (
                 <Box sx={{ display: 'flex', placeItems: 'center', gap: 2 }}>
-                    <Avatar src={user.avatarPath ?? ''} />
+                    <Avatar src={user?.avatarPath ?? ''} />
                     {user.username}
                 </Box>
             ) : null}

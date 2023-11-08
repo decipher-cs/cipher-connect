@@ -27,7 +27,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     const scrollToBottomRef = useRef<HTMLDivElement>(null)
 
     const { data: serverMessages } = useQuery({
-        queryKey: ['messages', props.currRoom.roomId],
+        queryKey: ['room-messages', props.currRoom.roomId],
         queryFn: () =>
             axiosServerInstance.get<Message[]>(Routes.get.messages + `/${props.currRoom.roomId}`).then(res => res.data),
     })
@@ -131,17 +131,21 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
             >
                 {timeSortedMessages.map((message, i) => {
                     return (
-                        <MessageTile
-                            key={message.key}
-                            message={message}
-                            user={
-                                props.currRoom.participants.filter(
-                                    ({ username }) => username === message.senderUsername
-                                )[0]
-                            }
-                            // If newest message in the list, put ref on it to auto-scroll to bottom
-                            autoScrollToBottomRef={i === messages.length - 1 ? scrollToBottomRef : null}
-                        />
+                        <>
+                            {message.roomId === props.currRoom.roomId ? (
+                                <MessageTile
+                                    key={message.key}
+                                    message={message}
+                                    user={
+                                        props.currRoom.participants.filter(
+                                            ({ username }) => username === message.senderUsername
+                                        )[0]
+                                    }
+                                    // If newest message in the list, put ref on it to auto-scroll to bottom
+                                    autoScrollToBottomRef={i === messages.length - 1 ? scrollToBottomRef : null}
+                                />
+                            ) : null}
+                        </>
                     )
                 })}
             </Box>
