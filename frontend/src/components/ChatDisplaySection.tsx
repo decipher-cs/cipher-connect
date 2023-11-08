@@ -130,22 +130,19 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                 }}
             >
                 {timeSortedMessages.map((message, i) => {
+                    if (message.roomId !== props.currRoom.roomId) return
                     return (
-                        <>
-                            {message.roomId === props.currRoom.roomId ? (
-                                <MessageTile
-                                    key={message.key}
-                                    message={message}
-                                    user={
-                                        props.currRoom.participants.filter(
-                                            ({ username }) => username === message.senderUsername
-                                        )[0]
-                                    }
-                                    // If newest message in the list, put ref on it to auto-scroll to bottom
-                                    autoScrollToBottomRef={i === messages.length - 1 ? scrollToBottomRef : null}
-                                />
-                            ) : null}
-                        </>
+                        <MessageTile
+                            key={message.key}
+                            message={message}
+                            user={
+                                props.currRoom.participants.filter(
+                                    ({ username }) => username === message.senderUsername
+                                )[0]
+                            }
+                            // If newest message in the list, put ref on it to auto-scroll to bottom
+                            autoScrollToBottomRef={i === messages.length - 1 ? scrollToBottomRef : null}
+                        />
                     )
                 })}
             </Box>
