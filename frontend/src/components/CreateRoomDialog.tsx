@@ -157,9 +157,6 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
                     <ButtonGroup variant='outlined'>
                         <Button onClick={handleClose}>Cancel</Button>
                         <Button onClick={() => reset()}>Clear</Button>
-                        <Button variant='contained' type='submit'>
-                            Submit
-                        </Button>
                         <ButtonWithLoader
                             showLoader={isSubmitting}
                             type='submit'
