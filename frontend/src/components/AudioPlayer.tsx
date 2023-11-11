@@ -56,7 +56,7 @@ export const AudioPlayer = ({ audioSrc }: { audioSrc: string }) => {
             }}
         >
             <IconButton onClick={handlePlayPauseToggle}>
-                {isPlaying ? <PlayCircleRounded color='primary' /> : <PauseCircleFilledRounded color='primary' />}
+                {isPlaying ? <PauseCircleFilledRounded color='primary' /> : <PlayCircleRounded color='primary' />}
             </IconButton>
 
             <Box ref={waveformContainer} sx={{ width: '100px' }} />
