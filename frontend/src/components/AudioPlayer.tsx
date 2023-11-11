@@ -1,10 +1,12 @@
 import { PauseCircleFilledRounded, PlayCircleRounded } from '@mui/icons-material'
-import { Box, IconButton } from '@mui/material'
+import { Box, IconButton, Paper, useTheme } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import WaveSurfer from 'wavesurfer.js'
 
 export const AudioPlayer = ({ audioSrc }: { audioSrc: string }) => {
     const waveformContainer = useRef(null)
+
+    const theme = useTheme()
 
     const [isPlaying, setIsPlaying] = useState(false)
 
@@ -18,11 +20,12 @@ export const AudioPlayer = ({ audioSrc }: { audioSrc: string }) => {
         if (waveformContainer.current === null) return
 
         const ws = WaveSurfer.create({
-            height: 20,
-            waveColor: 'blue',
-            progressColor: 'white',
+            height: 23,
+            waveColor: theme.palette.grey[500],
+            progressColor: theme.palette.primary.main,
             url: audioSrc,
             container: waveformContainer.current,
+            dragToSeek: true,
         })
 
         setWavesurfer(ws)
@@ -37,12 +40,26 @@ export const AudioPlayer = ({ audioSrc }: { audioSrc: string }) => {
     }, [waveformContainer.current, audioSrc])
 
     return (
-        <Box sx={{ border: 'solid 2px red', display: 'flex' }}>
-            <Box sx={{ flexShrink: 0, flexGrow: 1 , flexBasis: '100%'}} ref={waveformContainer} style={{ minHeight: '120px' }} />
-
+        <Paper
+            sx={{
+                background: theme =>
+                    theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.primary.contrastText,
+                display: 'grid',
+                gridAutoFlow: 'column',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                gap: 1,
+                pl: 1,
+                borderRadius: '45px',
+                aspectRatio: '12/3',
+                width: '200px',
+            }}
+        >
             <IconButton onClick={handlePlayPauseToggle}>
-                {isPlaying ? <PlayCircleRounded /> : <PauseCircleFilledRounded />}
+                {isPlaying ? <PlayCircleRounded color='primary' /> : <PauseCircleFilledRounded color='primary' />}
             </IconButton>
-        </Box>
+
+            <Box ref={waveformContainer} sx={{ width: '100px' }} />
+        </Paper>
     )
 }
