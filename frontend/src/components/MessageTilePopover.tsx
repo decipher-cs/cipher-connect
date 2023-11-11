@@ -1,7 +1,9 @@
-import { DeleteRounded, EditOffRounded, EditRounded } from '@mui/icons-material'
+import { DeleteRounded, DownloadRounded, EditOffRounded, EditRounded } from '@mui/icons-material'
 import { ButtonGroup, Popover, IconButton } from '@mui/material'
+import { useContext } from 'react'
+import { CredentialContext } from '../contexts/Credentials'
 import { useSocket } from '../hooks/useSocket'
-import { Room, Message, MessageContentType } from '../types/prisma.client'
+import { Room, Message, MessageContentType, User } from '../types/prisma.client'
 
 export const MessageTilePopover = ({
     open,
@@ -12,6 +14,7 @@ export const MessageTilePopover = ({
     textEditModeEnabled,
     toggleEditMode,
     contentType,
+    senderUsername,
 }: {
     open: boolean
     handleClose: () => void
@@ -21,8 +24,11 @@ export const MessageTilePopover = ({
     textEditModeEnabled: boolean
     toggleEditMode: () => void
     contentType: Message['contentType']
+    senderUsername: User['username']
 }) => {
     const socket = useSocket()
+
+    const { username } = useContext(CredentialContext)
 
     const handleMessageDelete = () => socket.emit('messageDeleted', messageId, roomId)
 
@@ -43,13 +49,20 @@ export const MessageTilePopover = ({
             }}
         >
             <ButtonGroup>
-                <IconButton onClick={handleMessageDelete}>
-                    <DeleteRounded />
-                </IconButton>
+                {senderUsername === username ? (
+                    <IconButton onClick={handleMessageDelete}>
+                        <DeleteRounded />
+                    </IconButton>
+                ) : null}
 
-                {contentType === MessageContentType.text ? (
+                {contentType === MessageContentType.text && senderUsername === username ? (
                     <IconButton onClick={toggleEditMode}>
                         {textEditModeEnabled ? <EditOffRounded /> : <EditRounded />}
+                    </IconButton>
+                ) : null}
+                {contentType !== MessageContentType.text ? (
+                    <IconButton>
+                        <DownloadRounded />
                     </IconButton>
                 ) : null}
 
