@@ -15,6 +15,7 @@ import { useSocket } from '../hooks/useSocket'
 import { useQuery } from '@tanstack/react-query'
 import { axiosServerInstance } from '../App'
 import { PulseLoader } from 'react-spinners'
+import { AudioPlayer } from './AudioPlayer'
 
 export interface ChatDisplaySectionProps {
     currRoom: RoomsState['joinedRooms'][0]
@@ -121,6 +122,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                     display: 'grid',
                     alignContent: 'flex-start',
                     gridTemplateColumns: '100%',
+                    width: '100%',
 
                     overflowY: 'scroll',
                     px: 2,
@@ -135,6 +137,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                         <MessageTile
                             key={message.key}
                             message={message}
+                            roomType={props.currRoom.roomType}
                             user={
                                 props.currRoom.participants.filter(
                                     ({ username }) => username === message.senderUsername
