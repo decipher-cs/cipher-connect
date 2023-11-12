@@ -1,8 +1,7 @@
 import { Download, ArrowForwardRounded, Preview, SmsFailedRounded, ArrowDropDownRounded } from '@mui/icons-material'
 import { Avatar, Box, IconButton, InputAdornment, Paper, Skeleton, Typography } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
-import { MouseEvent, useContext, useEffect, useState } from 'react'
+import { MouseEvent, useContext, useState } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
 import { useSocket } from '../hooks/useSocket'
 import { Message, MessageContentType, Room, RoomType, User, UserWithoutID } from '../types/prisma.client'
@@ -27,9 +26,9 @@ export const MessageTile = ({
 
     const alignment: 'left' | 'right' = senderUsername === username ? 'right' : 'left'
 
-    const [popoverAnchor, setPopoverAnchor] = useState<HTMLButtonElement | null>(null)
+    const [popoverAnchor, setPopoverAnchor] = useState<HTMLElement | null>(null)
 
-    const handleClickOnPopoverAnchor = (e: MouseEvent<HTMLButtonElement>) => setPopoverAnchor(e.currentTarget)
+    const handleClickOnPopoverAnchor = (e: MouseEvent<HTMLElement>) => setPopoverAnchor(e.currentTarget)
 
     const socket = useSocket()
 
@@ -46,79 +45,96 @@ export const MessageTile = ({
         setTextEditMode(false)
     }
 
+    const messageDeliveryTimeAndDate = new Date(createdAt).getHours() + ':' + new Date(createdAt).getMinutes()
+
     if (!content) return null
 
     return (
         <>
-            {senderUsername !== username && roomType === RoomType.group ? (
-                <Box sx={{ display: 'flex', placeItems: 'center', gap: 2 }}>
-                    <Avatar src={user?.avatarPath ?? ''} />
-                    {user.username}
-                </Box>
-            ) : null}
             <Box
                 sx={{
-                    // borderRadius: alignment === 'left' ? '0px 45px 45px 45px' : '45px 0px 45px 45px',
                     justifySelf: alignment === 'left' ? 'flex-start' : 'flex-end',
                     background: 'transparent',
+                    backgroundColor: 'transparend',
                     position: 'relative',
                     maxWidth: '90%',
                     width: 'fit-content',
+                    display: 'grid',
+                    gridTemplateRows: 'auto auto',
+                    gridTemplateColumns: 'auto auto auto',
+                    columnGap: 2,
+                    rowGap: 1,
                 }}
             >
-                <>
-                    <IconButton
-                        sx={{ position: 'absolute', right: '0px', top: '0px' }}
-                        onClick={handleClickOnPopoverAnchor}
-                    >
-                        <ArrowDropDownRounded />
-                    </IconButton>
+                {senderUsername !== username && roomType === RoomType.group ? (
+                    <>
+                        <Avatar src={user?.avatarPath ?? ''} sx={{ gridRow: '1 / 3', width: 50, height: 50 }} />
+                        <Typography>{user.username}</Typography>
+                    </>
+                ) : null}
+                <Typography
+                    variant='subtitle2'
+                    sx={{
+                        placeSelf: 'flex-end',
+                        gridColumn: roomType === RoomType.group || senderUsername === username ? '3' : '2',
+                        gridRow: '1',
+                    }}
+                >
+                    {messageDeliveryTimeAndDate}
+                </Typography>
 
-                    <MessageTilePopover
-                        open={isPopoverOpen}
-                        handleClose={closePopover}
-                        anchor={popoverAnchor}
-                        messageId={messageKey}
-                        roomId={roomId}
-                        textEditModeEnabled={textEditModeEnabled}
-                        toggleEditMode={() => setTextEditMode(p => !p)}
-                        contentType={contentType}
-                        senderUsername={senderUsername}
-                    />
-                </>
-                {contentType === MessageContentType.text ? (
-                    <Paper
-                        sx={{
-                            px: 4,
-                            py: 4,
-                            backgroundImage: 'linear-gradient(45deg,#3023AE 0%,#FF0099 100%)',
-                            borderRadius: alignment === 'left' ? '0px 45px 45px 45px' : '45px 0px 45px 45px',
-                        }}
-                        ref={autoScrollToBottomRef}
-                    >
-                        {textEditModeEnabled ? (
-                            <StyledTextField
-                                value={editableInputValue}
-                                multiline
-                                onChange={e => setEditableInputValue(e.target.value)}
-                                onKeyDown={e => (e.key === 'enter' ? handleTextEditConfirm : null)}
-                                InputProps={{
-                                    endAdornment: (
-                                        <InputAdornment position='end'>
-                                            <IconButton onClick={handleTextEditConfirm}>
-                                                <ArrowForwardRounded />
-                                            </IconButton>
-                                        </InputAdornment>
-                                    ),
-                                }}
-                            />
-                        ) : (
-                            <Typography sx={{ overflowWrap: 'break-word', color: 'white' }}>{content}</Typography>
-                        )}
-                    </Paper>
-                ) : (
-                    <MediaDisplay content={content} contentType={contentType} />
-                )}
+                <MessageTilePopover
+                    open={isPopoverOpen}
+                    handleClose={closePopover}
+                    anchor={popoverAnchor}
+                    messageId={messageKey}
+                    roomId={roomId}
+                    textEditModeEnabled={textEditModeEnabled}
+                    toggleEditMode={() => setTextEditMode(p => !p)}
+                    contentType={contentType}
+                    senderUsername={senderUsername}
+                />
+                <Box
+                    sx={{ gridRow: '2', gridColumn: '2/span 2', ':hover': { cursor: 'pointer' } }}
+                    onClick={handleClickOnPopoverAnchor}
+                >
+                    {contentType === MessageContentType.text ? (
+                        <Paper
+                            sx={{
+                                px: 4,
+                                py: 3,
+                                backgroundImage:
+                                    username === senderUsername
+                                        ? 'linear-gradient(45deg,#3023AE 0%,#FF0099 100%)'
+                                        : '#000',
+                                borderRadius: alignment === 'left' ? '0px 45px 45px 45px' : '45px 0px 45px 45px',
+                            }}
+                            ref={autoScrollToBottomRef}
+                        >
+                            {textEditModeEnabled ? (
+                                <StyledTextField
+                                    value={editableInputValue}
+                                    multiline
+                                    onChange={e => setEditableInputValue(e.target.value)}
+                                    onKeyDown={e => (e.key === 'enter' ? handleTextEditConfirm : null)}
+                                    InputProps={{
+                                        endAdornment: (
+                                            <InputAdornment position='end'>
+                                                <IconButton onClick={handleTextEditConfirm}>
+                                                    <ArrowForwardRounded />
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                />
+                            ) : (
+                                <Typography sx={{ overflowWrap: 'break-word' }}>{content}</Typography>
+                            )}
+                        </Paper>
+                    ) : (
+                        <MediaDisplay content={content} contentType={contentType} />
+                    )}
+                </Box>
             </Box>
         </>
     )

@@ -121,12 +121,12 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                 sx={{
                     display: 'grid',
                     alignContent: 'flex-start',
-                    gridTemplateColumns: '100%',
+                    // gridAutoRows: 'max-content',
                     width: '100%',
 
                     overflowY: 'scroll',
                     px: 2,
-                    gap: 1.8,
+                    gap: 3,
                     pt: 10,
                     pb: 2,
                 }}
