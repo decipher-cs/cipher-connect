@@ -165,7 +165,12 @@ const MediaDisplay = ({ content, contentType }: Pick<Message, 'contentType' | 'c
 
     switch (contentType) {
         case MessageContentType.audio:
-            return <AudioPlayer audioSrc={mediaSrc ?? ''} />
+            return (
+                <>
+                    <AudioPlayer audioSrc={mediaSrc ?? ''} />
+                    <audio src={mediaSrc ?? ''} controls />
+                </>
+            )
 
         // TODO: a new component for Type = file
         // File should open in new tab as preview
@@ -193,7 +198,7 @@ const MediaDisplay = ({ content, contentType }: Pick<Message, 'contentType' | 'c
                             </IconButton>
                         </Box>
                     ) : (
-                        <Skeleton sx={{ height: 250, aspectRatio: '1/2' }} variant='rounded' animation='wave' />
+                        <Skeleton sx={{ height: 100, aspectRatio: '2/1' }} variant='rounded' animation='wave' />
                     )}
                 </>
             )
