@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react'
 
-export const useAudioRecorder = () => {
-    const [audioStream, setAudioStream] = useState<MediaStream>()
-    const [recorder, setRecorder] = useState<MediaRecorder>()
-    const [microphoneReady, setMicrophoneReady] = useState<Boolean>(false)
-    const [recordingState, setRecordingState] = useState<RecordingState>()
+export const useAudioRecorder = (onRecordingFinish: (e: BlobEvent) => void) => {
+    const [audioRecorder, setAudioRecorder] = useState<MediaRecorder>()
+
+    const [recordingState, setRecordingState] = useState<RecordingState>('inactive')
+
+    const [isMicReady, setIsMicReady] = useState<Boolean>(false)
+
+    const [micPermission, setMicPermission] = useState<PermissionState>('prompt')
 
     const handleOnStart = (ev: Event) => {
         setRecordingState('recording')
@@ -14,46 +17,66 @@ export const useAudioRecorder = () => {
         setRecordingState('inactive')
     }
 
-    const setupMicrophoe = async () => {
-        if (window.MediaRecorder === undefined) {
-            alert('Audio recording is not supported on this device.')
-            return
-        }
+    const handleAudioDataAvailable = (ev: BlobEvent) => {
+        onRecordingFinish(ev)
+    }
+
+    const getMicPermission = async () => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-            setAudioStream(stream)
-            const audioRecorder = new MediaRecorder(stream)
-            setRecorder(audioRecorder)
+            if (window.MediaRecorder === undefined) throw Error('Audio recording facility not available on this device')
+
+            const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+
+            setMicPermission('granted')
+
+            const audioRecorder = new MediaRecorder(mediaStream)
+
             audioRecorder.onstart = handleOnStart
+
             audioRecorder.onstop = handleOnStop
-            setMicrophoneReady(true)
-        } catch (error) {
-            setMicrophoneReady(false)
+
+            audioRecorder.onerror = () => {
+                console.log('error while recording audio')
+            }
+
+            audioRecorder.ondataavailable = handleAudioDataAvailable
+
+            setAudioRecorder(audioRecorder)
+
+            setIsMicReady(true)
+        } catch (err) {
+            setMicPermission('denied')
+            setIsMicReady(false)
         }
     }
 
     useEffect(() => {
-        setupMicrophoe()
+        getMicPermission()
     }, [])
 
-    const startRecording = () => recorder?.start()
+    const startRecording = () => {
+        audioRecorder?.start()
+    }
 
-    const stopRecording = () => recorder?.stop()
+    const stopRecording = () => audioRecorder?.stop()
 
-    const pauseRecording = () => recorder?.pause()
+    const pauseRecording = () => audioRecorder?.pause()
 
-    const resumeRecording = () => recorder?.resume()
+    const resumeRecording = () => audioRecorder?.resume()
 
-    const getRecordingState = () => recorder?.state
+    const getRecordingState = () => audioRecorder?.state
 
-    const toggleRecorderStartStop = () => {
-        if (recorder?.state === 'inactive') startRecording()
-        else if (recorder?.state === 'recording') stopRecording()
+    const toggleAudioRecorderStartStop = () => {
+        if (!audioRecorder) throw Error('Audio device is undefined', audioRecorder)
+
+        if (audioRecorder.state === 'inactive') startRecording()
+        else if (audioRecorder.state === 'recording') stopRecording()
     }
 
     return {
-        toggleRecorderStartStop,
+        toggleAudioRecorderStartStop,
         recordingState,
-        recorder,
+        isMicReady,
+        micPermission,
     }
 }

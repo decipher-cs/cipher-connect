@@ -33,7 +33,9 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
 
     const [recordedAudioFile, setRecordedAudioFile] = useState<Blob>()
 
-    const audioRecorder = useAudioRecorder()
+    const { recordingState, toggleAudioRecorderStartStop, isMicReady, micPermission } = useAudioRecorder(ev => {
+        handleMessageDelivery({ content: ev.data, contentType: MessageContentType.audio })
+    })
 
     const { mutateAsync: uploadMedia, data } = useMutation({
         mutationKey: ['uploadMedia'],
@@ -75,7 +77,6 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
             createdAt: new Date(),
             contentType,
             content: content,
-            // MIME: 'MIME' in args ? args.MIME : null,
         }
 
         socket.emit('message', message)
@@ -119,17 +120,6 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
         setCurrInputText('')
     }
 
-    if (audioRecorder.recorder !== undefined) {
-        audioRecorder.recorder.ondataavailable = ev => {
-            const MIME = ev.data.type.split(';').at(0)
-            if (MIME === undefined) throw new Error('Unknown MIME type. error while recording audio.')
-
-            setRecordedAudioFile(ev.data)
-
-            handleMessageDelivery({ content: ev.data, contentType: MessageContentType.audio /*  MIME  */ })
-        }
-    }
-
     return (
         <>
             <StyledTextField
@@ -154,8 +144,8 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
                     endAdornment: (
                         <InputAdornment position='end'>
                             <ToggleButton
-                                onClick={audioRecorder.toggleRecorderStartStop}
-                                selected={audioRecorder.recordingState === 'recording'}
+                                onClick={toggleAudioRecorderStartStop}
+                                selected={recordingState === 'recording'}
                                 value='audio recording'
                                 color='primary'
                                 sx={{ border: '0px' }}
