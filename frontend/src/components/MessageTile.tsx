@@ -165,12 +165,7 @@ const MediaDisplay = ({ content, contentType }: Pick<Message, 'contentType' | 'c
 
     switch (contentType) {
         case MessageContentType.audio:
-            return (
-                <>
-                    <AudioPlayer audioSrc={mediaSrc ?? ''} />
-                    <audio src={mediaSrc ?? ''} controls />
-                </>
-            )
+            return <AudioPlayer audioSrc={mediaSrc ?? ''} />
 
         // TODO: a new component for Type = file
         // File should open in new tab as preview
