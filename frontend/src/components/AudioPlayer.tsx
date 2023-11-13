@@ -26,6 +26,8 @@ export const AudioPlayer = ({ audioSrc }: { audioSrc: string }) => {
             url: audioSrc,
             container: waveformContainer.current,
             dragToSeek: true,
+            barWidth: 2,
+            cursorWidth: 4,
         })
 
         setWavesurfer(ws)
@@ -51,7 +53,7 @@ export const AudioPlayer = ({ audioSrc }: { audioSrc: string }) => {
                 gap: 1,
                 pl: 1,
                 borderRadius: '45px',
-                aspectRatio: '12/3',
+                aspectRatio: '28/3',
                 width: '200px',
             }}
         >
