@@ -1,4 +1,12 @@
-import { Download, ArrowForwardRounded, Preview, SmsFailedRounded, ArrowDropDownRounded } from '@mui/icons-material'
+import {
+    Download,
+    ArrowForwardRounded,
+    Preview,
+    SmsFailedRounded,
+    ArrowDropDownRounded,
+    MoreRounded,
+    MoreHorizRounded,
+} from '@mui/icons-material'
 import { Avatar, Box, IconButton, InputAdornment, Paper, Skeleton, Typography } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
 import { MouseEvent, useContext, useState } from 'react'
@@ -45,7 +53,27 @@ export const MessageTile = ({
         setTextEditMode(false)
     }
 
-    const messageDeliveryTimeAndDate = new Date(createdAt).getHours() + ':' + new Date(createdAt).getMinutes()
+    const messageDeliveryTimeAndDate = () => {
+        let minute = new Date(createdAt).getMinutes().toLocaleString()
+        let hour = new Date(createdAt).getHours().toLocaleString()
+        let day = new Date(createdAt).getDay()
+        let month = new Date(createdAt).getMonth()
+        let year = new Date(createdAt).getFullYear()
+        // let offset = new Date(createdAt)
+        // let offset = new Date(createdAt) - new Date()
+        console.clear()
+        console.log(new Date(createdAt).toLocaleTimeString(), new Date().getTime())
+        // console.log(offset)
+
+        if (Number(minute) <= 9) {
+            minute = '0' + minute
+        }
+        if (Number(hour) < 10) {
+            hour = '0' + hour
+        }
+
+        return hour + ':' + minute
+    }
 
     if (!content) return null
 
@@ -80,7 +108,7 @@ export const MessageTile = ({
                         gridRow: '1',
                     }}
                 >
-                    {messageDeliveryTimeAndDate}
+                    {messageDeliveryTimeAndDate()}
                 </Typography>
 
                 <MessageTilePopover
@@ -95,9 +123,28 @@ export const MessageTile = ({
                     senderUsername={senderUsername}
                 />
                 <Box
-                    sx={{ gridRow: '2', gridColumn: '2/span 2', ':hover': { cursor: 'pointer' } }}
-                    onClick={handleClickOnPopoverAnchor}
+                    sx={{
+                        gridRow: '2',
+                        gridColumn: '2/span 2',
+                        position: 'relative',
+                        // display: 'grid'
+                    }}
                 >
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            display: 'grid',
+                            top: '0%',
+                            bottom: '0%',
+                            insetInline: alignment === 'left' ? 'auto -50px' : '-50px auto',
+                            placeItems: 'center',
+                        }}
+                    >
+                        <IconButton onClick={handleClickOnPopoverAnchor}>
+                            <MoreHorizRounded />
+                        </IconButton>
+                    </Box>
+
                     {contentType === MessageContentType.text ? (
                         <Paper
                             sx={{
