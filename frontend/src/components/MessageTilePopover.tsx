@@ -41,11 +41,11 @@ export const MessageTilePopover = ({
             anchorEl={anchor}
             anchorOrigin={{
                 vertical: 'top',
-                horizontal: 'right',
+                horizontal: 'center',
             }}
             transformOrigin={{
                 vertical: 'bottom',
-                horizontal: 'left',
+                horizontal: 'center',
             }}
         >
             <ButtonGroup>
