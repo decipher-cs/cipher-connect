@@ -88,7 +88,7 @@ export const Chat = () => {
                                 background: theme =>
                                     theme.palette.mode === 'dark'
                                         ? theme.palette.background.default
-                                        : 'linear-gradient(45deg, #e1eec3, #f05053)',
+                                        : 'linear-gradient(135deg, #f4e9e5,#f4dcd0,#eed0d2,#dbd7e4,#e4e8f2)',
                                 gridTemplateRows: '1fr auto',
                             }}
                         >
