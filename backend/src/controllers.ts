@@ -457,6 +457,6 @@ export const handleRoomConfigChange = async (req: Request, res: Response) => {
 }
 
 export const test = async (req: Request, res: Response) => {
-    console.log('test point hit')
+    console.count('test point hit')
     res.sendStatus(200)
 }

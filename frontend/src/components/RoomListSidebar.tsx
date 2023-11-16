@@ -31,7 +31,7 @@ export const RoomListSidebar = ({ rooms, roomDispatcher }: RoomListSidebar) => {
         isLoading: fetchingRoomsInProgress,
         refetch: syncRoomsWithServer,
     } = useQuery({
-        queryKey: ['rooms'],
+        queryKey: ['rooms', rooms.joinedRooms],
         queryFn: () =>
             axiosServerInstance.get<RoomDetails[]>(Routes.get.userRooms + `/${username}`).then(res => res.data),
     })
