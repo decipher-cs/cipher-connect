@@ -101,12 +101,13 @@ export const MessageTile = ({
                     </>
                 ) : null}
                 <Typography
-                    variant='subtitle2'
+                    variant='caption'
                     sx={{
                         placeSelf: 'flex-end',
                         gridColumn: roomType === RoomType.group || senderUsername === username ? '3' : '2',
                         gridRow: '1',
                     }}
+                    color='grey'
                 >
                     {messageDeliveryTimeAndDate()}
                 </Typography>
@@ -152,9 +153,13 @@ export const MessageTile = ({
                                 py: 3,
                                 backgroundImage:
                                     username === senderUsername
-                                        ? 'linear-gradient(45deg,#3023AE 0%,#FF0099 100%)'
+                                        ? 'linear-gradient(45deg,#108ca6,#2c98ca,#45a3ec)'
                                         : '#000',
                                 borderRadius: alignment === 'left' ? '0px 45px 45px 45px' : '45px 0px 45px 45px',
+                                color: theme =>
+                                    username === senderUsername
+                                        ? theme.palette.getContrastText('#108ca6')
+                                        : theme.palette.text.primary,
                             }}
                             ref={autoScrollToBottomRef}
                         >
