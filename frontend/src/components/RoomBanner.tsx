@@ -1,5 +1,5 @@
 import { ChevronRightRounded } from '@mui/icons-material'
-import { Avatar, Box, ButtonGroup, Collapse, IconButton, Typography } from '@mui/material'
+import { Avatar, Box, ButtonGroup, Collapse, IconButton, Typography, useTheme } from '@mui/material'
 import { useContext, useState } from 'react'
 import { StyledTextField } from './StyledTextField'
 import SearchIcon from '@mui/icons-material/Search'
@@ -29,7 +29,8 @@ export const RoomBanner = (props: { toggleRoomInfoSidebar: () => void; room: Roo
 
                 // From https://css.glass //
                 zIndex: 10,
-                background: 'rgba(255, 255, 255, 0.50)',
+                background: ({ palette }) =>
+                    palette.mode === 'dark' ? 'rgba(100, 100, 100, 0.50)' : 'rgba(255, 255, 255, 0.50)',
                 backdropFilter: 'blur(10px)',
                 webkitBackdropFilter: 'blur(20px)',
 
