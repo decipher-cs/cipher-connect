@@ -125,11 +125,12 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
 
                 display: 'grid',
                 px: 3,
-                gap: 1.3,
+                py: 1,
+                gap: 2,
             }}
         >
-            <Stack direction='row' sx={{ alignItems: 'center' }}>
-                <InfoRounded sx={{ justifySelf: 'flex-start' }} />
+            <Stack direction='row' sx={{ alignItems: 'center', gap: 2 }}>
+                <InfoRounded sx={{ justifySelf: 'flex-start' }} color='primary' />
 
                 <Typography sx={{ justifySelf: 'flex-start' }}>Room Info</Typography>
 
@@ -167,11 +168,12 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
 
             <Divider />
 
-            <Stack direction='row' alignItems='center'>
+            <Stack direction='row' alignItems='center' gap={2}>
                 <NotificationsRounded />
                 Mute Notifications
                 <Switch
                     sx={{ ml: 'auto' }}
+                    color='primary'
                     checked={room.isNotificationMuted}
                     onChange={(_, checked) => {
                         changeNotificationSetting({ isNotificationMuted: checked })
