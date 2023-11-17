@@ -40,13 +40,13 @@ export const Sidebar = (props: SidebarProps) => {
     return (
         <Box sx={{ display: 'grid', justifyItems: 'center' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Tooltip title='Profile'>
+                <Tooltip placement='right' title='Profile'>
                     <IconButton sx={{ justifySelf: 'center' }} onClick={handleOpen}>
                         <Avatar src={avatarURL ?? ''} />
                     </IconButton>
                 </Tooltip>
 
-                <Tooltip title='Source code'>
+                <Tooltip placement='right' title='Source code'>
                     <IconButton
                         sx={{ justifySelf: 'center' }}
                         href='https://github.com/decipher-cs/cipher-connect'
@@ -60,25 +60,25 @@ export const Sidebar = (props: SidebarProps) => {
             <ProfileSettingsDialog dialogOpen={dialogOpen} handleClose={handleClose} userProfile={userProfile} />
 
             <ButtonGroup orientation='vertical' sx={{ alignSelf: 'center' }}>
-                <Tooltip title='chat'>
+                <Tooltip placement='right' title='chat'>
                     <IconButton onClick={() => navigate('/chat')}>
                         <ChatBubbleRounded />
                     </IconButton>
                 </Tooltip>
 
-                <Tooltip title='settings'>
+                <Tooltip placement='right' title='settings'>
                     <IconButton onClick={handleOpen}>
                         <SettingsSuggestRounded />
                     </IconButton>
                 </Tooltip>
 
-                <Tooltip title='about'>
+                <Tooltip placement='right' title='about'>
                     <IconButton onClick={() => navigate('/about')}>
                         <ContactMailRounded />
                     </IconButton>
                 </Tooltip>
 
-                <Tooltip title='logout'>
+                <Tooltip placement='right' title='logout'>
                     <IconButton onClick={() => navigate('/logout')}>
                         <LogoutRounded />
                     </IconButton>
