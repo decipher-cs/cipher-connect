@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, IconButton, List, Typography } from '@mui/material'
+import { Box, Button, CircularProgress, IconButton, List, Tooltip, Typography } from '@mui/material'
 import { useContext, useEffect, useState } from 'react'
 import { AddToPhotosRounded, BorderColorRounded } from '@mui/icons-material'
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
@@ -20,7 +20,7 @@ interface RoomListSidebar {
 }
 
 export const RoomListSidebar = ({ rooms, roomDispatcher }: RoomListSidebar) => {
-    const { handleClose, handleOpen, dialogOpen } = useDialog()
+    const { handleClose, handleOpen, dialogOpen } = useDialog(true)
 
     const { username } = useContext(CredentialContext)
 
@@ -92,15 +92,19 @@ export const RoomListSidebar = ({ rooms, roomDispatcher }: RoomListSidebar) => {
                 minWidth: 'max-content',
 
                 display: 'grid',
+                // alignContent: 'center',
                 alignContent: 'flex-start',
+                // justifyItems: 'center'
             }}
         >
             <Typography pl={2} display={'inline'} sx={{ gridArea: '1 / 1 / 1 / 1', alignSelf: 'center' }}>
                 Messages
             </Typography>
-            <IconButton onClick={handleOpen} sx={{ justifySelf: 'flex-end', gridArea: '1 / 1 / 1 / 1', pr: 2 }}>
-                <AddToPhotosRounded />
-            </IconButton>
+            <Tooltip title='Create new room' placement='right'>
+                <IconButton onClick={handleOpen} sx={{ justifySelf: 'flex-end', gridArea: '1 / 1 / 1 / 1' }}>
+                    <AddToPhotosRounded />
+                </IconButton>
+            </Tooltip>
 
             <CreateRoomDialog dialogOpen={dialogOpen} roomDispatcher={roomDispatcher} handleClose={handleClose} />
 
