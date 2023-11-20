@@ -9,6 +9,9 @@ import {
     IconButton,
     ListItem,
     ListSubheader,
+    Stack,
+    ToggleButton,
+    ToggleButtonGroup,
 } from '@mui/material'
 import { List } from '@mui/material'
 import { RoomType, User } from '../types/prisma.client'
@@ -19,8 +22,10 @@ import { useSocket } from '../hooks/useSocket'
 import { ButtonSwitch } from './styled/ButtonSwitch'
 import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { newRoomFormValidation } from '../schemaValidators/yupFormValidators'
+import { roomCreationFormValidation } from '../schemaValidators/yupFormValidators'
 import { ButtonWithLoader } from './ButtonWithLoader'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 
 const MAX_ALLOWED_USERS_IN_PRIVATE_ROOM = 1
 
@@ -30,11 +35,7 @@ interface CreateRoomDialogProps {
     handleClose: () => void
 }
 
-export type InitialFormValues = {
-    roomType: RoomType
-    roomDisplayName: string
-    participants: { username: User['username'] }[]
-}
+type CreateRoomFormValues = z.infer<typeof roomCreationFormValidation>
 
 export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogProps) => {
     const socket = useSocket()
@@ -48,27 +49,29 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
         control,
         setValue,
         getValues,
-    } = useForm({
+    } = useForm<CreateRoomFormValues>({
         defaultValues: {
             roomType: RoomType.group,
             roomDisplayName: '',
             participants: [{ username: '' }],
-        } as InitialFormValues,
-        resolver: yupResolver(newRoomFormValidation),
+        } satisfies CreateRoomFormValues,
+        resolver: zodResolver(roomCreationFormValidation),
     })
 
     const { fields, append, remove } = useFieldArray({ control, name: 'participants' })
 
-    const handleFormSubmit: SubmitHandler<InitialFormValues> = () => {
-        const usernames = getValues('participants').map(({ username }) => username)
+    const handleFormSubmit: SubmitHandler<CreateRoomFormValues> = ({ participants, roomType, roomDisplayName }) => {
+        const uniqueUsernamesSet = new Set(participants.map(({ username }) => username))
+        const uniqueUsernames = [...uniqueUsernamesSet]
 
-        if (getValues('roomType') === RoomType.private) {
-            socket.emit('newRoomCreated', { roomType: RoomType.private, participant: usernames[0] })
-        } else if (getValues('roomType') === RoomType.group) {
+        if (roomType === RoomType.private) {
+            const username = participants.at(0)?.username
+            if (username) socket.emit('newRoomCreated', { roomType: RoomType.private, participant: username })
+        } else if (roomType === RoomType.group) {
             socket.emit('newRoomCreated', {
                 roomType: RoomType.group,
-                participants: usernames,
-                displayName: getValues('roomDisplayName'),
+                participants: uniqueUsernames,
+                displayName: roomDisplayName,
                 avatarPath: null,
             })
         }
@@ -80,23 +83,22 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
         <Dialog open={dialogOpen} scroll='paper' onClose={handleClose} fullWidth>
             <DialogTitle>Create a new room</DialogTitle>
 
-            <form onSubmit={handleSubmit(handleFormSubmit)}>
-                <DialogContent dividers sx={{}}>
-                    <FormControlLabel
-                        control={<ButtonSwitch labelWhenOff={RoomType.group} labelWhenOn={RoomType.private} />}
-                        label={getValues('roomType')}
-                        checked={getValues('roomType') === RoomType.private}
+            <DialogContent dividers>
+                <Stack component={'form'} id='create-room' onSubmit={handleSubmit(handleFormSubmit)} spacing={2}>
+                    <ToggleButtonGroup
+                        value={getValues('roomType')}
                         onChange={_ => {
                             setValue(
                                 'roomType',
                                 watch('roomType') === RoomType.private ? RoomType.group : RoomType.private
                             )
                         }}
-                    />
+                    >
+                        <ToggleButton value='group'>Group</ToggleButton>
+                        <ToggleButton value='private'>Private</ToggleButton>
+                    </ToggleButtonGroup>
 
                     <StyledTextField
-                        sx={{ px: 1, my: 4 }}
-                        size='small'
                         label='Group Name'
                         disabled={getValues('roomType') === RoomType.private}
                         helperText={errors.roomDisplayName !== undefined && errors.roomDisplayName.message}
@@ -104,9 +106,19 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
                         {...register('roomDisplayName')}
                     />
 
-                    <List disablePadding dense>
-                        <ListSubheader>
-                            Participants
+                    {/* <List disablePadding dense> */}
+                    <List disablePadding>
+                        <ListSubheader
+                            sx={{
+                                // background: 'transparent',
+                                border: 'solid 1px red',
+                                // alignItems: 'center',
+                                // justifyContent: 'space-between',
+                                placeItems: 'center',
+                                placeContent: 'center',
+                            }}
+                        >
+                            <span>Participants</span>
                             <Button
                                 disabled={
                                     getValues('participants').length >= MAX_ALLOWED_USERS_IN_PRIVATE_ROOM &&
@@ -119,8 +131,9 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
                         </ListSubheader>
                         {fields.map((username, i) => (
                             <ListItem
+                                disableGutters
+                                // disablePadding
                                 key={username.id}
-                                prefix='foobar_remove_c325s'
                                 secondaryAction={
                                     <>
                                         <IconButton edge='end'>
@@ -133,41 +146,44 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
                                 }
                             >
                                 <StyledTextField
-                                    size='small'
                                     variant='standard'
                                     disabled={
                                         getValues('roomType') === RoomType.private &&
                                         getValues('participants').length >= MAX_ALLOWED_USERS_IN_PRIVATE_ROOM &&
                                         i >= MAX_ALLOWED_USERS_IN_PRIVATE_ROOM
                                     }
-                                    helperText={
-                                        errors.participants !== undefined &&
-                                        (errors.participants?.root?.message ||
-                                            errors.participants[i]?.username?.message)
-                                    }
-                                    error={errors.participants !== undefined}
+                                    helperText={errors.participants?.[i]?.username?.message ?? ''}
+                                    error={errors?.participants?.[i] !== undefined}
                                     {...register(`participants.${i}.username`)}
                                 />
                             </ListItem>
                         ))}
                     </List>
-                </DialogContent>
+                </Stack>
+            </DialogContent>
 
-                <DialogActions>
-                    <ButtonGroup variant='outlined'>
-                        <Button onClick={handleClose}>Cancel</Button>
-                        <Button onClick={() => reset()}>Clear</Button>
-                        <ButtonWithLoader
-                            showLoader={isSubmitting}
-                            type='submit'
-                            variant='contained'
-                            disabled={isSubmitting || isValidating}
-                        >
-                            submit
-                        </ButtonWithLoader>
-                    </ButtonGroup>
-                </DialogActions>
-            </form>
+            <DialogActions>
+                <ButtonGroup variant='outlined'>
+                    <Button
+                        onClick={() => {
+                            reset()
+                            handleClose()
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                    <Button onClick={() => reset()}>Clear</Button>
+                    <ButtonWithLoader
+                        showLoader={isSubmitting}
+                        type='submit'
+                        form='create-room'
+                        variant='contained'
+                        disabled={isSubmitting || isValidating}
+                    >
+                        submit
+                    </ButtonWithLoader>
+                </ButtonGroup>
+            </DialogActions>
         </Dialog>
     )
 }

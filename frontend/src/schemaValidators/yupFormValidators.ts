@@ -1,5 +1,3 @@
-import { object, string, number, ObjectSchema, array, boolean, InferType, addMethod, mixed } from 'yup'
-import { InitialFormValues } from '../components/CreateRoomDialog'
 import { ProfileFormValues } from '../components/ProfileSettingsDialog'
 import { RoomType, UserStatus, UserWithoutID } from '../types/prisma.client'
 import { z } from 'zod'
@@ -7,49 +5,61 @@ import validator from 'validator'
 import { axiosServerInstance } from '../App'
 import { Routes } from '../types/routes'
 
-export const newRoomFormValidation: ObjectSchema<InitialFormValues> = object().shape({
-    roomType: string()
-        .default(RoomType.private)
-        .oneOf([RoomType.private, RoomType.group], 'room can only be of type group or private')
-        .required('This is a required value'),
-
-    participants: array()
-        .of(
-            object({
-                username: string()
-                    .required('Cannot be empty')
-                    .min(3, 'Need at least 3 characters')
-                    .max(16, 'maximum 16 characters allowed')
-                    .test(
-                        'username-validity-testk',
-                        'Username does not exist or is allowing requests',
-                        async username => {
-                            // TODO: check if user exists on DB
-                            return true
-                        }
-                    ),
+export const roomCreationFormValidation = z.union([
+    z.object({
+        roomType: z.enum([RoomType.private]),
+        roomDisplayName: z.string().optional(),
+        participants: z
+            .array(
+                z.object({
+                    username: z.string().optional().default(''),
+                })
+            )
+            .nonempty()
+            .max(20)
+            .refine(usernames => usernames[0].username.length >= 3 && usernames[0].username.length <= 16, {
+                message: 'String must be between 3 and 16 characters',
+                path: [0, 'username'],
             })
-        )
-        .required('Cannot be empty')
-        .when('roomType', {
-            is: (type: RoomType) => type === RoomType.private,
-            then: schema => schema.length(1, 'Need at least one username'),
-        })
-        .test('uniqueness-test', 'Duplicate username detected', values => {
-            const usernames = values.map(({ username }) => username)
-            return usernames.length === new Set(usernames).size
-        })
-        .min(1, 'Need at least one username'),
-
-    roomDisplayName: string()
-        .default('')
-        .when('roomType', {
-            is: (type: RoomType) => type === RoomType.group,
-            then(schema) {
-                return schema.required().min(3, 'Min 3 characters needed').max(16, 'Max 16 characters allowed').trim()
-            },
-        }),
-})
+            .refine(
+                async usernames => {
+                    const response = await axiosServerInstance.get<boolean>(
+                        Routes.get.isUsernameValid + '/' + usernames[0].username
+                    )
+                    return response.data
+                },
+                {
+                    message: 'username does not exist',
+                    path: [0, 'username'],
+                }
+            ),
+    }),
+    z.object({
+        roomType: z.enum([RoomType.group]),
+        roomDisplayName: z.string().min(3).max(16),
+        participants: z
+            .array(
+                z.object({
+                    username: z.string().min(3).max(16).default(''),
+                })
+            )
+            .nonempty()
+            .max(20)
+            .superRefine(async (usernames, ctx) => {
+                for (const i in usernames) {
+                    const response = await axiosServerInstance.get<boolean>(
+                        Routes.get.isUsernameValid + '/' + usernames[i].username
+                    )
+                    if (response.data === false)
+                        ctx.addIssue({
+                            code: z.ZodIssueCode.custom,
+                            message: `username does not exist`,
+                            path: [i, 'username'],
+                        })
+                }
+            }),
+    }),
+])
 
 export const userProfileUpdationFormValidation: z.ZodType<ProfileFormValues> = z.object({
     displayName: z.string().min(3).max(16).optional().or(z.literal('')),
