@@ -23,10 +23,15 @@ export const roomCreationFormValidation = z.union([
             })
             .refine(
                 async usernames => {
-                    const response = await axiosServerInstance.get<boolean>(
-                        Routes.get.isUsernameValid + '/' + usernames[0].username
-                    )
-                    return response.data
+                    try {
+                        const response = await axiosServerInstance.get<boolean>(
+                            Routes.get.isUsernameValid + '/' + usernames[0].username
+                        )
+                        return Boolean(response.data)
+                    } catch (err) {
+                        return false
+                    }
+                    return false
                 },
                 {
                     message: 'username does not exist',
@@ -47,15 +52,24 @@ export const roomCreationFormValidation = z.union([
             .max(20)
             .superRefine(async (usernames, ctx) => {
                 for (const i in usernames) {
-                    const response = await axiosServerInstance.get<boolean>(
-                        Routes.get.isUsernameValid + '/' + usernames[i].username
-                    )
-                    if (response.data === false)
+                    try {
+                        const response = await axiosServerInstance.get<boolean>(
+                            Routes.get.isUsernameValid + '/' + usernames[i].username
+                        )
+                        if (response.data === false)
+                            ctx.addIssue({
+                                code: z.ZodIssueCode.custom,
+                                message: `username does not exist`,
+                                path: [i, 'username'],
+                            })
+                    } catch (err) {
                         ctx.addIssue({
                             code: z.ZodIssueCode.custom,
                             message: `username does not exist`,
                             path: [i, 'username'],
                         })
+                        return false
+                    }
                 }
             }),
     }),
