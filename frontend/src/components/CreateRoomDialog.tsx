@@ -2,16 +2,13 @@ import {
     Box,
     Button,
     ButtonGroup,
-    CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
-    FormControlLabel,
     IconButton,
     InputAdornment,
     ListItem,
-    ListSubheader,
     Stack,
     ToggleButton,
     ToggleButtonGroup,
@@ -19,18 +16,15 @@ import {
 } from '@mui/material'
 import { List } from '@mui/material'
 import { RoomType, User } from '../types/prisma.client'
-import { CloseRounded, DeleteRounded, DoneAllRounded } from '@mui/icons-material'
+import { CloseRounded, DeleteRounded, DoneAllRounded, NoAccountsRounded } from '@mui/icons-material'
 import { StyledTextField } from './StyledTextField'
 import { RoomActions } from '../reducer/roomReducer'
 import { useSocket } from '../hooks/useSocket'
-import { ButtonSwitch } from './styled/ButtonSwitch'
 import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
 import { roomCreationFormValidation } from '../schemaValidators/yupFormValidators'
 import { ButtonWithLoader } from './ButtonWithLoader'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useEffect } from 'react'
 
 const MAX_ALLOWED_USERS_IN_PRIVATE_ROOM = 1
 
@@ -50,7 +44,7 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
         handleSubmit,
         watch,
         reset,
-        formState: { errors, isValidating, isSubmitting, isLoading, isSubmitSuccessful, touchedFields },
+        formState: { errors, isValidating, isSubmitting, touchedFields },
         control,
         setValue,
         getValues,
@@ -89,23 +83,17 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
     }
 
     return (
-        <Dialog open={dialogOpen} scroll='paper' onClose={handleClose} fullWidth>
+        <Dialog open={dialogOpen} scroll='paper' onClose={handleClose}>
             <DialogTitle>Create a new room</DialogTitle>
 
             <DialogContent dividers>
-                <Button
-                    onClick={() => {
-                        console.log(isValidating)
-                        console.log(isSubmitting)
-                        console.log(errors)
-                    }}
-                >
-                    debug log
-                </Button>
                 <Stack component={'form'} id='create-room' onSubmit={handleSubmit(handleFormSubmit)} spacing={4}>
                     <Box sx={{ display: 'grid', gap: 1 }}>
-                        <Typography variant='subtitle1'>Room Type :</Typography>
+                        <Typography fontWeight='bold' variant='subtitle1'>
+                            Room Type :
+                        </Typography>
                         <ToggleButtonGroup
+                            sx={{ pl: 2 }}
                             aria-label='room-type'
                             value={getValues('roomType')}
                             onChange={_ => {
@@ -121,9 +109,12 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
                     </Box>
 
                     <Box sx={{ display: 'grid', gap: 1 }}>
-                        <Typography variant='subtitle1'>Group Name :</Typography>
+                        <Typography fontWeight='bold' variant='subtitle1'>
+                            Group Name :
+                        </Typography>
                         <StyledTextField
-                            label='Group Name'
+                            sx={{ pl: 2 }}
+                            placeholder='Group Name'
                             variant='standard'
                             disabled={getValues('roomType') === RoomType.private}
                             helperText={errors.roomDisplayName !== undefined && errors.roomDisplayName.message}
@@ -140,7 +131,9 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
                                 placeContent: 'space-between',
                             }}
                         >
-                            <Typography variant='subtitle1'>Participants :</Typography>
+                            <Typography fontWeight='bold' variant='subtitle1'>
+                                Participants :
+                            </Typography>
                             <Button
                                 variant='outlined'
                                 disabled={
@@ -154,19 +147,7 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
                         </Box>
 
                         {fields.map((username, i) => (
-                            <ListItem
-                                disableGutters
-                                disablePadding
-                                dense
-                                key={username.id}
-                                secondaryAction={
-                                    <>
-                                        <IconButton aria-label='remove' onClick={() => remove(i)}>
-                                            <DeleteRounded />
-                                        </IconButton>
-                                    </>
-                                }
-                            >
+                            <ListItem sx={{ pl: 2 }} key={username.id}>
                                 <StyledTextField
                                     variant='standard'
                                     placeholder='Enter username...'
@@ -179,15 +160,18 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
                                     error={errors?.participants?.[i] !== undefined}
                                     {...register(`participants.${i}.username`)}
                                     InputProps={{
-                                        startAdornment: (
-                                            <InputAdornment position='start'>
-                                                {isValidating ? (
-                                                    <CircularProgress />
+                                        endAdornment: (
+                                            <InputAdornment position='end'>
+                                                {touchedFields?.participants?.[i]?.username === undefined ? (
+                                                    <NoAccountsRounded />
                                                 ) : errors.participants?.[i] ? (
                                                     <CloseRounded color='error' />
                                                 ) : (
                                                     <DoneAllRounded color='success' />
                                                 )}
+                                                <IconButton aria-label='remove' onClick={() => remove(i)}>
+                                                    <DeleteRounded />
+                                                </IconButton>
                                             </InputAdornment>
                                         ),
                                     }}
