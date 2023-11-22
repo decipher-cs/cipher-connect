@@ -1,5 +1,6 @@
 import {
     Avatar,
+    Box,
     Button,
     ButtonGroup,
     Dialog,
@@ -14,7 +15,7 @@ import {
     ToggleButtonGroup,
     Typography,
 } from '@mui/material'
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { PropsWithChildren, useContext, useEffect, useRef, useState } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
 import { User, UserStatus, UserWithoutID } from '../types/prisma.client'
 import { Routes } from '../types/routes'
@@ -60,8 +61,8 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
 
     const handleProfileSubmit: SubmitHandler<ProfileFormValues> = async ({ displayName, avatar, status }) => {
         const fd = new FormData()
-        if (displayName) fd.append('displayName', displayName)
         if (avatar) fd.append('upload', avatar)
+        if (displayName && displayName !== userProfile.displayName) fd.append('displayName', displayName)
         if (status && status !== userProfile.status) fd.append('status', status)
 
         let formLength = 0
@@ -85,7 +86,12 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
         resolver: zodResolver(userProfileUpdationFormValidation),
         defaultValues: {
             status: userProfile.status,
+            displayName: userProfile.displayName,
         } as ProfileFormValues,
+        mode: 'onChange',
+        reValidateMode: 'onChange',
+        criteriaMode: 'firstError',
+        shouldUnregister: true,
     })
 
     const { imageEditroDialogProps, status, handleOpen, editedImageData, setSourceImage, sourceImage } =
@@ -104,47 +110,68 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
 
     return (
         <>
-            <Dialog open={props.dialogOpen} onClose={handleClose} fullWidth>
+            <Dialog open={props.dialogOpen} onClose={handleClose}>
                 <DialogTitle>Profile Settings</DialogTitle>
 
                 {sourceImage ? <ImageEditorDialog {...imageEditroDialogProps} sourceImage={sourceImage} /> : null}
 
-                <DialogContent>
+                <DialogContent dividers>
                     <List component='form' onSubmit={() => handleSubmit(handleProfileSubmit)}>
-                        <ListItem sx={{ gap: 3 }}>
-                            <ListItemText>Avatar</ListItemText>
+                        <StyledListItem>
+                            <ListItemText primaryTypographyProps={{ fontWeight: 'bold', variant: 'subtitle1' }}>
+                                Avatar :
+                            </ListItemText>
 
-                            <IconButton component={'label'}>
-                                <Avatar src={editedImageData?.url} children={<CloudUploadRounded />} />
-                                <input
-                                    type='file'
-                                    accept='image/*'
-                                    hidden
-                                    onChange={e => {
-                                        const file = e.target.files && e.target.files[0]
-                                        if (file) {
-                                            setSourceImage(file)
-                                            handleOpen()
-                                        }
-                                    }}
-                                />
-                            </IconButton>
-                        </ListItem>
+                            <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+                                <Typography variant='body2' mb={0.8} ml={2}>
+                                    {editedImageData ? 'Image ready for uplaod' : 'No image selected'}
+                                </Typography>
+                                <IconButton component={'label'} sx={{ ml: 0 }}>
+                                    <Avatar
+                                        sx={() => {
+                                            const size = 30
+                                            return { width: size, height: size }
+                                        }}
+                                        src={editedImageData?.url}
+                                        children={<CloudUploadRounded />}
+                                    />
+                                    <input
+                                        type='file'
+                                        accept='image/*'
+                                        hidden
+                                        onChange={e => {
+                                            const file = e.target.files && e.target.files[0]
+                                            if (file) {
+                                                setSourceImage(file)
+                                                handleOpen()
+                                            }
+                                        }}
+                                    />
+                                </IconButton>
+                            </Box>
+                        </StyledListItem>
 
-                        <ListItem>
-                            <ListItemText>Display Name</ListItemText>
+                        <StyledListItem>
+                            <ListItemText primaryTypographyProps={{ fontWeight: 'bold', variant: 'subtitle1' }}>
+                                Display Name :
+                            </ListItemText>
+
                             <StyledTextField
-                                size='small'
+                                sx={{ ml: 2 }}
                                 {...register('displayName')}
-                                placeholder={userProfile.displayName}
+                                placeholder='Enter a name...'
+                                error={errors.displayName?.message !== undefined}
+                                helperText={errors.displayName?.message}
                             />
-                        </ListItem>
+                        </StyledListItem>
 
-                        <ListItem>
-                            <ListItemText>Status</ListItemText>
+                        <StyledListItem>
+                            <ListItemText primaryTypographyProps={{ fontWeight: 'bold', variant: 'subtitle1' }}>
+                                Status :
+                            </ListItemText>
                             <ToggleButtonGroup
                                 exclusive
-                                size='small'
+                                sx={{ ml: 2 }}
                                 value={watch('status')}
                                 {...register('status')}
                                 onChange={(_, value) => setValue('status', value)}
@@ -153,17 +180,7 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
                                 <ToggleButton value={UserStatus.dnd}>{UserStatus.dnd}</ToggleButton>
                                 <ToggleButton value={UserStatus.hidden}>{UserStatus.hidden}</ToggleButton>
                             </ToggleButtonGroup>
-                        </ListItem>
-
-                        <ListItem>
-                            <Typography color='red' variant='body1'>
-                                {errors &&
-                                    (errors?.avatar?.message ||
-                                        errors?.status?.message ||
-                                        errors?.displayName?.message ||
-                                        errors?.root?.message)}
-                            </Typography>
-                        </ListItem>
+                        </StyledListItem>
                     </List>
                 </DialogContent>
                 <DialogActions>
@@ -171,7 +188,7 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
                         <Button onClick={handleClose}>Cancel</Button>
                         <Button onClick={() => reset()}>reset</Button>
                         <ButtonWithLoader
-                            showLoader={isSubmitting}
+                            showLoader={isSubmitting || isValidating}
                             type='submit'
                             variant='contained'
                             disabled={isSubmitting || isValidating}
@@ -184,4 +201,8 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
             </Dialog>
         </>
     )
+}
+
+const StyledListItem = (props: PropsWithChildren) => {
+    return <ListItem sx={{ display: 'grid', gap: 1 }}>{props.children}</ListItem>
 }
