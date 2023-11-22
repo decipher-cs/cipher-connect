@@ -20,7 +20,7 @@ interface RoomListSidebar {
 }
 
 export const RoomListSidebar = ({ rooms, roomDispatcher }: RoomListSidebar) => {
-    const { handleClose, handleOpen, dialogOpen } = useDialog(true)
+    const { handleClose, handleOpen, dialogOpen } = useDialog()
 
     const { username } = useContext(CredentialContext)
 
@@ -95,6 +95,7 @@ export const RoomListSidebar = ({ rooms, roomDispatcher }: RoomListSidebar) => {
                 // alignContent: 'center',
                 alignContent: 'flex-start',
                 // justifyItems: 'center'
+                backgroundColor: theme => theme.palette.background.light,
             }}
         >
             <Typography pl={2} display={'inline'} sx={{ gridArea: '1 / 1 / 1 / 1', alignSelf: 'center' }}>
