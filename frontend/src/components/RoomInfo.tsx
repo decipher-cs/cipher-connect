@@ -120,6 +120,7 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
             sx={{
                 width: 'min(25vw, 450px)',
                 minHeight: '100%',
+                backgroundColor: theme => theme.palette.background.light,
 
                 alignContent: 'flex-start',
 
