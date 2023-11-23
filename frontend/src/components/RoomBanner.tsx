@@ -48,7 +48,10 @@ export const RoomBanner = (props: { toggleRoomInfoSidebar: () => void; room: Roo
 
             <ButtonGroup sx={{ justifySelf: 'flex-end', alignItems: 'center' }}>
                 <Collapse in={searchFieldVisible} orientation='horizontal'>
-                    <StyledTextField size='small' placeholder='Enter to search' sx={{ width: '200px', mr: 1 }} />
+                    <StyledTextField
+                        placeholder='Enter to search'
+                        sx={{ width: '200px', mr: 0, backgroundColor: theme => theme.palette.background.light }}
+                    />
                 </Collapse>
 
                 <IconButton onClick={() => setSearchFieldVisible(p => !p)}>

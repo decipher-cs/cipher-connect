@@ -126,7 +126,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
                 sx={{
                     background: theme =>
                         theme.palette.mode === 'dark'
-                            ? theme.palette.background.default
+                            ? theme.palette.background.light
                             : theme.palette.primary.contrastText,
                     width: '80%',
                     justifySelf: 'center',
