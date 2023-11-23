@@ -54,25 +54,14 @@ export const MessageTile = ({
     }
 
     const messageDeliveryTimeAndDate = () => {
-        let minute = new Date(createdAt).getMinutes().toLocaleString()
-        let hour = new Date(createdAt).getHours().toLocaleString()
-        let day = new Date(createdAt).getDay()
-        let month = new Date(createdAt).getMonth()
-        let year = new Date(createdAt).getFullYear()
-        // let offset = new Date(createdAt)
-        // let offset = new Date(createdAt) - new Date()
-        console.clear()
-        console.log(new Date(createdAt).toLocaleTimeString(), new Date().getTime())
-        // console.log(offset)
+        const creationDate = new Date(createdAt)
 
-        if (Number(minute) <= 9) {
-            minute = '0' + minute
-        }
-        if (Number(hour) < 10) {
-            hour = '0' + hour
-        }
+        const midnight = new Date()
+        midnight.setHours(0, 0, 0, 0)
 
-        return hour + ':' + minute
+        if (creationDate < midnight)
+            return creationDate.toLocaleString('en', { dateStyle: 'medium', timeStyle: 'short', hour12: false })
+        return creationDate.toLocaleString('en', { timeStyle: 'short', hour12: false })
     }
 
     if (!content) return null
