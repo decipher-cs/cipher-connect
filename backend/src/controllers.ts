@@ -343,6 +343,7 @@ export const handleUserLeavesRoom = async (req: Request, res: Response) => {
 
 export const handleUserExistsCheck = async (req: Request, res: Response) => {
     const { username } = req.params
+    if (!username) res.send(false)
     const userExists = await checkIfUserExists(username)
     res.send(userExists)
 }
