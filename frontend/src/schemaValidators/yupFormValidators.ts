@@ -90,26 +90,28 @@ export const loginAndSignupValidation = z.object({
 
 export const userListValidation = z.object({
     usernames: z
-        .object({
-            username: z
-                .string()
-                .min(3)
-                .max(16)
-                .refine(
-                    async username => {
-                        if (username.length < 3) return false
-                        try {
-                            const response = await axiosServerInstance.get<boolean>(
-                                Routes.get.isUsernameValid + '/' + username
-                            )
-                            return response.data
-                        } catch (err) {
-                            return false
-                        }
-                    },
-                    { message: 'Invalid username' }
-                ),
-        })
-        .array()
+        .array(
+            z.object({
+                username: z
+                    .string()
+                    .min(3)
+                    .max(16)
+                    .default('')
+                    .refine(
+                        async username => {
+                            if (username.length < 3 || username.length > 16) return false
+                            try {
+                                const response = await axiosServerInstance.get<boolean>(
+                                    Routes.get.isUsernameValid + '/' + username
+                                )
+                                return response.data
+                            } catch (err) {
+                                return false
+                            }
+                        },
+                        { message: 'username may not exist' }
+                    ),
+            })
+        )
         .nonempty(),
 })

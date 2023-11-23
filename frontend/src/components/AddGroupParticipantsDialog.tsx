@@ -34,7 +34,7 @@ export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRoom
 
     const {
         handleSubmit,
-        formState: { errors, isSubmitting, isValidating, isDirty },
+        formState: { errors, isSubmitting, isValidating, isDirty, touchedFields },
         control,
         register,
         reset,
@@ -43,15 +43,22 @@ export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRoom
             usernames: [{ username: '' }],
         },
         resolver: zodResolver(userListValidation),
+        mode: 'onChange',
+        reValidateMode: 'onChange',
+        shouldUnregister: true,
+        criteriaMode: 'firstError',
     })
 
     const { append, remove, fields } = useFieldArray({ name: 'usernames', control })
 
     const submitUserList: SubmitHandler<UserList> = ({ usernames }) => {
-        const uniqueUsers = new Set(usernames.map(({ username }) => username))
-        const usernameArray = Array.from(uniqueUsers)
-        socket.emit('userJoinedRoom', props.room.roomId, usernameArray)
+        console.log('submitted', usernames)
+        // const uniqueUsers = new Set(usernames.map(({ username }) => username))
+        // const usernameArray = Array.from(uniqueUsers)
+        // socket.emit('userJoinedRoom', props.room.roomId, usernameArray)
+        // handleClose()
     }
+    console.log(touchedFields.usernames)
 
     return (
         <>
@@ -59,9 +66,16 @@ export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRoom
                 <PersonAddRounded />
             </IconButton>
             <Dialog open={dialogOpen} onClose={handleClose} fullWidth>
-                <DialogTitle>
+                <DialogTitle
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                    }}
+                >
                     Add members to group
-                    <Button onClick={() => append({ username: '' })}>Add More</Button>
+                    <Button variant='outlined' color='primary' onClick={() => append({ username: '' })}>
+                        Add More
+                    </Button>
                 </DialogTitle>
 
                 <DialogContent>
@@ -69,24 +83,18 @@ export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRoom
                         <StyledTextField
                             key={field.id}
                             size='small'
-                            sx={{ width: '100%' }}
+                            sx={{ width: '100%', my: 1 }}
                             {...register(`usernames.${i}.username` as const)}
-                            placeholder='Add User'
-                            error={
-                                errors.usernames !== undefined && errors.usernames[i]?.username?.message !== undefined
-                            }
-                            helperText={
-                                errors.usernames &&
-                                errors.usernames[i]?.username &&
-                                errors.usernames[i]?.username?.message
-                            }
+                            placeholder='Add user to group'
+                            error={errors.usernames?.[i]?.username?.message !== undefined}
+                            helperText={errors.usernames?.[i]?.username?.message}
                             InputProps={{
                                 endAdornment: (
                                     <>
-                                        {isDirty &&
+                                        {touchedFields?.usernames?.[i] &&
                                             (isValidating ? (
                                                 <CircularProgress size={'1rem'} />
-                                            ) : errors?.usernames?.[i] ? (
+                                            ) : errors?.usernames?.[i]?.username?.message ? (
                                                 <CloseRounded color='error' />
                                             ) : (
                                                 <DoneAllRounded color='success' />
@@ -115,9 +123,7 @@ export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRoom
                             type='submit'
                             variant='contained'
                             disabled={isSubmitting || isValidating}
-                            onClick={() => {
-                                handleSubmit(submitUserList)().then(() => handleClose())
-                            }}
+                            onClick={handleSubmit(submitUserList)}
                         >
                             Confirm
                         </ButtonWithLoader>
