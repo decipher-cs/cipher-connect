@@ -90,12 +90,15 @@ Install my-project with yarn
 - [x] DO NOT SEND OTHER PEOPLE'S PASSWORD HASHS TO OTHER USERS!!! (How did this even happen??)
 - [ ] userRooms in backend should be stored in a set (or something similar) not an array.
 - [x] Ensure a room without participants can not exist OR run a scheduled job in DB to delete all rooms without participants.
-- [ ] Might wanna use a library like [promise-retry](https://www.npmjs.com/package/promise-retry) to re-run failed queries to DB.
+- [x] Might wanna use a library like [promise-retry](https://www.npmjs.com/package/promise-retry) to re-run failed queries to DB.
 - [x] Add support for group chat.
 - [ ] Break text into multiple lines when a single word has too many characters and overflows.
 - [ ] Host your own fonts.
-- [ ] Fix .env variables to be platform agnostic.
+- [x] Fix .env variables to be platform agnostic.
 - [ ] Setup protected API routes.
+- [ ] Make website responsive by setting position "abolute" to room info and room list sidebar.
+- [ ] Notify user if no internet connection is availabe. 
+- [ ] Throw error if logging in while the server is unreachable. (check if server is unreachable first)
 
 ## License
 
