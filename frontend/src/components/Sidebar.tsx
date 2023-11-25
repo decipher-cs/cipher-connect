@@ -5,7 +5,18 @@ import {
     LogoutRounded,
     SettingsSuggestRounded,
 } from '@mui/icons-material'
-import { Avatar, Box, ButtonGroup, CircularProgress, IconButton, Switch, SxProps, Tooltip } from '@mui/material'
+import {
+    Avatar,
+    Box,
+    ButtonGroup,
+    CircularProgress,
+    IconButton,
+    Switch,
+    SxProps,
+    ToggleButton,
+    ToggleButtonGroup,
+    Tooltip,
+} from '@mui/material'
 import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CredentialContext } from '../contexts/Credentials'
@@ -33,6 +44,11 @@ export const Sidebar = (props: SidebarProps) => {
         queryFn: () => axiosServerInstance.get<UserWithoutID>(Routes.get.user + `/${username}`).then(res => res.data),
     })
 
+    const [selectedItem, setSelectedItem] = useState('chat')
+
+    const handleSelectedItemChange = (event: React.MouseEvent<HTMLElement, MouseEvent>, value: string) =>
+        setSelectedItem(value)
+
     if (!userProfile) return <CircularProgress />
 
     const avatarURL = userProfile.avatarPath
@@ -59,31 +75,31 @@ export const Sidebar = (props: SidebarProps) => {
 
             <ProfileSettingsDialog dialogOpen={dialogOpen} handleClose={handleClose} userProfile={userProfile} />
 
-            <ButtonGroup orientation='vertical' sx={{ alignSelf: 'center' }}>
-                <Tooltip placement='right' title='chat'>
-                    <IconButton onClick={() => navigate('/chat')}>
+            <ToggleButtonGroup orientation='vertical' sx={{ alignSelf: 'center' }} exclusive value={selectedItem}>
+                <ToggleButton value='chat' onClick={() => navigate('/chat')} onChange={handleSelectedItemChange}>
+                    <Tooltip placement='right' title='chat'>
                         <ChatBubbleRounded />
-                    </IconButton>
-                </Tooltip>
+                    </Tooltip>
+                </ToggleButton>
 
-                <Tooltip placement='right' title='settings'>
-                    <IconButton onClick={handleOpen}>
+                <ToggleButton value='setting' onClick={handleOpen} onChange={handleSelectedItemChange}>
+                    <Tooltip placement='right' title='settings'>
                         <SettingsSuggestRounded />
-                    </IconButton>
-                </Tooltip>
+                    </Tooltip>
+                </ToggleButton>
 
-                <Tooltip placement='right' title='about'>
-                    <IconButton onClick={() => navigate('/about')}>
+                <ToggleButton value='about' onClick={() => navigate('/about')} onChange={handleSelectedItemChange}>
+                    <Tooltip placement='right' title='about'>
                         <ContactMailRounded />
-                    </IconButton>
-                </Tooltip>
+                    </Tooltip>
+                </ToggleButton>
 
-                <Tooltip placement='right' title='logout'>
-                    <IconButton onClick={() => navigate('/logout')}>
+                <ToggleButton value='logout' onClick={() => navigate('/logout')} onChange={handleSelectedItemChange}>
+                    <Tooltip placement='right' title='logout'>
                         <LogoutRounded />
-                    </IconButton>
-                </Tooltip>
-            </ButtonGroup>
+                    </Tooltip>
+                </ToggleButton>
+            </ToggleButtonGroup>
             <ThemeToggleSwitch sx={{ alignSelf: 'flex-end' }} />
         </Box>
     )
