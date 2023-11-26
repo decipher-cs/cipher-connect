@@ -75,26 +75,32 @@ export const Sidebar = (props: SidebarProps) => {
 
             <ProfileSettingsDialog dialogOpen={dialogOpen} handleClose={handleClose} userProfile={userProfile} />
 
-            <ToggleButtonGroup orientation='vertical' sx={{ alignSelf: 'center' }} exclusive value={selectedItem}>
-                <ToggleButton value='chat' onClick={() => navigate('/chat')} onChange={handleSelectedItemChange}>
+            <ToggleButtonGroup
+                orientation='vertical'
+                sx={{ alignSelf: 'center' }}
+                exclusive
+                value={selectedItem}
+                onChange={handleSelectedItemChange}
+            >
+                <ToggleButton value='chat' onClick={() => navigate('/chat')}>
                     <Tooltip placement='right' title='chat'>
                         <ChatBubbleRounded />
                     </Tooltip>
                 </ToggleButton>
 
-                <ToggleButton value='setting' onClick={handleOpen} onChange={handleSelectedItemChange}>
+                <ToggleButton value='setting' onClick={handleOpen}>
                     <Tooltip placement='right' title='settings'>
                         <SettingsSuggestRounded />
                     </Tooltip>
                 </ToggleButton>
 
-                <ToggleButton value='about' onClick={() => navigate('/about')} onChange={handleSelectedItemChange}>
+                <ToggleButton value='about' onClick={() => navigate('/about')}>
                     <Tooltip placement='right' title='about'>
                         <ContactMailRounded />
                     </Tooltip>
                 </ToggleButton>
 
-                <ToggleButton value='logout' onClick={() => navigate('/logout')} onChange={handleSelectedItemChange}>
+                <ToggleButton value='logout' onClick={() => navigate('/logout')}>
                     <Tooltip placement='right' title='logout'>
                         <LogoutRounded />
                     </Tooltip>
