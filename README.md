@@ -99,6 +99,7 @@ Install my-project with yarn
 - [ ] Make website responsive by setting position "abolute" to room info and room list sidebar.
 - [ ] Notify user if no internet connection is availabe. 
 - [ ] Throw error if logging in while the server is unreachable. (check if server is unreachable first)
+- [ ] Provide option to hide password while typing.
 
 ## License
 
