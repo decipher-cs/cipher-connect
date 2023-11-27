@@ -102,9 +102,10 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
                                     watch('roomType') === RoomType.private ? RoomType.group : RoomType.private
                                 )
                             }}
+                            color={errors.roomType?.message ? 'error' : undefined}
                         >
-                            <ToggleButton value='group'>Group</ToggleButton>
-                            <ToggleButton value='private'>Private</ToggleButton>
+                            <ToggleButton value={RoomType.group}>Group</ToggleButton>
+                            <ToggleButton value={RoomType.private}>Private</ToggleButton>
                         </ToggleButtonGroup>
                     </Box>
 
