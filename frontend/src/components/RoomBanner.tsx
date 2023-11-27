@@ -1,5 +1,21 @@
-import { ArrowRightRounded, ArrowLeftRounded, ChevronRightRounded } from '@mui/icons-material'
-import { Avatar, Box, ButtonGroup, Collapse, IconButton, InputAdornment, Typography, useTheme } from '@mui/material'
+import {
+    ArrowRightRounded,
+    ArrowLeftRounded,
+    ChevronRightRounded,
+    CancelRounded,
+    ClearRounded,
+} from '@mui/icons-material'
+import {
+    Avatar,
+    Box,
+    ButtonGroup,
+    Collapse,
+    Divider,
+    IconButton,
+    InputAdornment,
+    Typography,
+    useTheme,
+} from '@mui/material'
 import { RefObject, useContext, useEffect, useRef, useState } from 'react'
 import { StyledTextField } from './StyledTextField'
 import SearchIcon from '@mui/icons-material/Search'
@@ -87,6 +103,7 @@ export const RoomBanner = ({
                     palette.mode === 'dark' ? 'rgba(100, 100, 100, 0.50)' : 'rgba(255, 255, 255, 0.50)',
                 backdropFilter: 'blur(10px)',
                 webkitBackdropFilter: 'blur(20px)',
+                // boxShadow: 'rgba(100, 100, 100, 0.50)  0px 0px 5px 0px',
 
                 display: 'grid',
                 gridTemplateColumns: 'repeat(2, auto) 1fr',
@@ -105,13 +122,17 @@ export const RoomBanner = ({
                     <StyledTextField
                         autoFocus
                         placeholder='Enter to search'
-                        sx={{ width: '280px', mr: 2, backgroundColor: theme => theme.palette.background.light }}
+                        sx={{ width: '380px', mr: 2, backgroundColor: theme => theme.palette.background.light }}
                         onChange={e => setSearchTerm(e.target.value)}
                         onKeyDown={e => (e.key.toLowerCase() === 'enter' ? incrementCurrIndex() : null)}
                         value={searchTerm}
                         InputProps={{
                             endAdornment: (
                                 <>
+                                    <Typography color='grey'>
+                                        {currHighlightIndex + 1}/{totalSearchHits}
+                                    </Typography>
+                                    <Divider orientation='vertical' flexItem variant='middle' sx={{ ml: 2 }} />
                                     <ButtonGroup>
                                         <InputAdornment position='end'>
                                             <IconButton edge='end' onClick={decrementCurrIndex}>
@@ -123,10 +144,12 @@ export const RoomBanner = ({
                                                 <ArrowRightRounded />
                                             </IconButton>
                                         </InputAdornment>
+                                        <InputAdornment position='end'>
+                                            <IconButton onClick={() => setSearchTerm('')} edge='start'>
+                                                <ClearRounded />
+                                            </IconButton>
+                                        </InputAdornment>
                                     </ButtonGroup>
-                                    <Typography color='grey'>
-                                        {currHighlightIndex + 1}/{totalSearchHits}
-                                    </Typography>
                                 </>
                             ),
                         }}

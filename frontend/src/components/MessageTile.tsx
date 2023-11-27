@@ -67,34 +67,6 @@ export const MessageTile = ({
         return creationDate.toLocaleString('en', { timeStyle: 'short', hour12: false })
     }
 
-    // const hightlightString = (searchString: string, searchTerm: string) => {
-    //     if (!searchTerm || searchTerm.length === 0) return searchString
-    //     // TODO: manage case sensitivity
-    //     let result: any[] = searchString.toLowerCase().split(searchTerm.toLowerCase())
-    //
-    //     if (result.length === 1) return searchString
-    //
-    //     // setSearchParams(p => ({
-    //     //     ...p,
-    //     //     searchHits: p.searchHits + result.length - 1,
-    //     //     searchHitsRef: [...p.searchHitsRef, tileRef],
-    //     // }))
-    //
-    //     const markedString = (str: string): JSX.Element => {
-    //         return <mark>{str}</mark>
-    //     }
-    //
-    //     for (let i = result.length - 1; i > 0; i--) {
-    //         result.splice(i, 0, markedString(searchTerm))
-    //     }
-    //
-    //     result = result.map((el, i) => <span key={i}>{el}</span>)
-    //
-    //     return result
-    // }
-
-    // const res = hightlightString(content, searchParams.searchTerm)
-
     if (!content) return null
 
     return (
