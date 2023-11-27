@@ -2,7 +2,7 @@ import { Box } from '@mui/material'
 import { useContext, useEffect, useReducer, useRef } from 'react'
 import { CredentialContext } from '../contexts/Credentials'
 import React, { useState } from 'react'
-import { RoomWithParticipants, User } from '../types/prisma.client'
+import { MessageContentType, RoomWithParticipants, User } from '../types/prisma.client'
 import { MessageTile } from './MessageTile'
 import { ChatInputBar } from './ChatInputBar'
 import { RoomBanner } from './RoomBanner'
@@ -16,6 +16,7 @@ import { useQuery } from '@tanstack/react-query'
 import { axiosServerInstance } from '../App'
 import { PulseLoader } from 'react-spinners'
 import { AudioPlayer } from './AudioPlayer'
+import Mark from 'mark.js'
 
 export interface ChatDisplaySectionProps {
     currRoom: RoomsState['joinedRooms'][0]
@@ -26,6 +27,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     const { username } = useContext(CredentialContext)
 
     const scrollToBottomRef = useRef<HTMLDivElement>(null)
+    const tileContainer = useRef<HTMLElement>(null)
 
     const { data: serverMessages } = useQuery({
         queryKey: ['room-messages', props.currRoom.roomId],
@@ -116,12 +118,16 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
 
     return (
         <>
-            <RoomBanner toggleRoomInfoSidebar={props.toggleRoomInfoSidebar} room={props.currRoom} />
+            <RoomBanner
+                toggleRoomInfoSidebar={props.toggleRoomInfoSidebar}
+                room={props.currRoom}
+                searchContainerRef={tileContainer}
+            />
             <Box
+                ref={tileContainer}
                 sx={{
                     display: 'grid',
                     alignContent: 'flex-start',
-                    // gridAutoRows: 'max-content',
                     width: '100%',
 
                     overflowY: 'scroll',

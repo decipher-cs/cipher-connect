@@ -1,12 +1,21 @@
-import { ChevronRightRounded } from '@mui/icons-material'
-import { Avatar, Box, ButtonGroup, Collapse, IconButton, Typography, useTheme } from '@mui/material'
-import { useContext, useState } from 'react'
+import { ArrowRightRounded, ArrowLeftRounded, ChevronRightRounded } from '@mui/icons-material'
+import { Avatar, Box, ButtonGroup, Collapse, IconButton, InputAdornment, Typography, useTheme } from '@mui/material'
+import { RefObject, useContext, useEffect, useRef, useState } from 'react'
 import { StyledTextField } from './StyledTextField'
 import SearchIcon from '@mui/icons-material/Search'
 import { CredentialContext } from '../contexts/Credentials'
 import { RoomsState } from '../reducer/roomReducer'
+import Mark from 'mark.js'
+import '../mark.css'
 
-export const RoomBanner = (props: { toggleRoomInfoSidebar: () => void; room: RoomsState['joinedRooms'][0] }) => {
+export const RoomBanner = ({
+    searchContainerRef,
+    ...props
+}: {
+    toggleRoomInfoSidebar: () => void
+    room: RoomsState['joinedRooms'][0]
+    searchContainerRef: RefObject<HTMLElement>
+}) => {
     const { username } = useContext(CredentialContext)
 
     const [searchFieldVisible, setSearchFieldVisible] = useState(false)
@@ -18,6 +27,51 @@ export const RoomBanner = (props: { toggleRoomInfoSidebar: () => void; room: Roo
         props.room.roomType === 'private' ? privateRoomCompanion?.displayName : props.room.roomDisplayName
 
     const imgSrc = props.room.roomType === 'private' ? privateRoomCompanion?.avatarPath : props.room.roomAvatar
+
+    const [searchTerm, setSearchTerm] = useState('')
+
+    const highlightedElements = useRef<Element[]>([])
+
+    const [totalSearchHits, setTotalSearchHits] = useState(0)
+
+    const [currHighlightIndex, setCurrHighlightIndex] = useState(0)
+
+    const incrementCurrIndex = () => setCurrHighlightIndex(p => (p >= totalSearchHits - 1 ? 0 : p + 1))
+
+    const decrementCurrIndex = () => setCurrHighlightIndex(p => (p === 0 ? totalSearchHits - 1 : p - 1))
+
+    useEffect(() => {
+        if (!searchContainerRef || !searchContainerRef.current) return
+
+        const mark = new Mark(searchContainerRef.current)
+
+        highlightedElements.current = []
+
+        mark.unmark()
+
+        mark.mark(searchTerm, {
+            each: element => highlightedElements.current.push(element),
+            done(marksTotal) {
+                setTotalSearchHits(marksTotal)
+                setCurrHighlightIndex(marksTotal - 1)
+            },
+        })
+    }, [searchTerm, searchContainerRef.current])
+
+    useEffect(() => {
+        if (!searchContainerRef || !searchContainerRef.current || highlightedElements.current.length === 0) return
+
+        const currElem = highlightedElements.current.at(currHighlightIndex)
+
+        if (!currElem) return
+
+        currElem.classList.add('focused-mark')
+        currElem.scrollIntoView({ behavior: 'smooth', block: 'center' })
+
+        return () => {
+            currElem?.classList.remove('focused-mark')
+        }
+    }, [currHighlightIndex])
 
     return (
         <Box
@@ -49,8 +103,33 @@ export const RoomBanner = (props: { toggleRoomInfoSidebar: () => void; room: Roo
             <ButtonGroup sx={{ justifySelf: 'flex-end', alignItems: 'center' }}>
                 <Collapse in={searchFieldVisible} orientation='horizontal'>
                     <StyledTextField
+                        autoFocus
                         placeholder='Enter to search'
-                        sx={{ width: '200px', mr: 0, backgroundColor: theme => theme.palette.background.light }}
+                        sx={{ width: '280px', mr: 2, backgroundColor: theme => theme.palette.background.light }}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        onKeyDown={e => (e.key.toLowerCase() === 'enter' ? incrementCurrIndex() : null)}
+                        value={searchTerm}
+                        InputProps={{
+                            endAdornment: (
+                                <>
+                                    <ButtonGroup>
+                                        <InputAdornment position='end'>
+                                            <IconButton edge='end' onClick={decrementCurrIndex}>
+                                                <ArrowLeftRounded />
+                                            </IconButton>
+                                        </InputAdornment>
+                                        <InputAdornment position='end'>
+                                            <IconButton edge='start' onClick={incrementCurrIndex}>
+                                                <ArrowRightRounded />
+                                            </IconButton>
+                                        </InputAdornment>
+                                    </ButtonGroup>
+                                    <Typography color='grey'>
+                                        {currHighlightIndex + 1}/{totalSearchHits}
+                                    </Typography>
+                                </>
+                            ),
+                        }}
                     />
                 </Collapse>
 

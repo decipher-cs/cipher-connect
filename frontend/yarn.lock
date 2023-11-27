@@ -633,10 +633,24 @@
     "@tanstack/query-core" "4.36.1"
     use-sync-external-store "^1.2.0"
 
+"@types/jquery@*":
+  version "3.5.29"
+  resolved "https://registry.yarnpkg.com/@types/jquery/-/jquery-3.5.29.tgz#3c06a1f519cd5fc3a7a108971436c00685b5dcea"
+  integrity sha512-oXQQC9X9MOPRrMhPHHOsXqeQDnWeCDT3PelUIg/Oy8FAbzSZtFHRjc7IpbfFVmpLtJ+UOoywpRsuO5Jxjybyeg==
+  dependencies:
+    "@types/sizzle" "*"
+
 "@types/json-schema@^7.0.9":
   version "7.0.11"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.11.tgz#d421b6c527a3037f7c84433fd2c4229e016863d3"
   integrity sha512-wOuvG1SN4Us4rez+tylwwwCV1psiNVOkJeM3AUWUNWg/jDQY2+HE/444y5gc+jBmRqASOm2Oeh5c1axHobwRKQ==
+
+"@types/mark.js@^8.11.12":
+  version "8.11.12"
+  resolved "https://registry.yarnpkg.com/@types/mark.js/-/mark.js-8.11.12.tgz#72d37a0f25755a0b12affcbeb0d24290fd77f522"
+  integrity sha512-244ZnaIBpz4c6xutliAnYVZp6xJlmC569jZqnR3ElO1Y01ooYASSVQEqpd2x0A2UfrgVMs5V9/9tUAdZaDMytQ==
+  dependencies:
+    "@types/jquery" "*"
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"
@@ -694,6 +708,11 @@
   version "7.3.13"
   resolved "https://registry.yarnpkg.com/@types/semver/-/semver-7.3.13.tgz#da4bfd73f49bd541d28920ab0e2bf0ee80f71c91"
   integrity sha512-21cFJr9z3g5dW8B0CVI9g2O9beqaThGQ6ZFBqHfwhzLDKUxaqTIy3vnfah/UPkfOiF2pLq+tGz+W8RyCskuslw==
+
+"@types/sizzle@*":
+  version "2.3.8"
+  resolved "https://registry.yarnpkg.com/@types/sizzle/-/sizzle-2.3.8.tgz#518609aefb797da19bf222feb199e8f653ff7627"
+  integrity sha512-0vWLNK2D5MT9dg0iOo8GlKguPAU02QjmZitPEsXRuJXU/OGIOt9vT9Fc26wtYuavLxtO45v9PGleoL9Z0k1LHg==
 
 "@types/validator@^13.11.5":
   version "13.11.5"
@@ -1627,6 +1646,11 @@ magic-bytes.js@^1.0.17:
   version "1.0.17"
   resolved "https://registry.yarnpkg.com/magic-bytes.js/-/magic-bytes.js-1.0.17.tgz#6265d568df98c02b523c0defdd18b86cb2cae883"
   integrity sha512-PEDpPzHpKe5AxkVmQrNPHFRvPN2ELkkj3eIg4IZO9JdhBiAY3aU53lgYXs9j8B7lpza+QiW0UA4QHCH7EskSeg==
+
+mark.js@^8.11.1:
+  version "8.11.1"
+  resolved "https://registry.yarnpkg.com/mark.js/-/mark.js-8.11.1.tgz#180f1f9ebef8b0e638e4166ad52db879beb2ffc5"
+  integrity sha512-1I+1qpDt4idfgLQG+BNWmrqku+7/2bi5nLf4YwF8y8zXvmfiTBY3PV3ZibfrjBueCByROpuBjLLFCajqkgYoLQ==
 
 merge2@^1.3.0, merge2@^1.4.1:
   version "1.4.1"
