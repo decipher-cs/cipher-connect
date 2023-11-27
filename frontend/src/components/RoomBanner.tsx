@@ -122,7 +122,12 @@ export const RoomBanner = ({
                     <StyledTextField
                         autoFocus
                         placeholder='Enter to search'
-                        sx={{ width: '380px', mr: 2, backgroundColor: theme => theme.palette.background.light }}
+                        sx={{
+                            minWidth: '200px',
+                            maxWidth: '450px',
+                            mr: 2,
+                            backgroundColor: theme => theme.palette.background.light,
+                        }}
                         onChange={e => setSearchTerm(e.target.value)}
                         onKeyDown={e => (e.key.toLowerCase() === 'enter' ? incrementCurrIndex() : null)}
                         value={searchTerm}
