@@ -27,6 +27,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     const { username } = useContext(CredentialContext)
 
     const scrollToBottomRef = useRef<HTMLDivElement>(null)
+
     const tileContainer = useRef<HTMLElement>(null)
 
     const { data: serverMessages } = useQuery({

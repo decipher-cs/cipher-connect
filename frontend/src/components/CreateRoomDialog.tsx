@@ -68,8 +68,8 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
         const uniqueUsernames = [...uniqueUsernamesSet]
 
         if (roomType === RoomType.private) {
-            const username = participants.at(0)?.username
-            if (username) socket.emit('newRoomCreated', { roomType: RoomType.private, participant: username })
+            const member = participants.at(0)?.username
+            if (member) socket.emit('newRoomCreated', { roomType: RoomType.private, participant: member })
         } else if (roomType === RoomType.group) {
             socket.emit('newRoomCreated', {
                 roomType: RoomType.group,

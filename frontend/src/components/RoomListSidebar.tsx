@@ -1,9 +1,8 @@
-import { Box, Button, CircularProgress, IconButton, List, Tooltip, Typography } from '@mui/material'
+import { Box, CircularProgress, IconButton, List, Tooltip, Typography } from '@mui/material'
 import { useContext, useEffect, useState } from 'react'
-import { AddToPhotosRounded, BorderColorRounded } from '@mui/icons-material'
+import { AddToPhotosRounded } from '@mui/icons-material'
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { RoomListItem } from './RoomListItem'
-import { MessageListAction } from '../reducer/messageListReducer'
 import { CreateRoomDialog } from './CreateRoomDialog'
 import { useDialog } from '../hooks/useDialog'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -11,7 +10,6 @@ import { CredentialContext } from '../contexts/Credentials'
 import { Routes } from '../types/routes'
 import { useSocket } from '../hooks/useSocket'
 import { RoomDetails } from '../types/prisma.client'
-import axios from 'axios'
 import { axiosServerInstance } from '../App'
 
 interface RoomListSidebar {
@@ -28,13 +26,18 @@ export const RoomListSidebar = ({ rooms, roomDispatcher }: RoomListSidebar) => {
 
     const {
         data: fetchedRooms,
-        isLoading: fetchingRoomsInProgress,
+        isFetching: fetchingRoomsInProgress,
         refetch: syncRoomsWithServer,
     } = useQuery({
-        queryKey: ['rooms', rooms.joinedRooms],
+        queryKey: ['userRooms'],
         queryFn: () =>
             axiosServerInstance.get<RoomDetails[]>(Routes.get.userRooms + `/${username}`).then(res => res.data),
+        initialData: [],
     })
+
+    useEffect(() => {
+        if (fetchedRooms) roomDispatcher({ type: RoomActionType.initializeRoom, rooms: fetchedRooms })
+    }, [fetchedRooms])
 
     const { mutate: mutateMessageReadStatus } = useMutation({
         mutationFn: (value: { roomId: string; messageStatus: boolean }) =>
@@ -44,10 +47,6 @@ export const RoomListSidebar = ({ rooms, roomDispatcher }: RoomListSidebar) => {
                 })
                 .then(res => res.data),
     })
-
-    useEffect(() => {
-        if (fetchedRooms) roomDispatcher({ type: RoomActionType.initializeRoom, rooms: fetchedRooms })
-    }, [fetchedRooms])
 
     useEffect(() => {
         socket.on('notification', roomId => {
