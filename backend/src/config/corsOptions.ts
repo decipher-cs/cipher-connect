@@ -2,14 +2,15 @@ import { CorsOptions } from 'cors'
 import cors from 'cors'
 
 export const corsWithOptions = () => {
-    const whitelist = process.env.CLIENT_URL
+    const whitelist =
+        process.env.NODE_ENV === 'production'
+            ? [process.env.CLIENT_URL]
+            : [process.env.CLIENT_URL, 'http://localhost:4173']
 
     const corsOption: CorsOptions = {
         credentials: true,
         origin(requestOrigin, callback) {
-            if (process.env.NODE_ENV === 'development') {
-                callback(null, true)
-            } else if (requestOrigin === undefined || whitelist.includes(requestOrigin) === false) {
+            if (!requestOrigin || !whitelist.includes(requestOrigin)) {
                 callback(new Error(requestOrigin + ' not allowed by CORS'))
             } else {
                 callback(null, true)
