@@ -71,12 +71,12 @@ export const loginUser = async (req: Request, res: Response) => {
 export const createUser = async (req: Request, res: Response) => {
     let { username, password }: LoginCredentials = req.body
 
-    if (password === undefined) {
+    if (!password || !username) {
         res.status(401).end('Invalid username or password')
         return
     }
 
-    const passwordHash = await bcrypt.hash(password, 10) // hash password
+    const passwordHash = await bcrypt.hash(password, 8) // hash password
 
     const newUserDetails = await createNewUser(username, passwordHash) // put hash and username in DB
 

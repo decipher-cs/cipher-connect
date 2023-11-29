@@ -5,6 +5,7 @@ declare global {
             SECRET: string
             PORT: number
             CLIENT_URL: string
+            SESSION_SECRET: string
             ACCESS_TOKEN_SECRET: string
             REFRESH_TOKEN_SECRET: string
             UPLOADTHING_SECRET: string

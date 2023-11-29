@@ -10,7 +10,9 @@ export const corsWithOptions = () => {
     const corsOption: CorsOptions = {
         credentials: true,
         origin(requestOrigin, callback) {
-            if (!requestOrigin || !whitelist.includes(requestOrigin)) {
+            if (process.env.NODE_ENV === 'development') {
+                callback(null, true)
+            } else if (!requestOrigin || !whitelist.includes(requestOrigin)) {
                 callback(new Error(requestOrigin + ' not allowed by CORS'))
             } else {
                 callback(null, true)
