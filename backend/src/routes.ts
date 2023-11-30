@@ -3,8 +3,8 @@ import {
     createUser,
     loginUser,
     logoutUser,
-    renewAccessToken,
-    varifyRefreshToken,
+    // renewAccessToken,
+    // varifyRefreshToken,
     fetchRoomPariticpants,
     fetchMessages,
     returnUsers,
@@ -36,8 +36,11 @@ const routes = {
         users: '/users',
         user: '/user',
         isUsernameValid: '/is-username-valid',
+        logout: '/logout',
     },
     post: {
+        login: '/login',
+        signup: '/signup',
         avatar: '/avatar',
         media: '/Media',
         privateRoom: '/private-room',
@@ -53,19 +56,10 @@ const routes = {
         userRoom: '/user-room',
         room: '/room',
     },
-    login: '/login',
-    signup: '/signup',
-    renewtoken: '/renewtoken',
-    logout: '/logout',
-    varifyRefreshToken: '/varify-refresh-token',
 } as const
 
 export const initRoutes = (app: Express) => {
-    app.all(routes.login, loginUser)
-    app.all(routes.signup, createUser)
-    app.all(routes.renewtoken, renewAccessToken)
-    app.all(routes.logout, logoutUser)
-    app.all(routes.varifyRefreshToken, varifyRefreshToken)
+    app.get(routes.get.logout, logoutUser)
 
     app.get(routes.get.userRooms + '/:username', handleGettingRoomDetails)
 
@@ -80,6 +74,10 @@ export const initRoutes = (app: Express) => {
     app.get(routes.get.messages + '/:roomId', fetchMessages)
 
     app.get(routes.get.isUsernameValid + '/:username', handleUserExistsCheck)
+
+    app.post(routes.post.login, loginUser)
+
+    app.post(routes.post.signup, createUser)
 
     app.post(routes.post.media, media, handleMediaUpload)
 

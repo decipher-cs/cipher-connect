@@ -7,8 +7,11 @@ export const Routes = {
         users: '/users',
         user: '/user',
         isUsernameValid: '/is-username-valid',
+        logout: '/logout',
     },
     post: {
+        login: '/login',
+        signup: '/signup',
         avatar: '/avatar',
         media: '/Media',
         privateRoom: '/private-room',
@@ -24,9 +27,4 @@ export const Routes = {
         userRoom: '/user-room',
         room: '/room',
     },
-    login: '/login',
-    signup: '/signup',
-    renewtoken: '/renewtoken',
-    logout: '/logout',
-    varifyRefreshToken: '/varify-refresh-token',
 } as const
