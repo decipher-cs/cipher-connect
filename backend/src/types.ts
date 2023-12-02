@@ -1,6 +1,6 @@
 import { Message, Room, User, RoomConfig, UserRoom, RoomType } from '@prisma/client'
 
-export type UserWithoutID = Omit<User, 'userId'>
+export type UserWithoutID = Omit<User, 'userId' | 'passwordHash'>
 
 export type RoomWithParticipants = Room & { participants: UserWithoutID[] }
 

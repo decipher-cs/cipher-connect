@@ -12,6 +12,7 @@ Table User {
   userId String [pk]
   username String [unique, not null]
   createTime DateTime [default: `now()`, not null]
+  passwordHash String [not null]
   displayName String [not null]
   avatarPath String
   status UserStatus [not null, default: 'available']
@@ -19,15 +20,7 @@ Table User {
   message Message [not null]
   roomConfig RoomConfig [not null]
   userRoom UserRoom [not null]
-  passwordHash PasswordHash
   rooms Room [not null]
-}
-
-Table PasswordHash {
-  id Int [pk, increment]
-  username String [unique, not null]
-  hash String [not null]
-  user User [not null]
 }
 
 Table RoomConfig {
@@ -103,8 +96,6 @@ Enum MessageContentType {
 }
 
 Ref: RefreshToken.username > User.username
-
-Ref: PasswordHash.username - User.username
 
 Ref: RoomConfig.username > User.username [delete: Cascade]
 

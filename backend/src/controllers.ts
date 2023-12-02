@@ -1,11 +1,8 @@
 import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
 import { Request, Response } from 'express'
-import { createAccessToken, createRefreshToken } from './middleware/jwtFunctions.js'
 import {
     checkIfUserExists,
     getMessagesFromRoom,
-    getRefreshToken,
     getRoomDetails,
     getRoomPariticpants,
     getUniqueRoomDetails,
@@ -13,8 +10,8 @@ import {
     getUserHash,
     getUsers,
 } from './models/find.js'
-import { addRefreshToken, createGroup, createNewUser, createPrivateRoom } from './models/create.js'
-import { deleteRefreshToken, deleteRoom, deleteUserRoom } from './models/delete.js'
+import { createGroup, createNewUser, createPrivateRoom } from './models/create.js'
+import { deleteRoom, deleteUserRoom } from './models/delete.js'
 import {
     updateMessageReadStatus,
     updateRoom,
@@ -22,57 +19,52 @@ import {
     updateRoomParticipants,
     updateUser,
 } from './models/update.js'
-import { RoomDetails, UserWithoutID } from './types.js'
-import { createUploadthing, FileRouter, createServerHandler, UTApi } from 'uploadthing/server'
+import { UserWithoutID } from './types.js'
+import { UTApi } from 'uploadthing/server'
 import { RoomConfig } from '@prisma/client'
+import * as dotenv from 'dotenv'
 
+dotenv.config()
 const utapi = new UTApi()
 
-interface LoginCredentials {
-    username: string
-    password?: string
-}
-
 export const loginUser = async (req: Request, res: Response) => {
-    const { username, password }: LoginCredentials = req.body
+    if (req.session.username) {
+        res.redirect('logout')
+        return
+    }
+
+    const { username, password } = req.body
+
+    if (!username || !password) {
+        res.sendStatus(400)
+        return
+    }
 
     const hash = await getUserHash(username) // get password hash from DB
 
-    if (hash === null || password === undefined) {
-        res.status(401).end('Invalid username or password')
+    if (!hash || !(await bcrypt.compare(password, hash))) {
+        res.status(400).end('Invalid username or password')
         return
     }
 
-    // const isPasswordCorrect = await bcrypt.compare(password, hash.passwordHash) // #Fix
-    const isPasswordCorrect = true
-
-    if (isPasswordCorrect !== true) {
-        res.status(401).end('Invalid username or password')
-        return
-    }
-
-    const accessToken = createAccessToken({ username }) // call JWT to create token
-
-    const refreshToken = createRefreshToken({ username }) // call JWT to create another token
-
-    addRefreshToken(username, refreshToken) // Add refresh token to database
-
-    res.cookie('refreshToken', refreshToken, {
-        httpOnly: false,
-        maxAge: 1000 * 60 * 60 * 24,
+    req.session.regenerate(err => {
+        if (err) {
+            res.sendStatus(500)
+            return
+        }
+        req.session.username = username
+        res.sendStatus(200)
     })
-
-    res.json(accessToken)
 
     return
 }
 
 // User sign-up
 export const createUser = async (req: Request, res: Response) => {
-    let { username, password }: LoginCredentials = req.body
+    let { username, password } = req.body
 
     if (!password || !username) {
-        res.status(401).end('Invalid username or password')
+        res.send(400)
         return
     }
 
@@ -80,84 +72,21 @@ export const createUser = async (req: Request, res: Response) => {
 
     const newUserDetails = await createNewUser(username, passwordHash) // put hash and username in DB
 
-    if (newUserDetails === null) {
+    if (!newUserDetails) {
         // check for username collision
-        res.status(409).end('username taken')
+        res.status(400).end('username taken')
         return
     }
 
-    res.sendStatus(200)
-
+    res.send(200)
     return
 }
 
-export const varifyRefreshToken = async (req: Request, res: Response) => {
-    const refreshToken: string | undefined = req.cookies?.refreshToken
-
-    const { username }: LoginCredentials = req.body
-
-    if (refreshToken === undefined) {
-        res.sendStatus(401)
-        return
-    }
-
-    const tokenFromDB = await getRefreshToken(username)
-
-    if (tokenFromDB.includes(refreshToken) === false) {
-        res.sendStatus(401)
-        return
-    }
-
-    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decode) => {
-        if (err !== null) {
-            console.log(err)
-            res.sendStatus(403)
-            return
-        } else if (err === null) {
-            res.json({ username }).end()
-            return
-        }
-        res.sendStatus(500)
-        return
-    })
-}
-
-export const renewAccessToken = async (req: Request, res: Response) => {
-    const refreshToken: string | undefined = req.cookies?.refreshToken
-
-    //set password to be optional in ts
-    let { username, password }: LoginCredentials = req.body
-
-    if (refreshToken === undefined) {
-        res.send(401).end('undefined refreshtoken')
-        return
-    }
-
-    const refrestTokensFromDB = await getRefreshToken(username)
-
-    if (refrestTokensFromDB.includes(refreshToken) === false) {
-        res.send(401).end('not in db')
-        return
-    }
-
-    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decode) => {
-        if (err === null) {
-            const newAccessToken = createAccessToken({ username })
-            res.json(newAccessToken)
-            return
-        }
-        // console.log('ERRIS ->>', err)
-        res.sendStatus(403)
-        return
-    })
-}
-
 export const logoutUser = async (req: Request, res: Response) => {
-    const { username }: LoginCredentials = req.body
-
-    deleteRefreshToken(username)
-
-    res.sendStatus(200)
+    req.session.destroy(err => {
+        if (!err) res.sendStatus(200)
+        else res.sendStatus(500)
+    })
 }
 
 export const storeMediaToFS = async (req: Request, res: Response) => {
@@ -167,8 +96,6 @@ export const storeMediaToFS = async (req: Request, res: Response) => {
     }
 
     const { filename }: Express.Multer.File = req.file
-    console.log(filename)
-    // utapi.uploadFilesFromUrl('http://localhost:8080/public/media/' + filename)
 
     res.json(filename)
     return
@@ -413,7 +340,7 @@ export const handleMediaUpload = async (req: Request, res: Response) => {
 
         const blob = new Blob([buffer], { type: mimetype })
 
-        const { data, error } = await utapi.uploadFiles(blob, { mimetype, name: originalname })
+        const { data, error } = await utapi.uploadFiles(blob, { metadata: { mimetype, name: originalname } })
 
         if (error || !data) throw new Error('Error uploading file')
 
@@ -436,7 +363,7 @@ export const handleAvatarChange = async (req: Request, res: Response) => {
 
         const blob = new Blob([buffer], { type: mimetype })
 
-        const { data, error } = await utapi.uploadFiles(blob, { mimetype, name: originalname })
+        const { data, error } = await utapi.uploadFiles(blob, { metadata: { mimetype, name: originalname } })
 
         if (error || !data) throw new Error('Error uploading file')
 
@@ -457,7 +384,16 @@ export const handleRoomConfigChange = async (req: Request, res: Response) => {
     res.json(changedConfig)
 }
 
+export const doesValidUserSessionExist = async (req: Request, res: Response) => {
+    if (req.session.id && req.session.username) {
+        res.send(req.session.username)
+    } else res.sendStatus(401)
+    return
+}
+
 export const test = async (req: Request, res: Response) => {
-    console.count('test point hit')
-    res.sendStatus(200)
+    if (req.session.id && req.session.username) {
+        res.send(req.session.username)
+    }
+    return
 }

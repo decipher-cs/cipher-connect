@@ -1,21 +1,27 @@
+import { SessionData } from 'express-session'
 declare global {
     namespace NodeJS {
         interface ProcessEnv {
             NODE_ENV: 'production' | 'development' // Cant be development unless NODE_ENV=development is set in the scripts insdie package.json
-            SECRET: string
-            PORT: number
-            CLIENT_URL: string
-            SESSION_SECRET: string
-            ACCESS_TOKEN_SECRET: string
-            REFRESH_TOKEN_SECRET: string
-            UPLOADTHING_SECRET: string
-            UPLOADTHING_APP_ID: string
+            SECRET: string | undefined
+            PORT: string | undefined
+            CLIENT_URL: string | undefined
+            SESSION_SECRET: string | undefined
+            UPLOADTHING_SECRET: string | undefined
+            UPLOADTHING_APP_ID: string | undefined
         }
     }
+
     namespace cookieParser {
         interface CookieParseOptions {
             token: string
         }
+    }
+}
+
+declare module 'express-session' {
+    export interface SessionData {
+        username?: string | undefined
     }
 }
 

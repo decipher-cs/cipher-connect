@@ -109,12 +109,16 @@ export const getRefreshToken = async (username: string) => {
     return tokenArr
 }
 
-export const getUserHash = async (username: string) => {
-    const hash = await prisma.user.findUnique({
-        where: { username },
-        select: { passwordHash: true },
-    })
-    return hash
+export const getUserHash = async (username: string): Promise<null | string> => {
+    try {
+        const hash = await prisma.user.findUnique({
+            where: { username },
+            select: { passwordHash: true },
+        })
+        return hash?.passwordHash ?? null
+    } catch (err) {
+        return null
+    }
 }
 
 export const getUsernameFromRefreshToken = async (token: string) => {

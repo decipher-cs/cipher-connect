@@ -578,15 +578,15 @@
   dependencies:
     "@types/node" "*"
 
-"@uploadthing/mime-types@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@uploadthing/mime-types/-/mime-types-0.2.1.tgz#ee9daf91e30943a324d31f21a4b5ee9c7cd1076d"
-  integrity sha512-UDySsPbdi7wp52WG7mp5CiZwaTvokDubqhm1xhFm73Bqhp0PsGbwSSF5PdCXH4fe8Y4EKGrMyWQ4i1fF9+DVVQ==
+"@uploadthing/mime-types@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@uploadthing/mime-types/-/mime-types-0.2.2.tgz#94ec59c61729f6bef5662d8b222831e8afd59369"
+  integrity sha512-ZUo1JHOPPMZDsUw1mOhhVDIvJGlsjj6T0xJ/YJtulyJwL43S9B5pxg1cHcRuTEgjaxj7B55jiqQ6r9mDrrjH9A==
 
-"@uploadthing/shared@^5.2.5":
-  version "5.2.5"
-  resolved "https://registry.yarnpkg.com/@uploadthing/shared/-/shared-5.2.5.tgz#753b9d3bcbf489b8a4d348c9412391b72c817a67"
-  integrity sha512-b6Nr0YzV9iinVK9OydBVQH0xPQEPgw7ty/q9aQbEnRQedc4TqARaYQEoMvTu7bRuiK7MIpKodzVTQdFKHhMLTg==
+"@uploadthing/shared@^6.0.2":
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/@uploadthing/shared/-/shared-6.0.2.tgz#8c804ee087b76254f06d76792967515bd12e6971"
+  integrity sha512-yFOhvzBG8VB2qmEGWDuW/tV/ZcfRZ4a6rX7i9/ZS3IqHA0FO7CKa8yitltAl3yRdSI9it88iMEQg7Ah/ve8D4A==
 
 abbrev@1:
   version "1.1.1"
@@ -3363,13 +3363,13 @@ unpipe@1.0.0, unpipe@~1.0.0:
   resolved "https://registry.yarnpkg.com/unpipe/-/unpipe-1.0.0.tgz#b2bf4ee8514aae6165b4817829d21b2ef49904ec"
   integrity sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ==
 
-uploadthing@^5.7.2:
-  version "5.7.2"
-  resolved "https://registry.yarnpkg.com/uploadthing/-/uploadthing-5.7.2.tgz#c2679862b369485d5d29077a4fbf5e123215bc8e"
-  integrity sha512-VgNJP+gn4k835BV6E+oOq7FLGNAlh9fUB+jAotvplvQBxCkglEKlI7Hd7iynydbx0wLC1R/idRpJJNiMCAR33A==
+uploadthing@^6.0.3:
+  version "6.0.3"
+  resolved "https://registry.yarnpkg.com/uploadthing/-/uploadthing-6.0.3.tgz#5883ce72b4d26625a20261cc50b939bff79209c8"
+  integrity sha512-KH+FWHUg9zsJT+pYcVOa3p6WiPBJ8Qdgv+HUArkW8C5wF6nnDFhBFIg6hEa499Q5mcO4UOY5hLeBGMJu/C+abQ==
   dependencies:
-    "@uploadthing/mime-types" "^0.2.1"
-    "@uploadthing/shared" "^5.2.5"
+    "@uploadthing/mime-types" "^0.2.2"
+    "@uploadthing/shared" "^6.0.2"
 
 url-join@^4.0.1:
   version "4.0.1"

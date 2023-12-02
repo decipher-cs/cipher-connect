@@ -1,33 +1,31 @@
-import { PrismaClient, Prisma, MessageContentType, Message, User, Room } from '@prisma/client'
+import { Message, User } from '@prisma/client'
 import { prisma } from '../server.js'
-import { RoomDetails } from '../types.js'
+import { UserWithoutID } from '../types.js'
 
-export const createNewUser = async (username: string, passwordHash: string) => {
+export const createNewUser = async (username: string, passwordHash: string): Promise<UserWithoutID | null> => {
     try {
-        const returnedData = await prisma.user.create({
-            data: {
-                username,
-                displayName: username,
-            },
-        })
-        await prisma.passwordHash.create({
-            data: {
-                username,
-                hash: passwordHash,
-            },
-        })
-        return returnedData
-    } catch (err) {
-        if (err instanceof Prisma.PrismaClientKnownRequestError) {
-            if (err.code === 'P2002') return null
-        }
-        throw err
-    }
-}
+        const result = await prisma.user.create({
+            data: { username, passwordHash, displayName: username },
+            select: {
+                passwordHash: false,
+                userId: false,
 
-export const addRefreshToken = async (username: string, token: string) => {
-    const refreshToken = await prisma.refreshToken.create({ data: { username, tokenValue: token } })
-    return refreshToken
+                username: true,
+                createTime: true,
+                displayName: true,
+                avatarPath: true,
+                status: true,
+            },
+        })
+        return result
+    } catch (err) {
+        // if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        //     "Unique constraint failed on the {constraint}"
+        //     if (err.code === 'P2002') return null
+        // }
+        console.log('error encountered while creating new user', err)
+        return null
+    }
 }
 
 export const createUserRoom = async (username: string, roomId: string) => {

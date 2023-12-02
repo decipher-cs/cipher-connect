@@ -24,9 +24,10 @@ enum UserStatus {
 }
 
 model User {
-  userId     String   @id @unique @default(cuid())
-  username   String   @unique @db.VarChar(16)
-  createTime DateTime @default(now()) @db.Timestamp(0)
+  userId       String   @id @unique @default(cuid())
+  username     String   @unique @db.VarChar(16)
+  createTime   DateTime @default(now()) @db.Timestamp(0)
+  passwordHash String   @db.MediumText
 
   displayName String     @db.VarChar(16)
   avatarPath  String?    @db.MediumText
@@ -36,16 +37,7 @@ model User {
   message       Message[]
   roomConfig    RoomConfig[]
   userRoom      UserRoom[]
-  passwordHash  PasswordHash?
   rooms         Room[]
-}
-
-model PasswordHash {
-  id       Int    @id @unique @default(autoincrement())
-  username String @unique @db.VarChar(16)
-  hash     String @db.VarChar(60)
-
-  user User @relation(fields: [username], references: [username])
 }
 
 model RoomConfig {
@@ -58,7 +50,6 @@ model RoomConfig {
 
   user     User      @relation(fields: [username], references: [username], onDelete: Cascade)
   room     Room      @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
-  // userRoom UserRoom @relation(fields: [username, roomId], references: [username, roomId])
   userRoom UserRoom?
 
   @@id([username, roomId])
@@ -114,7 +105,6 @@ model Message {
   createdAt      DateTime           @default(now())
   editedAt       DateTime?          @updatedAt
   contentType    MessageContentType
-  // MIME           String?            @db.MediumText
 
   sender User @relation(fields: [senderUsername], references: [username], onDelete: Cascade)
   room   Room @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
