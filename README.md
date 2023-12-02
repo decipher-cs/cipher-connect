@@ -79,6 +79,8 @@ Install my-project with yarn
  - [Wrap Balancer for balancing paragraphs](https://react-wrap-balancer.vercel.app/)
  - [Glassmorph/ frosted glass effect](https://css.glass/)
  - [MDN's radius generator](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_backgrounds_and_borders/Border-radius_generator)
+ - [Reddit: Why doesn't res.redirect() redirects SPAs like react](https://www.reddit.com/r/learnjavascript/comments/bs9gq0/comment/eonklyl/?utm_source=share&utm_medium=web2x&context=3)
+ - [TS declaration merging](https://dev.to/chris927/extending-express-types-with-typescript-declaration-merging-typescript-4-3jh)
 
 ## ToDo
 
@@ -100,6 +102,7 @@ Install my-project with yarn
 - [ ] Notify user if no internet connection is availabe. 
 - [ ] Throw error if logging in while the server is unreachable. (check if server is unreachable first)
 - [ ] Provide option to hide password while typing.
+- [ ] Redirect client to login page on logout using res.redirect('logout')
 
 ## License
 
