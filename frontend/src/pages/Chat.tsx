@@ -1,7 +1,6 @@
 import { Box, Collapse, Switch, Typography } from '@mui/material'
 import { useContext, useEffect, useReducer, useRef, useState } from 'react'
 import { ChatDisplaySection } from '../components/ChatDisplaySection'
-import { CredentialContext } from '../contexts/Credentials'
 import { PulseLoader } from 'react-spinners'
 import { RoomInfo } from '../components/RoomInfo'
 import { Sidebar } from '../components/Sidebar'
@@ -9,13 +8,16 @@ import { RoomActionType, roomReducer } from '../reducer/roomReducer'
 import { RoomListSidebar } from '../components/RoomListSidebar'
 import { useSocket } from '../hooks/useSocket'
 import { useDialog } from '../hooks/useDialog'
+import { useAuth } from '../hooks/useAuth'
 
 export const Chat = () => {
     const [isLoading, setIsLoading] = useState(true)
 
     const socket = useSocket()
 
-    const { username, isLoggedIn } = useContext(CredentialContext)
+    const {
+        authStatus: { isLoggedIn, username },
+    } = useAuth()
 
     const [rooms, roomDispatcher] = useReducer(roomReducer, { selectedRoom: null, joinedRooms: [] })
 

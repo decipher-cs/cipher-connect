@@ -6,7 +6,6 @@ import { Message, MessageContentType } from '../types/prisma.client'
 import { SocketWithCustomEvents, TypingStatus } from '../types/socket'
 import { MultimediaAttachmentMenu } from './MultimediaAttachmentMenu'
 import { StyledTextField } from './StyledTextField'
-import { CredentialContext } from '../contexts/Credentials'
 import { MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
 import { RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { Routes } from '../types/routes'
@@ -14,6 +13,7 @@ import filetypeinfo, { filetypeextension, filetypemime, filetypename } from 'mag
 import { useSocket } from '../hooks/useSocket'
 import { useMutation } from '@tanstack/react-query'
 import { axiosServerInstance } from '../App'
+import { useAuth } from '../hooks/useAuth'
 
 const mimeToFileType = (mime: string) => {
     return mime.split('/')[0]
@@ -25,7 +25,9 @@ interface ChatInputBarProps {
 }
 
 export const ChatInputBar = (props: ChatInputBarProps) => {
-    const { username } = useContext(CredentialContext)
+    const {
+        authStatus: { username, isLoggedIn },
+    } = useAuth()
 
     const [currInputText, setCurrInputText] = useState('')
 

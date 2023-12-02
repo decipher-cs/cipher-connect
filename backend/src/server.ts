@@ -12,7 +12,6 @@ import expressSession, { Session } from 'express-session'
 dotenv.config()
 
 if (
-    !process.env.SECRET ||
     !process.env.PORT ||
     !process.env.CLIENT_URL ||
     !process.env.SESSION_SECRET ||

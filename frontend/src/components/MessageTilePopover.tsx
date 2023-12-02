@@ -1,7 +1,7 @@
 import { DeleteRounded, DownloadRounded, EditOffRounded, EditRounded } from '@mui/icons-material'
 import { ButtonGroup, Popover, IconButton } from '@mui/material'
 import { useContext } from 'react'
-import { CredentialContext } from '../contexts/Credentials'
+import { useAuth } from '../hooks/useAuth'
 import { useSocket } from '../hooks/useSocket'
 import { Room, Message, MessageContentType, User } from '../types/prisma.client'
 
@@ -28,7 +28,9 @@ export const MessageTilePopover = ({
 }) => {
     const socket = useSocket()
 
-    const { username } = useContext(CredentialContext)
+    const {
+        authStatus: { username, isLoggedIn },
+    } = useAuth()
 
     const handleMessageDelete = () => socket.emit('messageDeleted', messageId, roomId)
 

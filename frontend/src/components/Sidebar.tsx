@@ -19,7 +19,6 @@ import {
 } from '@mui/material'
 import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CredentialContext } from '../contexts/Credentials'
 import { useSocket } from '../hooks/useSocket'
 import { User, UserWithoutID } from '../types/prisma.client'
 import { Routes } from '../types/routes'
@@ -29,6 +28,7 @@ import axios from 'axios'
 import { useDialog } from '../hooks/useDialog'
 import { axiosServerInstance } from '../App'
 import { ThemeToggleSwitch } from './ThemeToggleSwitch'
+import { useAuth } from '../hooks/useAuth'
 
 interface SidebarProps {}
 
@@ -37,7 +37,9 @@ export const Sidebar = (props: SidebarProps) => {
 
     const { dialogOpen, handleOpen, handleClose } = useDialog()
 
-    const { username } = useContext(CredentialContext)
+    const {
+        authStatus: { username },
+    } = useAuth()
 
     const { data: userProfile } = useQuery({
         queryKey: ['userProfile'],

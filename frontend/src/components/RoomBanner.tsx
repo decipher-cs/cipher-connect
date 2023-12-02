@@ -19,10 +19,10 @@ import {
 import { RefObject, useContext, useEffect, useRef, useState } from 'react'
 import { StyledTextField } from './StyledTextField'
 import SearchIcon from '@mui/icons-material/Search'
-import { CredentialContext } from '../contexts/Credentials'
 import { RoomsState } from '../reducer/roomReducer'
 import Mark from 'mark.js'
 import '../mark.css'
+import { useAuth } from '../hooks/useAuth'
 
 export const RoomBanner = ({
     searchContainerRef,
@@ -32,7 +32,9 @@ export const RoomBanner = ({
     room: RoomsState['joinedRooms'][0]
     searchContainerRef: RefObject<HTMLElement>
 }) => {
-    const { username } = useContext(CredentialContext)
+    const {
+        authStatus: { username, isLoggedIn },
+    } = useAuth()
 
     const [searchFieldVisible, setSearchFieldVisible] = useState(false)
 

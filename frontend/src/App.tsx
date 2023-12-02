@@ -1,41 +1,13 @@
-import { createTheme, CssBaseline, ThemeProvider } from '@mui/material'
+import { createTheme, CssBaseline, LinearProgress, ThemeProvider } from '@mui/material'
 import { useContext, useEffect, useState } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { RequireAuth } from './components/RequireAuth'
-import { CredentialContext, CredentialContextProvider } from './contexts/Credentials'
-import { Chat } from './pages/Chat'
-import { About } from './pages/About'
-import { Login } from './pages/Login'
-import { Logout } from './pages/Logout'
-import { Routes as ApiRoutes } from './types/routes'
-import { SocketContextProvider } from './contexts/Socket'
-import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import axios from 'axios'
-import { ThemeContext } from './contexts/ThemeModeContextProvider'
+import { ThemeContext, ThemeModeContextProvider } from './contexts/ThemeModeContextProvider'
+import { AuthenticationContextProvider } from './contexts/AuthenticationContext'
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
+import { Pages } from './components/Pages'
+import { useDarkModeToggle } from './hooks/useDarkModeToggle'
 
-const TempUsernameDisplay = () => {
-    const { username, handleCredentialChange, isLoggedIn } = useContext(CredentialContext)
-
-    useEffect(() => {
-        const username = window.localStorage.getItem('username')
-
-        if (username === null) return
-
-        const varifyUser = async () => {
-            const response = await axiosServerInstance.post(ApiRoutes.varifyRefreshToken, { username })
-
-            if (response.statusText === 'OK') {
-                const verifiedUsername: { username: string } = response.data
-                handleCredentialChange({ username: verifiedUsername.username, isLoggedIn: true })
-            }
-        }
-
-        varifyUser()
-    }, [])
-
-    return null
-}
+if (!import.meta.env.VITE_SERVER_URL) throw new Error('Server URL not provided to the app.')
 
 export const queryClient = new QueryClient()
 
@@ -45,34 +17,15 @@ export const axiosServerInstance = axios.create({
 })
 
 const App = () => {
-    const { theme } = useContext(ThemeContext)
+    const { theme } = useDarkModeToggle()
 
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline>
                 <QueryClientProvider client={queryClient}>
-                    <CredentialContextProvider>
-                        <BrowserRouter>
-                            <TempUsernameDisplay />
-
-                            <Routes>
-                                <Route path='/login' element={<Login />} />
-                                <Route
-                                    path='/chat'
-                                    element={
-                                        <RequireAuth>
-                                            <SocketContextProvider>
-                                                <Chat />
-                                            </SocketContextProvider>
-                                        </RequireAuth>
-                                    }
-                                />
-                                <Route path='/about' element={<About />} />
-                                <Route path='/logout' element={<Logout />} />
-                                <Route path='*' element={<Navigate to='/chat' replace />} />
-                            </Routes>
-                        </BrowserRouter>
-                    </CredentialContextProvider>
+                    <AuthenticationContextProvider>
+                        <Pages />
+                    </AuthenticationContextProvider>
                 </QueryClientProvider>
             </CssBaseline>
         </ThemeProvider>

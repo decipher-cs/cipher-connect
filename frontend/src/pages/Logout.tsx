@@ -1,18 +1,19 @@
-import { useContext, useEffect } from 'react'
+import { useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 import { axiosServerInstance } from '../App'
-import { CredentialContext } from '../contexts/Credentials'
+import { useAuth } from '../hooks/useAuth'
+import { Routes } from '../types/routes'
 
 export const Logout = () => {
-    const { username, isLoggedIn, logUserOut } = useContext(CredentialContext)
-
-    const URL = import.meta.env.VITE_SERVER_URL
-    // logUserOut()
+    const {
+        authStatus: { isLoggedIn },
+        resetUserAuth,
+    } = useAuth()
 
     useEffect(() => {
         if (isLoggedIn === true) {
-            axiosServerInstance.post('/logout', { username })
-            logUserOut()
+            axiosServerInstance.get(Routes.get.logout)
+            resetUserAuth()
         }
     }, [])
 

@@ -16,7 +16,6 @@ import {
     Typography,
 } from '@mui/material'
 import React, { PropsWithChildren, useContext, useEffect, useRef, useState } from 'react'
-import { CredentialContext } from '../contexts/Credentials'
 import { User, UserStatus, UserWithoutID } from '../types/prisma.client'
 import { Routes } from '../types/routes'
 import { StyledTextField } from './StyledTextField'
@@ -30,6 +29,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { userProfileUpdationFormValidation } from '../schemaValidators/yupFormValidators'
 import { axiosServerInstance, queryClient } from '../App'
 import { ButtonWithLoader } from './ButtonWithLoader'
+import { useAuth } from '../hooks/useAuth'
 
 interface ProfileSettingsDialogProps {
     readonly dialogOpen: boolean
@@ -44,7 +44,9 @@ export type ProfileFormValues = {
 }
 
 export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: ProfileSettingsDialogProps) => {
-    const { username } = useContext(CredentialContext)
+    const {
+        authStatus: { username, isLoggedIn },
+    } = useAuth()
 
     const socket = useSocket()
 
@@ -67,6 +69,8 @@ export const ProfileSettingsDialog = ({ handleClose, userProfile, ...props }: Pr
 
         let formLength = 0
         fd.forEach(_ => formLength++)
+
+        if (!username) throw new Error('username is undefined while user is logged in. Impossible scenario.')
 
         if (formLength > 0) {
             fd.append('username', username)

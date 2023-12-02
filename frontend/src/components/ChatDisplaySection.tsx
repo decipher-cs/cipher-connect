@@ -1,6 +1,5 @@
 import { Box } from '@mui/material'
 import { useContext, useEffect, useReducer, useRef } from 'react'
-import { CredentialContext } from '../contexts/Credentials'
 import React, { useState } from 'react'
 import { MessageContentType, RoomWithParticipants, User } from '../types/prisma.client'
 import { MessageTile } from './MessageTile'
@@ -17,6 +16,7 @@ import { axiosServerInstance } from '../App'
 import { PulseLoader } from 'react-spinners'
 import { AudioPlayer } from './AudioPlayer'
 import Mark from 'mark.js'
+import { useAuth } from '../hooks/useAuth'
 
 export interface ChatDisplaySectionProps {
     currRoom: RoomsState['joinedRooms'][0]
@@ -24,7 +24,9 @@ export interface ChatDisplaySectionProps {
 }
 
 export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
-    const { username } = useContext(CredentialContext)
+    const {
+        authStatus: { username },
+    } = useAuth()
 
     const scrollToBottomRef = useRef<HTMLDivElement>(null)
 

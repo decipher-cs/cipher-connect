@@ -27,7 +27,7 @@ import { useImageEditor } from '../hooks/useImageEditor'
 import { ImageEditorDialog } from './ImageEditorDialog'
 import { useDialog } from '../hooks/useDialog'
 import { RoomConfig } from '../types/prisma.client'
-import { CredentialContext } from '../contexts/Credentials'
+import { useAuth } from '../hooks/useAuth'
 
 interface RoomInfoProps {
     room: RoomsState['joinedRooms'][0]
@@ -36,7 +36,9 @@ interface RoomInfoProps {
 }
 
 export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ...props }: RoomInfoProps) => {
-    const { username } = useContext(CredentialContext)
+    const {
+        authStatus: { username },
+    } = useAuth()
 
     const socket = useSocket()
 

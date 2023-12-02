@@ -10,7 +10,7 @@ import {
 import { Avatar, Box, IconButton, InputAdornment, Paper, Skeleton, Typography } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
 import { MouseEvent, useContext, useRef, useState } from 'react'
-import { CredentialContext } from '../contexts/Credentials'
+import { useAuth } from '../hooks/useAuth'
 import { useSocket } from '../hooks/useSocket'
 import { Message, MessageContentType, Room, RoomType, User, UserWithoutID } from '../types/prisma.client'
 import { AudioPlayer } from './AudioPlayer'
@@ -31,7 +31,9 @@ export const MessageTile = ({
     message: { roomId, contentType, content, key: messageKey, senderUsername, createdAt, editedAt },
     ...props
 }: MessageTileProps) => {
-    const { username } = useContext(CredentialContext)
+    const {
+        authStatus: { username, isLoggedIn },
+    } = useAuth()
 
     const tileRef = useRef(null)
 

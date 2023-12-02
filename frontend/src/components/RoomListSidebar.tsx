@@ -6,11 +6,11 @@ import { RoomListItem } from './RoomListItem'
 import { CreateRoomDialog } from './CreateRoomDialog'
 import { useDialog } from '../hooks/useDialog'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { CredentialContext } from '../contexts/Credentials'
 import { Routes } from '../types/routes'
 import { useSocket } from '../hooks/useSocket'
 import { RoomDetails } from '../types/prisma.client'
 import { axiosServerInstance } from '../App'
+import { useAuth } from '../hooks/useAuth'
 
 interface RoomListSidebar {
     roomDispatcher: React.Dispatch<RoomActions>
@@ -20,7 +20,9 @@ interface RoomListSidebar {
 export const RoomListSidebar = ({ rooms, roomDispatcher }: RoomListSidebar) => {
     const { handleClose, handleOpen, dialogOpen } = useDialog()
 
-    const { username } = useContext(CredentialContext)
+    const {
+        authStatus: { username },
+    } = useAuth()
 
     const socket = useSocket()
 

@@ -2,7 +2,9 @@ import { Theme } from '@mui/material'
 import { createContext, PropsWithChildren, useState } from 'react'
 import { darkTheme, lightTheme } from '../theme/theme'
 
-export const ThemeContext = createContext({ theme: lightTheme, toggleTheme: () => {} })
+type ThemeContext = { theme: Theme; toggleTheme: () => void }
+
+export const ThemeContext = createContext<ThemeContext | null>(null)
 
 export const ThemeModeContextProvider = (props: PropsWithChildren) => {
     const [theme, setTheme] = useState<Theme>(darkTheme)

@@ -8,6 +8,7 @@ export const Routes = {
         user: '/user',
         isUsernameValid: '/is-username-valid',
         logout: '/logout',
+        sessionStatus: '/session-status',
     },
     post: {
         login: '/login',

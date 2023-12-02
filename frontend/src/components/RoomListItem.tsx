@@ -1,7 +1,6 @@
 import { Avatar, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
 import MarkUnreadChatAltIcon from '@mui/icons-material/MarkUnreadChatAlt'
 import React, { memo, useContext, useEffect, useState } from 'react'
-import { CredentialContext } from '../contexts/Credentials'
 import { MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { Message } from '../types/prisma.client'
@@ -9,6 +8,7 @@ import { Routes } from '../types/routes'
 import { UseMutateFunction, useMutation, useQuery } from '@tanstack/react-query'
 import { axiosServerInstance } from '../App'
 import { useSocket } from '../hooks/useSocket'
+import { useAuth } from '../hooks/useAuth'
 
 interface RoomListItemProps {
     room: RoomsState['joinedRooms'][0]
@@ -19,7 +19,9 @@ interface RoomListItemProps {
 }
 
 export const RoomListItem = memo((props: RoomListItemProps) => {
-    const { username } = useContext(CredentialContext)
+    const {
+        authStatus: { username, isLoggedIn },
+    } = useAuth()
 
     const displayName = (() => {
         return props.room.roomType === 'private' && props.room.roomAvatar === null

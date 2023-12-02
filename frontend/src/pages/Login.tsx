@@ -1,6 +1,5 @@
 import { Box, Button, CircularProgress, Container, Tab, Tabs } from '@mui/material'
 import { useContext, useState } from 'react'
-import { CredentialContext } from '../contexts/Credentials'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { StyledTextField } from '../components/StyledTextField'
 import { SubmitHandler, useForm } from 'react-hook-form'
@@ -8,11 +7,15 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { loginAndSignupValidation } from '../schemaValidators/yupFormValidators'
 import { z } from 'zod'
 import { axiosServerInstance } from '../App'
-import { AxiosError } from 'axios'
+import axios, { AxiosError } from 'axios'
 import { ButtonWithLoader } from '../components/ButtonWithLoader'
+import { useAuth } from '../hooks/useAuth'
 
 export const Login = () => {
-    const { isLoggedIn, handleCredentialChange } = useContext(CredentialContext)
+    const {
+        authStatus: { isLoggedIn, username },
+        authoriseUser,
+    } = useAuth()
 
     const navigate = useNavigate()
 
@@ -27,7 +30,7 @@ export const Login = () => {
         handleSubmit,
         reset,
         setError,
-        formState: { errors, isSubmitting },
+        formState: { errors, isSubmitting, isLoading },
     } = useForm<z.infer<typeof loginAndSignupValidation>>({
         defaultValues: {
             username: import.meta.env.DEV === true ? 'password' : '',
@@ -39,8 +42,9 @@ export const Login = () => {
     const handleUserLogin: SubmitHandler<z.infer<typeof loginAndSignupValidation>> = async ({ username, password }) => {
         try {
             const response = await axiosServerInstance.post(formType, { username, password })
+
             if (response.status === 200) {
-                handleCredentialChange({ username, isLoggedIn: true })
+                authoriseUser(username)
                 navigate('/chat')
             }
         } catch (error) {
@@ -91,6 +95,7 @@ export const Login = () => {
                                         fullWidth
                                         error={errors.password !== undefined}
                                         helperText={errors?.password?.message ?? ''}
+                                        type='password'
                                         {...register('password')}
                                     />
 
@@ -110,10 +115,10 @@ export const Login = () => {
                                             reset
                                         </Button>
                                         <ButtonWithLoader
-                                            showLoader={isSubmitting}
+                                            showLoader={isSubmitting || isLoading}
                                             type='submit'
                                             variant='contained'
-                                            disabled={isSubmitting}
+                                            disabled={isSubmitting || isLoading}
                                         >
                                             submit
                                         </ButtonWithLoader>
