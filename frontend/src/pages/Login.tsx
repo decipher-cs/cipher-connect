@@ -59,7 +59,13 @@ export const Login = () => {
     }
 
     return (
-        <>
+        <Box
+            sx={{
+                background: theme => theme.design.background,
+                backgroundSize: theme => (theme.palette.mode === 'dark' ? theme.design.backgroundSize : null),
+                height: '100svh',
+            }}
+        >
             <Tabs value={selectedTab} onChange={() => setIsLogin(!isLogin)} centered>
                 <Tab label='Login' />
                 <Tab label='Signup' />
@@ -128,6 +134,6 @@ export const Login = () => {
                         </div>
                     )
                 })}
-        </>
+        </Box>
     )
 }

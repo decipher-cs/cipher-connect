@@ -128,7 +128,6 @@ export const RoomBanner = ({
                             minWidth: '200px',
                             maxWidth: '450px',
                             mr: 2,
-                            backgroundColor: theme => theme.palette.background.light,
                         }}
                         onChange={e => setSearchTerm(e.target.value)}
                         onKeyDown={e => (e.key.toLowerCase() === 'enter' ? incrementCurrIndex() : null)}

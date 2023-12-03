@@ -5,6 +5,19 @@ declare module '@mui/material/styles' {
     interface TypeBackground {
         dark?: TypeBackground['default']
         light?: TypeBackground['default']
+        image?: TypeBackground['default']
+    }
+    interface Theme {
+        design: {
+            background: string
+            backgroundSize: string
+        }
+    }
+    interface ThemeOptions {
+        design?: {
+            background?: string
+            backgroundSize?: string
+        }
     }
 }
 
@@ -22,6 +35,25 @@ export const darkTheme = createTheme({
             light: '#1c1c24',
         },
     },
+    design: {
+        background: (function () {
+            const bg = '#141319'
+            const size = 30
+            const loopColor = '#18171d'
+            const loop = `#0000 46%, ${loopColor} 47% 53%, #0000 54%`
+
+            return `radial-gradient(100% 100% at 100% 101%, ${loop})
+                        ${size}px ${size}px,
+                        radial-gradient(100% 100% at 0 0, ${loop}) 
+                        ${size}px ${size}px,
+                        radial-gradient(100% 100%, ${bg} 22%, ${loopColor} 23% 29%, ${bg} 30% 34%, ${loopColor} 35% 41%, #0000 42%)
+                        ${bg}`
+        })(),
+        backgroundSize: (() => {
+            const size = 30
+            return `${size * 2}px ${size * 2}px`
+        })(),
+    },
     typography: {
         fontFamily: ['Roboto'].join(','),
     },
@@ -29,7 +61,14 @@ export const darkTheme = createTheme({
         MuiButton: { defaultProps: { color: 'primary', size: 'small' } },
         MuiButtonGroup: { defaultProps: { color: 'primary', size: 'small' } },
         MuiToggleButtonGroup: { defaultProps: { color: 'primary', size: 'small' } },
-        MuiTextField: { defaultProps: { size: 'small' } },
+        MuiTextField: {
+            defaultProps: {
+                size: 'small',
+                sx: {
+                    backgroundColor: theme => theme.palette.background.light,
+                },
+            },
+        },
     },
 })
 
@@ -47,6 +86,7 @@ export const lightTheme = createTheme({
             light: '#faf5f3',
         },
     },
+    design: { background: 'linear-gradient(135deg, #f4e9e5,#f4dcd0,#eed0d2,#dbd7e4,#e4e8f2)' },
     typography: {
         fontFamily: ['Roboto'].join(','),
     },
@@ -54,6 +94,13 @@ export const lightTheme = createTheme({
         MuiButton: { defaultProps: { color: 'primary', size: 'small' } },
         MuiButtonGroup: { defaultProps: { color: 'primary', size: 'small' } },
         MuiToggleButtonGroup: { defaultProps: { color: 'primary', size: 'small' } },
-        MuiTextField: { defaultProps: { size: 'small' } },
+        MuiTextField: {
+            defaultProps: {
+                size: 'small',
+                sx: {
+                    backgroundColor: theme => theme.palette.background.light,
+                },
+            },
+        },
     },
 })
