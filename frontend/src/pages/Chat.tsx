@@ -9,6 +9,7 @@ import { RoomListSidebar } from '../components/RoomListSidebar'
 import { useSocket } from '../hooks/useSocket'
 import { useDialog } from '../hooks/useDialog'
 import { useAuth } from '../hooks/useAuth'
+import { Navigate } from 'react-router-dom'
 
 export const Chat = () => {
     const [isLoading, setIsLoading] = useState(true)
@@ -54,6 +55,8 @@ export const Chat = () => {
             socket.disconnect()
         }
     }, [])
+
+    if (isLoggedIn === false) return <Navigate to='/login' replace />
 
     if (isLoading) return <PulseLoader color='#36d7b7' />
 
