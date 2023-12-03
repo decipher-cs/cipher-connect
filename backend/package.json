@@ -15,7 +15,8 @@
         "migrate": "prisma migrate"
     },
     "dependencies": {
-        "@prisma/client": "^5.5.2",
+        "@prisma/client": "^5.6.0",
+        "@quixo3/prisma-session-store": "^3.1.13",
         "@types/bcrypt": "^5.0.0",
         "bcrypt": "^5.1.0",
         "cookie-parser": "^1.4.6",
@@ -39,7 +40,7 @@
         "express": "^4.18.2",
         "express-openid-connect": "^2.14.0",
         "multer": "^1.4.5-lts.1",
-        "prisma": "^4.14.1",
+        "prisma": "^5.6.0",
         "prisma-dbml-generator": "^0.10.0",
         "prisma-erd-generator": "^1.8.0",
         "ts-node": "^10.9.1",

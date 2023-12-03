@@ -109,3 +109,10 @@ model Message {
   sender User @relation(fields: [senderUsername], references: [username], onDelete: Cascade)
   room   Room @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
 }
+
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String   @db.MediumText
+  expiresAt DateTime
+}

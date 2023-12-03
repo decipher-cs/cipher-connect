@@ -9,6 +9,7 @@ declare global {
             SESSION_SECRET: string | undefined
             UPLOADTHING_SECRET: string | undefined
             UPLOADTHING_APP_ID: string | undefined
+            DATABASE_URL: string | undefined
         }
     }
 

@@ -76,6 +76,13 @@ Table Message {
   room Room [not null]
 }
 
+Table Session {
+  id String [pk]
+  sid String [unique, not null]
+  data String [not null]
+  expiresAt DateTime [not null]
+}
+
 Enum UserStatus {
   available
   dnd

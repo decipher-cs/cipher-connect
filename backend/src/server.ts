@@ -8,6 +8,7 @@ import { corsWithOptions } from './config/corsOptions.js'
 import multer from 'multer'
 import { PrismaClient } from '@prisma/client'
 import expressSession from 'express-session'
+import { PrismaSessionStore } from '@quixo3/prisma-session-store'
 
 dotenv.config()
 
@@ -16,18 +17,25 @@ if (
     !process.env.CLIENT_URL ||
     !process.env.SESSION_SECRET ||
     !process.env.UPLOADTHING_SECRET ||
-    !process.env.UPLOADTHING_APP_ID
+    !process.env.UPLOADTHING_APP_ID ||
+    !process.env.DATABASE_URL
 )
     throw new Error('Environment variable(s) missing.')
 
 const ONE_DAY = 1000 * 60 * 60 * 24
 const PORT = process.env.PORT
 const app = express()
+export const prisma = new PrismaClient()
 const session = expressSession({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: process.env.NODE_ENV === 'production' ? { maxAge: ONE_DAY, secure: true } : { maxAge: 1000 * 60 * 5 },
+    // cookie: process.env.NODE_ENV === 'production' ? { maxAge: ONE_DAY, secure: true } : { maxAge: 1000 * 60 * 5 },
+    store: new PrismaSessionStore(prisma, {
+        dbRecordIdIsSessionId: true,
+        dbRecordIdFunction: undefined,
+        checkPeriod: ONE_DAY * 2,
+    }),
 })
 
 const server = http.createServer(app)
@@ -39,8 +47,6 @@ const io = new Server(server, {
                 : [process.env.CLIENT_URL, 'http://localhost:4173'],
     },
 })
-
-export const prisma = new PrismaClient()
 
 export const media = multer().single('upload')
 
