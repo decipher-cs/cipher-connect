@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, Container, Tab, Tabs } from '@mui/material'
+import { Box, Button, ButtonGroup, CircularProgress, Container, Tab, Tabs } from '@mui/material'
 import { useContext, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { StyledTextField } from '../components/StyledTextField'
@@ -13,7 +13,7 @@ import { useAuth } from '../hooks/useAuth'
 
 export const Login = () => {
     const {
-        authStatus: { isLoggedIn, username },
+        authStatus: { isLoggedIn },
         authoriseUser,
     } = useAuth()
 
@@ -43,14 +43,16 @@ export const Login = () => {
         try {
             const response = await axiosServerInstance.post(formType, { username, password })
 
-            if (response.status === 200) {
+            if (response.status === 201) {
                 authoriseUser(username)
                 navigate('/chat')
             }
         } catch (error) {
-            if (error instanceof AxiosError && error?.response?.status === 401) {
-                setError('root', { message: 'Invalid username or password' })
-            } else setError('root', { message: 'Unknown Error' })
+            if (error instanceof AxiosError && error.response) {
+                const errMessage = error.response.data.message
+                setError('username', { message: errMessage })
+                setError('password', { message: errMessage })
+            } else setError('root', { message: 'Unknown server error. Try again.' })
         }
     }
 
@@ -93,14 +95,14 @@ export const Login = () => {
                                         label='username'
                                         fullWidth
                                         error={errors.username !== undefined}
-                                        helperText={errors?.username?.message ?? ''}
+                                        helperText={errors?.username?.message ?? ' '}
                                         {...register('username')}
                                     />
                                     <StyledTextField
                                         label='password'
                                         fullWidth
                                         error={errors.password !== undefined}
-                                        helperText={errors?.password?.message ?? ''}
+                                        helperText={errors?.password?.message ?? ' '}
                                         type='password'
                                         {...register('password')}
                                     />
@@ -111,11 +113,10 @@ export const Login = () => {
                                         <br />
                                     )}
 
-                                    <Box display='inline-flex' gap={3}>
+                                    <ButtonGroup variant='text' fullWidth>
                                         <Button
                                             type='reset'
-                                            variant='contained'
-                                            onClick={() => reset()}
+                                            onClick={() => reset({ password: '', username: '' })}
                                             disabled={isSubmitting}
                                         >
                                             reset
@@ -123,12 +124,11 @@ export const Login = () => {
                                         <ButtonWithLoader
                                             showLoader={isSubmitting || isLoading}
                                             type='submit'
-                                            variant='contained'
                                             disabled={isSubmitting || isLoading}
                                         >
                                             submit
                                         </ButtonWithLoader>
-                                    </Box>
+                                    </ButtonGroup>
                                 </Container>
                             ) : null}
                         </div>

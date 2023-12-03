@@ -61,14 +61,7 @@ export const darkTheme = createTheme({
         MuiButton: { defaultProps: { color: 'primary', size: 'small' } },
         MuiButtonGroup: { defaultProps: { color: 'primary', size: 'small' } },
         MuiToggleButtonGroup: { defaultProps: { color: 'primary', size: 'small' } },
-        MuiTextField: {
-            defaultProps: {
-                size: 'small',
-                sx: {
-                    backgroundColor: theme => theme.palette.background.light,
-                },
-            },
-        },
+        MuiTextField: { defaultProps: { size: 'small' } },
     },
 })
 
@@ -82,7 +75,6 @@ export const lightTheme = createTheme({
         },
         background: {
             default: '#ffffff',
-            // dark: 'red',
             light: '#faf5f3',
         },
     },
@@ -94,13 +86,6 @@ export const lightTheme = createTheme({
         MuiButton: { defaultProps: { color: 'primary', size: 'small' } },
         MuiButtonGroup: { defaultProps: { color: 'primary', size: 'small' } },
         MuiToggleButtonGroup: { defaultProps: { color: 'primary', size: 'small' } },
-        MuiTextField: {
-            defaultProps: {
-                size: 'small',
-                sx: {
-                    backgroundColor: theme => theme.palette.background.light,
-                },
-            },
-        },
+        MuiTextField: { defaultProps: { size: 'small' } },
     },
 })

@@ -33,27 +33,39 @@ export const loginUser = async (req: Request, res: Response) => {
         return
     }
 
+    let response: { message: undefined | string } = { message: undefined }
+
     const { username, password } = req.body
 
     if (!username || !password) {
-        res.sendStatus(400)
+        response = { message: 'username/password not provided' }
+        res.status(400).json(response)
         return
     }
 
     const hash = await getUserHash(username) // get password hash from DB
 
-    if (!hash || !(await bcrypt.compare(password, hash))) {
-        res.status(400).end('Invalid username or password')
+    if (!hash) {
+        response = { message: 'Incorrect username/password.' }
+        res.status(400).json(response)
+        return
+    }
+
+    if (!(await bcrypt.compare(password, hash))) {
+        response = { message: 'Incorrect username/password.' }
+        res.status(400).json(response)
         return
     }
 
     req.session.regenerate(err => {
         if (err) {
-            res.sendStatus(500)
+            response = { message: 'Server failed, try again or make a report to the developer.' }
+            res.status(500).json(response)
             return
         }
         req.session.username = username
-        res.sendStatus(200)
+        response = { message: undefined }
+        res.status(201).json(response)
     })
 
     return
@@ -63,8 +75,11 @@ export const loginUser = async (req: Request, res: Response) => {
 export const createUser = async (req: Request, res: Response) => {
     let { username, password } = req.body
 
+    let response: { message: undefined | string } = { message: undefined }
+
     if (!password || !username) {
-        res.send(400)
+        response = { message: 'username/password not provided' }
+        res.status(400).json(response)
         return
     }
 
@@ -74,11 +89,13 @@ export const createUser = async (req: Request, res: Response) => {
 
     if (!newUserDetails) {
         // check for username collision
-        res.status(400).end('username taken')
+        response = { message: 'Username not available.' }
+        res.status(400).json(response)
+        return
         return
     }
 
-    res.send(200)
+    res.send(201).json(response)
     return
 }
 

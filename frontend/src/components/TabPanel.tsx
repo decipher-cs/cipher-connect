@@ -32,7 +32,7 @@ export const TabPanel = (props: TabPanelProps) => {
                             onClick={handleFormReset}
                             disabled={props.isSubmitting}
                         >
-                            reset
+                            resetfaewfewa
                         </Button>
                         <Button type='submit' variant='contained' disabled={props.isSubmitting}>
                             submit

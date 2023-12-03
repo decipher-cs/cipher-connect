@@ -39,6 +39,12 @@ type CreateRoomFormValues = z.infer<typeof roomCreationFormValidation>
 export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogProps) => {
     const socket = useSocket()
 
+    const defaultValues = {
+        roomType: RoomType.group,
+        roomDisplayName: '',
+        participants: [{ username: '' }],
+    } satisfies CreateRoomFormValues
+
     const {
         register,
         handleSubmit,
@@ -49,11 +55,7 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
         setValue,
         getValues,
     } = useForm<CreateRoomFormValues>({
-        defaultValues: {
-            roomType: RoomType.group,
-            roomDisplayName: '',
-            participants: [{ username: '' }],
-        } satisfies CreateRoomFormValues,
+        defaultValues,
         resolver: zodResolver(roomCreationFormValidation),
         mode: 'onBlur',
         reValidateMode: 'onBlur',
@@ -78,7 +80,7 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
                 avatarPath: null,
             })
         }
-        reset()
+        reset(defaultValues)
         handleClose()
     }
 
@@ -93,15 +95,11 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
                             Room Type :
                         </Typography>
                         <ToggleButtonGroup
+                            exclusive
                             sx={{ pl: 2 }}
                             aria-label='room-type'
                             value={getValues('roomType')}
-                            onChange={_ => {
-                                setValue(
-                                    'roomType',
-                                    watch('roomType') === RoomType.private ? RoomType.group : RoomType.private
-                                )
-                            }}
+                            onChange={(_, value) => setValue('roomType', value)}
                             color={errors.roomType?.message ? 'error' : undefined}
                         >
                             <ToggleButton value={RoomType.group}>Group</ToggleButton>
@@ -118,13 +116,13 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
                             placeholder='Group Name'
                             variant='standard'
                             disabled={getValues('roomType') === RoomType.private}
-                            helperText={errors.roomDisplayName !== undefined && errors.roomDisplayName.message}
+                            helperText={errors?.roomDisplayName?.message ?? ' '}
                             error={errors.roomDisplayName !== undefined && getValues('roomType') === RoomType.group}
                             {...register('roomDisplayName')}
                         />
                     </Box>
 
-                    <List>
+                    <List dense disablePadding>
                         <Box
                             sx={{
                                 background: 'transparent',
@@ -143,7 +141,7 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
                                 }
                                 onClick={() => append({ username: '' })}
                             >
-                                add
+                                more +
                             </Button>
                         </Box>
 
@@ -157,7 +155,7 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
                                         getValues('participants').length >= MAX_ALLOWED_USERS_IN_PRIVATE_ROOM &&
                                         i >= MAX_ALLOWED_USERS_IN_PRIVATE_ROOM
                                     }
-                                    helperText={errors.participants?.[i]?.username?.message ?? ''}
+                                    helperText={errors.participants?.[i]?.username?.message ?? ' '}
                                     error={errors?.participants?.[i] !== undefined}
                                     {...register(`participants.${i}.username`)}
                                     InputProps={{
@@ -186,8 +184,9 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
             <DialogActions>
                 <ButtonGroup variant='outlined'>
                     <Button
+                        type='reset'
                         onClick={() => {
-                            reset()
+                            reset(defaultValues)
                             handleClose()
                         }}
                     >

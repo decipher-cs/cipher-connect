@@ -1,8 +1,8 @@
 import { styled, TextField } from '@mui/material'
 
-export const StyledTextField = styled(TextField)(({ theme }) => ({
-    borderRadius: '20px',
+export const StyledTextField = styled(TextField)(({ theme, variant }) => ({
     '& .MuiInputBase-root': {
-        borderRadius: '20px',
+        borderRadius: variant === 'standard' ? '0px' : '20px',
+        backgroundColor: variant === 'standard' ? 'transparent' : theme.palette.background.light,
     },
 }))

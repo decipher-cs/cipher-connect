@@ -1,5 +1,5 @@
 import http from 'http'
-import express, { NextFunction, Request, Response } from 'express'
+import express from 'express'
 import * as dotenv from 'dotenv'
 import { Server } from 'socket.io'
 import { initRoutes } from './routes.js'
@@ -7,7 +7,7 @@ import { initSocketIO } from './socket.js'
 import { corsWithOptions } from './config/corsOptions.js'
 import multer from 'multer'
 import { PrismaClient } from '@prisma/client'
-import expressSession, { Session } from 'express-session'
+import expressSession from 'express-session'
 
 dotenv.config()
 

@@ -13,7 +13,6 @@ import { CloseRounded, DeleteRounded, DoneAllRounded, PersonAddRounded } from '@
 import { StyledTextField } from './StyledTextField'
 import { Routes } from '../types/routes'
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
-import { CredentialContext } from '../contexts/Credentials'
 import { useFormik, FormikErrors } from 'formik'
 import { useSocket } from '../hooks/useSocket'
 import { useQuery } from '@tanstack/react-query'
@@ -87,7 +86,7 @@ export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRoom
                             {...register(`usernames.${i}.username` as const)}
                             placeholder='Add user to group'
                             error={errors.usernames?.[i]?.username?.message !== undefined}
-                            helperText={errors.usernames?.[i]?.username?.message}
+                            helperText={errors.usernames?.[i]?.username?.message ?? ' '}
                             InputProps={{
                                 endAdornment: (
                                     <>
