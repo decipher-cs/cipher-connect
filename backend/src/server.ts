@@ -30,7 +30,7 @@ const session = expressSession({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    // cookie: process.env.NODE_ENV === 'production' ? { maxAge: ONE_DAY, secure: true } : { maxAge: 1000 * 60 * 5 },
+    cookie: process.env.NODE_ENV === 'production' ? { maxAge: ONE_DAY, secure: true } : { maxAge: 1000 * 60 * 5 },
     store: new PrismaSessionStore(prisma, {
         dbRecordIdIsSessionId: true,
         dbRecordIdFunction: undefined,

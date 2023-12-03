@@ -36,8 +36,9 @@ export const loginUser = async (req: Request, res: Response) => {
     let response: { message: undefined | string } = { message: undefined }
 
     const { username, password } = req.body
+    console.log('user logged in with creds: ', username, password)
 
-    if (!username || !password) {
+    if (!username || typeof username !== 'string' || !password) {
         response = { message: 'username/password not provided' }
         res.status(400).json(response)
         return
@@ -77,7 +78,9 @@ export const createUser = async (req: Request, res: Response) => {
 
     let response: { message: undefined | string } = { message: undefined }
 
-    if (!password || !username) {
+    console.log('new user created with creds: ', username, password)
+
+    if (!username || typeof username !== 'string' || !password) {
         response = { message: 'username/password not provided' }
         res.status(400).json(response)
         return
@@ -425,8 +428,6 @@ export const doesValidUserSessionExist = async (req: Request, res: Response) => 
 }
 
 export const test = async (req: Request, res: Response) => {
-    if (req.session.id && req.session.username) {
-        res.send(req.session.username)
-    }
+    res.send(req.session.username)
     return
 }
