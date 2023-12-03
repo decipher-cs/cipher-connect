@@ -92,10 +92,18 @@ export const createUser = async (req: Request, res: Response) => {
         response = { message: 'Username not available.' }
         res.status(400).json(response)
         return
-        return
     }
 
-    res.send(201).json(response)
+    req.session.regenerate(err => {
+        if (err) {
+            response = { message: 'Server failed, try again or make a report to the developer.' }
+            res.status(500).json(response)
+            return
+        }
+        req.session.username = username
+        response = { message: undefined }
+        res.status(201).json(response)
+    })
     return
 }
 
@@ -119,7 +127,8 @@ export const storeMediaToFS = async (req: Request, res: Response) => {
 }
 
 export const storeAvatarToFS = async (req: Request, res: Response) => {
-    const { username, roomId } = req.body
+    const { username } = req.session
+    const { roomId } = req.body
 
     if (req.file === undefined) {
         res.sendStatus(400)
@@ -320,8 +329,8 @@ export const handleMessageReadStatusChange = async (req: Request, res: Response)
 }
 
 export const handleUserProfileUpdation = async (req: Request, res: Response) => {
-    const { status, displayName, username }: Partial<Pick<UserWithoutID, 'displayName' | 'username' | 'status'>> =
-        req.body
+    const { username } = req.session
+    const { status, displayName }: Partial<Pick<UserWithoutID, 'displayName' | 'username' | 'status'>> = req.body
     const { buffer } = req.file ?? { buffer: undefined }
     let avatarPath: string | undefined
 
@@ -369,7 +378,8 @@ export const handleMediaUpload = async (req: Request, res: Response) => {
 }
 
 export const handleAvatarChange = async (req: Request, res: Response) => {
-    const { username, roomId } = req.body
+    const { roomId } = req.body
+    const { username } = req.session
 
     try {
         if (!req.file) throw new Error('no file to upload')
@@ -395,7 +405,13 @@ export const handleAvatarChange = async (req: Request, res: Response) => {
 }
 
 export const handleRoomConfigChange = async (req: Request, res: Response) => {
-    const { username, roomId, ...newConfig }: RoomConfig = req.body
+    const { roomId, ...newConfig }: RoomConfig = req.body
+    const { username } = req.session
+
+    if (!username) {
+        res.status(400)
+        return
+    }
 
     const changedConfig = await updateRoomConfig(roomId, username, newConfig)
     res.json(changedConfig)

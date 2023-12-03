@@ -113,7 +113,7 @@ export const Login = () => {
                                         <br />
                                     )}
 
-                                    <ButtonGroup variant='text' fullWidth>
+                                    <ButtonGroup variant='outlined' fullWidth>
                                         <Button
                                             type='reset'
                                             onClick={() => reset({ password: '', username: '' })}
