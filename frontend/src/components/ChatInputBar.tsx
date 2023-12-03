@@ -14,6 +14,7 @@ import { useSocket } from '../hooks/useSocket'
 import { useMutation } from '@tanstack/react-query'
 import { axiosServerInstance } from '../App'
 import { useAuth } from '../hooks/useAuth'
+import { Navigate } from 'react-router-dom'
 
 const mimeToFileType = (mime: string) => {
     return mime.split('/')[0]
@@ -45,6 +46,8 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
     })
 
     const socket = useSocket()
+
+    if (!isLoggedIn || !username) return <Navigate to='/login' replace />
 
     type HandleMessageDeliveryArgs =
         | {
