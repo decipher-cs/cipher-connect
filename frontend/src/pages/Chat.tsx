@@ -1,4 +1,4 @@
-import { Box, Collapse, Switch, Typography } from '@mui/material'
+import { Box, CircularProgress, Collapse, Switch, Typography } from '@mui/material'
 import { useContext, useEffect, useReducer, useRef, useState } from 'react'
 import { ChatDisplaySection } from '../components/ChatDisplaySection'
 import { PulseLoader } from 'react-spinners'
@@ -58,7 +58,7 @@ export const Chat = () => {
 
     if (isLoggedIn === false) return <Navigate to='/login' replace />
 
-    if (isLoading) return <PulseLoader color='#36d7b7' />
+    if (isLoading) return <CircularProgress />
 
     return (
         <>

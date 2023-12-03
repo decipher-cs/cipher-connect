@@ -11,22 +11,22 @@ export const RequireAuth = (props: React.PropsWithChildren) => {
         resetUserAuth,
     } = useAuth()
 
-    useEffect(() => {
-        const intercepter = axiosServerInstance.interceptors.response.use(undefined, interceptedError => {
-            if (interceptedError instanceof AxiosError) {
-                const { response } = interceptedError
-                if (response?.status === 401) {
-                    resetUserAuth()
-                    navigateTo('/login')
-                }
-            }
-            return Promise.reject(interceptedError)
-        })
-
-        return () => {
-            axiosServerInstance.interceptors.response.eject(intercepter)
-        }
-    }, [axiosServerInstance])
+    // useEffect(() => {
+    //     const intercepter = axiosServerInstance.interceptors.response.use(undefined, interceptedError => {
+    //         if (interceptedError instanceof AxiosError) {
+    //             const { response } = interceptedError
+    //             if (response?.status === 401) {
+    //                 resetUserAuth()
+    //                 navigateTo('/login')
+    //             }
+    //         }
+    //         return Promise.reject(interceptedError)
+    //     })
+    //
+    //     return () => {
+    //         axiosServerInstance.interceptors.response.eject(intercepter)
+    //     }
+    // }, [axiosServerInstance])
 
     // return <div>please log in</div>
     if (isLoggedIn === true) {
