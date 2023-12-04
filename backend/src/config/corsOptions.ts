@@ -5,7 +5,15 @@ export const corsWithOptions = () => {
     const whitelist =
         process.env.NODE_ENV === 'production'
             ? [process.env.CLIENT_URL]
-            : [process.env.CLIENT_URL, 'http://localhost:4173', 'http://192.168.1.10:5173']
+            : [
+                  process.env.CLIENT_URL,
+                  'http://localhost:4173',
+                  'http://192.168.1.10:5173',
+                  'https://192.168.1.10:5173',
+                  'https://192.168.1.10:5173/',
+                  'https://192.168.1.10',
+                  'https://192.168.1.10/',
+              ]
 
     const corsOption: CorsOptions = {
         credentials: true,

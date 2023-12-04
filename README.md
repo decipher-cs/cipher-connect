@@ -48,6 +48,7 @@ Deplyed on [netlify](https://taupe-mandazi-7fa3f4.netlify.app/)
 - Error boundries
 - Custom Hooks
 - React-query
+- `crypto.randomUUID()` only runs when the URL scheme is https or client is running on localhost
 
 
 ## Installation
@@ -103,6 +104,7 @@ Install my-project with yarn
 - [ ] Throw error if logging in while the server is unreachable. (check if server is unreachable first)
 - [ ] Provide option to hide password while typing.
 - [ ] Redirect client to login page on logout using res.redirect('logout')
+- [ ] Warn before running `crypto.randomUUID()` in an unsecure context (http scheme) and alert user or throw error.
 
 ## License
 

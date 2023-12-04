@@ -1,6 +1,6 @@
 import { ArrowRight, AttachFileRounded, MicRounded } from '@mui/icons-material'
 import { IconButton, InputAdornment, ToggleButton } from '@mui/material'
-import { useContext, useState } from 'react'
+import { useContext, useId, useState } from 'react'
 import { useAudioRecorder } from '../hooks/useAudioRecorder'
 import { Message, MessageContentType } from '../types/prisma.client'
 import { SocketWithCustomEvents, TypingStatus } from '../types/socket'

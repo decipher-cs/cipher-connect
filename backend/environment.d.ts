@@ -2,7 +2,7 @@ import { SessionData } from 'express-session'
 declare global {
     namespace NodeJS {
         interface ProcessEnv {
-            NODE_ENV: 'production' | 'development' // Cant be development unless NODE_ENV=development is set in the scripts insdie package.json
+            NODE_ENV: 'production' | 'development' // Cant be development unless NODE_ENV=development is set in the scripts inside package.json
             SECRET: string | undefined
             PORT: string | undefined
             CLIENT_URL: string | undefined

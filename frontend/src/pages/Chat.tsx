@@ -1,4 +1,4 @@
-import { Box, CircularProgress, Collapse, Switch, Typography } from '@mui/material'
+import { Box, Button, CircularProgress, Collapse, Switch, Typography } from '@mui/material'
 import { useContext, useEffect, useReducer, useRef, useState } from 'react'
 import { ChatDisplaySection } from '../components/ChatDisplaySection'
 import { PulseLoader } from 'react-spinners'
@@ -10,6 +10,7 @@ import { useSocket } from '../hooks/useSocket'
 import { useDialog } from '../hooks/useDialog'
 import { useAuth } from '../hooks/useAuth'
 import { Navigate } from 'react-router-dom'
+import { axiosServerInstance } from '../App'
 
 export const Chat = () => {
     const [isLoading, setIsLoading] = useState(true)

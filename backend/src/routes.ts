@@ -1,4 +1,4 @@
-import { Express } from 'express'
+import { Express, Router } from 'express'
 import {
     createUser,
     loginUser,
@@ -61,7 +61,7 @@ const routes = {
     },
 } as const
 
-export const initRoutes = (app: Express) => {
+export const initRoutes = (app: Router) => {
     app.get(routes.get.sessionStatus, doesValidUserSessionExist)
 
     app.get(routes.get.logout, logoutUser)
