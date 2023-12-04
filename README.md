@@ -9,9 +9,10 @@ A **multimedia messaging app** built with sockets, react, node and mySQL.
 
 ## Demo
 
-Deplyed on [netlify](https://taupe-mandazi-7fa3f4.netlify.app/)
+Deplyed on [render](https://dashboard.render.com/)
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/7d934d22-f49b-4a03-92cc-82d05d21ac4b/deploy-status)](https://app.netlify.com/sites/taupe-mandazi-7fa3f4/deploys)
+https://cipher-connect.onrender.com/
+
 
 
 ## Features
