@@ -5,8 +5,6 @@ import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-quer
 import { Pages } from './components/Pages'
 import { useDarkModeToggle } from './hooks/useDarkModeToggle'
 
-if (!import.meta.env.VITE_SERVER_URL) throw new Error('Server URL not provided to the app.')
-
 export const queryClient = new QueryClient()
 
 export const axiosServerInstance = axios.create({
