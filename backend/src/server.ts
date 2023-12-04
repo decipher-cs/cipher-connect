@@ -29,14 +29,18 @@ export const prisma = new PrismaClient()
 const session = expressSession({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: false,
-    cookie: process.env.NODE_ENV === 'production' ? { maxAge: ONE_DAY, secure: true } : { maxAge: 1000 * 60 * 5 },
+    saveUninitialized: true,
+    cookie: { maxAge: 1000 * 60 * 15, secure: true, sameSite: 'none' },
+    // process.env.NODE_ENV === 'production'
+    // ? { maxAge: ONE_DAY, secure: true, sameSite: 'none' }
+    // : { maxAge: 1000 * 60 * 5, httpOnly: false, sameSite: 'none', secure: false },
     store: new PrismaSessionStore(prisma, {
         dbRecordIdIsSessionId: true,
         dbRecordIdFunction: undefined,
         checkPeriod: ONE_DAY * 2,
     }),
 })
+// app.set('trust proxy', 1)
 
 const server = http.createServer(app)
 const io = new Server(server, {

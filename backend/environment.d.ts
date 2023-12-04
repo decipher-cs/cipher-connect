@@ -12,12 +12,6 @@ declare global {
             DATABASE_URL: string | undefined
         }
     }
-
-    namespace cookieParser {
-        interface CookieParseOptions {
-            token: string
-        }
-    }
 }
 
 declare module 'express-session' {
