@@ -52,6 +52,7 @@ const io = new Server(server, {
 export const media = multer().single('upload')
 
 app.use(session)
+app.use(express.static('../frontend/dist'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use('/api', router)
