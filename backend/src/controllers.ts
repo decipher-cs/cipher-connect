@@ -65,7 +65,7 @@ export const loginUser = async (req: Request, res: Response) => {
         }
         req.session.username = username
         response = { message: undefined }
-        res.status(201).json(response)
+        res.status(201).send(username)
     })
 
     return
@@ -102,7 +102,7 @@ export const createUser = async (req: Request, res: Response) => {
         }
         req.session.username = username
         response = { message: undefined }
-        res.status(201).json(response)
+        res.status(201).send(username)
     })
     return
 }
