@@ -3,8 +3,6 @@ import {
     createUser,
     loginUser,
     logoutUser,
-    // renewAccessToken,
-    // varifyRefreshToken,
     fetchRoomPariticpants,
     fetchMessages,
     returnUsers,
