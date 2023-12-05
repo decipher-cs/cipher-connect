@@ -46,7 +46,10 @@ const session = expressSession({
 
 const server = http.createServer(app)
 const io = new Server(server, {
-    path: '/api/socket.io/',
+    cors: {
+        origin: '*',
+        methods: ['GET', 'POST'],
+    },
 })
 
 export const media = multer().single('upload')
