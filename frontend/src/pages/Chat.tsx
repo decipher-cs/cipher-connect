@@ -63,6 +63,13 @@ export const Chat = () => {
 
     return (
         <>
+            <Button onClick={()=>{
+                console.log('///logging///')
+                console.log(socket.connected)
+                console.log('///logs ended///')
+            }}>
+             logger
+            </Button>
             <Box
                 sx={{
                     display: 'flex',
