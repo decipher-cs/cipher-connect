@@ -18,22 +18,24 @@ export const Pages = () => {
         authStatus: { isLoggedIn },
     } = useAuth()
 
-    const { status, data: username } = useQuery({
-        queryFn: () =>
-            axiosServerInstance.get<string>(ApiRoutes.get.sessionStatus).then(res => {
-                // if ()
-                console.log("axios's res from session-status", res.data, res)
-                return 'password'
-            }),
-        retry: false,
-    })
+    let status = 'success'
 
-    useEffect(() => {
-        if (status === 'success' && username) {
-            console.log('login-status gave response. Setting username as:', username)
-            authoriseUser(username)
-        }
-    }, [username])
+    // const { status, data: username } = useQuery({
+    //     queryFn: () =>
+    //         axiosServerInstance.get<string>(ApiRoutes.get.sessionStatus).then(res => {
+    //             // if ()
+    //             console.log("axios's res from session-status", res.data, res)
+    //             return 'password'
+    //         }),
+    //     retry: false,
+    // })
+    //
+    // useEffect(() => {
+    //     if (status === 'success' && username) {
+    //         console.log('login-status gave response. Setting username as:', username)
+    //         authoriseUser(username)
+    //     }
+    // }, [username, status])
 
     return (
         <>
