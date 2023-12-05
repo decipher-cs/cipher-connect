@@ -27,8 +27,9 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
         const username: string | undefined = socket.handshake.auth.username
 
         if (username === undefined) return next(new Error('Username not valid'))
-        if ((await getUser(username)) === null) return next(new Error('Username not in database'))
+        // if ((await getUser(username)) === null) return next(new Error('Username not in database'))
 
+        console.log('new socket connection. username:', username, 'socket.id:', socket.id)
         socket.data.username = username
 
         return next()
