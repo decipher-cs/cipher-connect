@@ -38,7 +38,7 @@ export const Sidebar = (props: SidebarProps) => {
     const { dialogOpen, handleOpen, handleClose } = useDialog()
 
     const {
-        authStatus: { username },
+        authStatus: { username, isLoggedIn },
     } = useAuth()
 
     const { data: userProfile } = useQuery({
@@ -50,6 +50,8 @@ export const Sidebar = (props: SidebarProps) => {
 
     const handleSelectedItemChange = (event: React.MouseEvent<HTMLElement, MouseEvent>, value: string) =>
         setSelectedItem(value)
+
+    console.log('inside sidebar:', userProfile, username, isLoggedIn)
 
     if (!userProfile) return <CircularProgress />
 

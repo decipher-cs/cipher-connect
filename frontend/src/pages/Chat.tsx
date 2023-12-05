@@ -1,7 +1,6 @@
 import { Box, Button, CircularProgress, Collapse, Switch, Typography } from '@mui/material'
 import { useContext, useEffect, useReducer, useRef, useState } from 'react'
 import { ChatDisplaySection } from '../components/ChatDisplaySection'
-import { PulseLoader } from 'react-spinners'
 import { RoomInfo } from '../components/RoomInfo'
 import { Sidebar } from '../components/Sidebar'
 import { RoomActionType, roomReducer } from '../reducer/roomReducer'
@@ -14,7 +13,7 @@ export const Chat = () => {
     const socket = useSocket()
 
     const {
-        authStatus: { username },
+        authStatus: { username, isLoggedIn },
     } = useAuth()
 
     const [rooms, roomDispatcher] = useReducer(roomReducer, { selectedRoom: null, joinedRooms: [] })
@@ -47,6 +46,8 @@ export const Chat = () => {
             socket.removeListener('userProfileUpdated')
         }
     }, [])
+
+    if (!isLoggedIn || !username) return <Navigate to='/login' />
 
     return (
         <>
