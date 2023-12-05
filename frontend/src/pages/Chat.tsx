@@ -8,6 +8,7 @@ import { RoomListSidebar } from '../components/RoomListSidebar'
 import { useSocket } from '../hooks/useSocket'
 import { useDialog } from '../hooks/useDialog'
 import { useAuth } from '../hooks/useAuth'
+import { Navigate } from 'react-router-dom'
 
 export const Chat = () => {
     const socket = useSocket()
