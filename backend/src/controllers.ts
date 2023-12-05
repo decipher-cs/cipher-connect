@@ -425,7 +425,7 @@ export const doesValidUserSessionExist = async (req: Request, res: Response) => 
 }
 
 export const test = async (req: Request, res: Response) => {
-    console.log('all i know', req.session.id)
+    console.log('test point hit', req.session.id)
     res.sendStatus(200)
     return
 }

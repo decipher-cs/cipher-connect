@@ -9,16 +9,12 @@ import { RoomListSidebar } from '../components/RoomListSidebar'
 import { useSocket } from '../hooks/useSocket'
 import { useDialog } from '../hooks/useDialog'
 import { useAuth } from '../hooks/useAuth'
-import { Navigate } from 'react-router-dom'
-import { axiosServerInstance } from '../App'
 
 export const Chat = () => {
-    const [isLoading, setIsLoading] = useState(true)
-
     const socket = useSocket()
 
     const {
-        authStatus: { isLoggedIn, username },
+        authStatus: { username },
     } = useAuth()
 
     const [rooms, roomDispatcher] = useReducer(roomReducer, { selectedRoom: null, joinedRooms: [] })
@@ -26,13 +22,6 @@ export const Chat = () => {
     const { dialogOpen: roomInfoSidebarOpen, handleToggle: toggleRoomInfoSidebar } = useDialog()
 
     useEffect(() => {
-        if (socket.connected === false && isLoggedIn === true) {
-            socket.auth = { username }
-            socket.connect()
-        }
-
-        setIsLoading(false)
-
         socket.on('userLeftRoom', (staleUsername, roomId) => {
             if (username === staleUsername) {
                 // TODO: maybe this should direclty be after the onClick leave room and not here. event staying close to action
@@ -52,24 +41,15 @@ export const Chat = () => {
         socket.on('userProfileUpdated', profile => {})
 
         return () => {
-            socket.removeAllListeners()
-            socket.disconnect()
+            socket.removeListener('userLeftRoom')
+            socket.removeListener('userJoinedRoom')
+            socket.removeListener('roomDeleted')
+            socket.removeListener('userProfileUpdated')
         }
     }, [])
 
-    if (isLoggedIn === false) return <Navigate to='/login' replace />
-
-    if (isLoading) return <CircularProgress />
-
     return (
         <>
-            <Button onClick={()=>{
-                console.log('///logging///')
-                console.log(socket.connected)
-                console.log('///logs ended///')
-            }}>
-             logger
-            </Button>
             <Box
                 sx={{
                     display: 'flex',
