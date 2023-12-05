@@ -34,7 +34,7 @@ export const prisma = new PrismaClient()
 const session = expressSession({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     store: new PrismaSessionStore(prisma, {
         dbRecordIdIsSessionId: true,
         dbRecordIdFunction: undefined,

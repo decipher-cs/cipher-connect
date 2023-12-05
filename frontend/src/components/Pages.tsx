@@ -25,7 +25,10 @@ export const Pages = () => {
     })
 
     useEffect(() => {
-        if (status === 'success' && username) authoriseUser(username)
+        if (status === 'success' && username) {
+            console.log('login-status gave response. Setting username as:', username)
+            authoriseUser(username)
+        }
     }, [username])
 
     return (

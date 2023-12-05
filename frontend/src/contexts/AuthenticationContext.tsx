@@ -16,12 +16,14 @@ export const AuthenticationContextProvider = (props: React.PropsWithChildren) =>
         username: undefined,
         isLoggedIn: false,
     })
+    console.log('curr auth settings:', authStatus)
 
     const resetUserAuth = () => {
         setAuthStatus({ isLoggedIn: false, username: undefined })
     }
 
     const authoriseUser = (username: string) => {
+        console.log('new auth username', username)
         if (username) setAuthStatus({ isLoggedIn: true, username })
         else throw new Error('username cannot be undefined while setting auth status')
     }
