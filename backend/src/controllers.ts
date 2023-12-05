@@ -423,7 +423,7 @@ export const doesValidUserSessionExist = async (req: Request, res: Response) => 
         res.send(req.session.username)
     } else {
         console.log('no valid session')
-        res.sendStatus(401)
+        res.sendStatus(401).end(undefined)
     }
     return
 }
