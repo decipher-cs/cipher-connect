@@ -60,6 +60,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use('/api', router)
 
+console.log('logging working')
 initRoutes(router)
 initSocketIO(io)
 
