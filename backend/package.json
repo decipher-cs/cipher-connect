@@ -6,7 +6,7 @@
     "license": "GNU General Public License v3.0",
     "type": "module",
     "scripts": {
-        "build": "cp -r ../frontend/dist ./client/ && yarn prisma db push && yarn prisma generate && tsc",
+        "build": "yarn prisma db push && yarn prisma generate && tsc",
         "dev": "tsc-watch -p ./tsconfig.json --onSuccess \"node ./dist/server.js\"",
         "start": "node ./dist/server.js",
         "push": "prisma db push",
