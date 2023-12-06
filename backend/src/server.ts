@@ -60,13 +60,11 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use('/api', router)
 
-console.log('logging working')
 initRoutes(router)
 initSocketIO(io)
 
-app.get('*', (req, res) => {
-    console.log('wildcard')
-    res.redirect('/')
+app.get('*', (_, res) => {
+    res.sendFile('/dist/index.html', { root: '.' })
 })
 
 server.listen(PORT, () => console.log('Server started on port', PORT))

@@ -418,12 +418,9 @@ export const handleRoomConfigChange = async (req: Request, res: Response) => {
 }
 
 export const doesValidUserSessionExist = async (req: Request, res: Response) => {
-    console.log('chekcing validation')
     if (req.session.id && req.session.username) {
-        console.log('valid session exists for usrname:', req.session.username)
         res.sendStatus(201).end(req.session.username)
     } else {
-        console.log('no valid session')
         res.sendStatus(401)
     }
     return
