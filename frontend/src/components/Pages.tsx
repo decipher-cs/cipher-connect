@@ -19,7 +19,11 @@ export const Pages = () => {
     } = useAuth()
 
     const { status, data: username } = useQuery({
-        queryFn: () => axiosServerInstance.get<string>(ApiRoutes.get.sessionStatus).then(res => res.data),
+        queryKey: ['session-status'],
+        queryFn: () =>
+            axiosServerInstance
+                .get<string>(ApiRoutes.get.sessionStatus)
+                .then(data => (typeof data === 'string' ? data : undefined)),
         retry: false,
     })
 

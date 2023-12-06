@@ -419,7 +419,7 @@ export const handleRoomConfigChange = async (req: Request, res: Response) => {
 
 export const doesValidUserSessionExist = async (req: Request, res: Response) => {
     if (req.session.id && req.session.username) {
-        res.sendStatus(201).end(req.session.username)
+        res.status(201).end(req.session.username)
     } else {
         res.sendStatus(401)
     }

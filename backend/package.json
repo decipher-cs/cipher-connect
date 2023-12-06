@@ -1,18 +1,17 @@
 {
-    "name": "server-auth",
-    "version": "5.0.0",
+    "name": "cipher-connect-server",
+    "version": "6.0.0",
     "description": "backend for messaging app",
     "main": "./dist/server.js",
     "license": "GNU General Public License v3.0",
     "type": "module",
     "scripts": {
-        "build": "tsc",
+        "build": "cp -r ../frontend/dist ./client/ && yarn prisma db push && yarn prisma generate && tsc",
         "dev": "tsc-watch -p ./tsconfig.json --onSuccess \"node ./dist/server.js\"",
         "start": "node ./dist/server.js",
         "push": "prisma db push",
         "generate": "prisma generate",
-        "studio": "prisma studio",
-        "migrate": "prisma migrate"
+        "studio": "prisma studio"
     },
     "dependencies": {
         "@prisma/client": "^5.6.0",

@@ -16,6 +16,7 @@ import {
     ToggleButton,
     ToggleButtonGroup,
     Tooltip,
+    Typography,
 } from '@mui/material'
 import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -51,19 +52,22 @@ export const Sidebar = (props: SidebarProps) => {
     const handleSelectedItemChange = (event: React.MouseEvent<HTMLElement, MouseEvent>, value: string) =>
         setSelectedItem(value)
 
-    console.log('inside sidebar:', userProfile, username, isLoggedIn)
-
     if (!userProfile) return <CircularProgress />
 
     const avatarURL = userProfile.avatarPath
 
     return (
         <Box sx={{ display: 'grid', justifyItems: 'center' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
                 <Tooltip placement='right' title='Profile'>
-                    <IconButton sx={{ justifySelf: 'center' }} onClick={handleOpen}>
-                        <Avatar src={avatarURL ?? ''} />
-                    </IconButton>
+                    <>
+                        <IconButton sx={{ justifySelf: 'center' }} onClick={handleOpen}>
+                            <Avatar src={avatarURL ?? ''} />
+                        </IconButton>
+                        <Typography variant='caption' textOverflow='ellipsis'>
+                            {username}
+                        </Typography>
+                    </>
                 </Tooltip>
 
                 <Tooltip placement='right' title='Source code'>

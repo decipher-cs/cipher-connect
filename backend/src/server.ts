@@ -55,7 +55,7 @@ const io = new Server(server, {
 export const media = multer().single('upload')
 
 app.use(session)
-app.use(express.static('../frontend/dist'))
+app.use(express.static('client/'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use('/api', router)
@@ -64,7 +64,7 @@ initRoutes(router)
 initSocketIO(io)
 
 app.get('*', (_, res) => {
-    res.sendFile('/dist/index.html', { root: '.' })
+    res.sendFile('client/index.html', { root: '.' })
 })
 
 server.listen(PORT, () => console.log('Server started on port', PORT))

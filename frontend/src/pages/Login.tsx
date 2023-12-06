@@ -68,15 +68,6 @@ export const Login = () => {
                 height: '100svh',
             }}
         >
-            <Button
-                onClick={() => {
-                    axiosServerInstance.get('/test').then(res => {
-                        console.log('res from logger is:', res.data, res)
-                    })
-                }}
-            >
-                logger
-            </Button>
             <Tabs value={selectedTab} onChange={() => setIsLogin(!isLogin)} centered>
                 <Tab label='Login' />
                 <Tab label='Signup' />
