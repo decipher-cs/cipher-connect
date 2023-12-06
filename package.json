@@ -5,8 +5,7 @@
     "License": "GNU General Public License v3.0",
     "author": "decipher",
     "scripts": {
-        "build": "yarn --cwd frontend/ && yarn --cwd backend/ && cp -r frontend/dist backend/client && yarn --cwd backend/ build",
-        "dev": "tsc-watch -p ./tsconfig.json --onSuccess \"node ./dist/server.js\"",
-        "start": "cd backend/ && node dist/server.js"
+        "build": "yarn --cwd frontend/; yarn --cwd backend/; cp -r ./frontend/dist/ ./backend/client; yarn --cwd backend/ build",
+        "start": "yarn --cwd ./backend/ start"
     }
 }
