@@ -431,6 +431,6 @@ export const doesValidUserSessionExist = async (req: Request, res: Response) => 
 
 export const test = async (req: Request, res: Response) => {
     console.log('test point hit', req.session.id)
-    res.sendStatus(200)
+    res.sendStatus(201)
     return
 }

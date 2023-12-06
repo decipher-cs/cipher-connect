@@ -64,4 +64,9 @@ console.log('logging working')
 initRoutes(router)
 initSocketIO(io)
 
+app.get('*', (req, res) => {
+    console.log('wildcard')
+    res.redirect('/')
+})
+
 server.listen(PORT, () => console.log('Server started on port', PORT))
