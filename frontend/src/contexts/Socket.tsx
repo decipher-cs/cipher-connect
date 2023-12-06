@@ -1,4 +1,4 @@
-import React, { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react'
+import { createContext, PropsWithChildren, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { socket } from '../socket'
 
@@ -16,13 +16,13 @@ export const SocketContextProvider = (props: PropsWithChildren) => {
         socket.connect()
 
         socket.on('connect', () => {
-            console.log('socket connection successful')
+            import.meta.env.DEV ?? console.log('socket connection successful')
         })
         socket.on('connect_error', err => {
-            console.log('error while connecting through socket. ->', err)
+            import.meta.env.DEV ?? console.log('error while connecting through socket. ->', err)
         })
         socket.on('disconnect', (reason, description) => {
-            console.log('socket disconnected.\n', 'reason:', reason, 'description:', description)
+            import.meta.env.DEV ?? console.log('socket disconnected.\n', 'reason:', reason, 'description:', description)
         })
 
         return () => {

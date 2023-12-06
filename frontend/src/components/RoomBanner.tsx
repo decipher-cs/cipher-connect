@@ -113,7 +113,7 @@ export const RoomBanner = ({
                 alignContent: 'center',
             }}
         >
-            <IconButton href={imgSrc ?? ''} target='_blank'>
+            <IconButton href={imgSrc ?? ''} target='_blank' onClick={props.toggleRoomInfoSidebar}>
                 <Avatar src={imgSrc ?? ''} />
             </IconButton>
 

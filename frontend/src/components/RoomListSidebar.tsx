@@ -89,13 +89,11 @@ export const RoomListSidebar = ({ rooms, roomDispatcher }: RoomListSidebar) => {
             sx={{
                 flexShrink: 0,
                 flexGrow: 0,
-                width: '23%',
+                width: '25%',
                 minWidth: 'max-content',
 
                 display: 'grid',
-                // alignContent: 'center',
                 alignContent: 'flex-start',
-                // justifyItems: 'center'
                 backgroundColor: theme => theme.palette.background.light,
             }}
         >

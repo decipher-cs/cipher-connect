@@ -56,7 +56,7 @@ export const Chat = () => {
                 sx={{
                     display: 'flex',
                     height: '100svh',
-                    maxWidth: '100vw',
+                    width: '100vw',
                     alignContent: 'stretch',
                 }}
             >

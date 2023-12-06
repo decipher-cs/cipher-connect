@@ -11,14 +11,7 @@ import { PrismaSessionStore } from '@quixo3/prisma-session-store'
 
 dotenv.config()
 
-if (
-    !process.env.PORT ||
-    !process.env.CLIENT_URL ||
-    !process.env.SESSION_SECRET ||
-    !process.env.UPLOADTHING_SECRET ||
-    !process.env.UPLOADTHING_APP_ID ||
-    !process.env.DATABASE_URL
-)
+if (!process.env.PORT || !process.env.SESSION_SECRET || !process.env.UPLOADTHING_SECRET || !process.env.DATABASE_URL)
     throw new Error('Environment variable(s) missing.')
 
 const ONE_DAY = 1000 * 60 * 60 * 24
@@ -40,7 +33,7 @@ const session = expressSession({
         dbRecordIdFunction: undefined,
     }),
     cookie: {
-        maxAge: process.env.NODE_ENV === 'production' ? ONE_DAY * 2 : 1000 * 60 * 5,
+        maxAge: process.env.NODE_ENV === 'production' ? ONE_DAY : 1000 * 60 * 5,
     },
 })
 
