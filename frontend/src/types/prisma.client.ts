@@ -69,7 +69,7 @@ export type UserRoom = {
  * Model Message
  *
  */
-export type Message = {
+export type ServerMessage = {
     key: string
     senderUsername: string
     roomId: string
@@ -101,6 +101,10 @@ export enum UserStatus {
     dnd = 'dnd',
     hidden = 'hidden',
 }
+
+export type MessageDeliveryStatus = 'delivered' | 'delivering' | 'failed'
+
+export type Message = ServerMessage & { deliveryStatus: MessageDeliveryStatus }
 
 export type UserWithoutID = Omit<User, 'userId'>
 

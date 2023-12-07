@@ -1,7 +1,7 @@
 import { Box } from '@mui/material'
 import { useContext, useEffect, useReducer, useRef } from 'react'
 import React, { useState } from 'react'
-import { MessageContentType, RoomWithParticipants, User } from '../types/prisma.client'
+import { MessageContentType, RoomWithParticipants, ServerMessage, User } from '../types/prisma.client'
 import { MessageTile } from './MessageTile'
 import { ChatInputBar } from './ChatInputBar'
 import { RoomBanner } from './RoomBanner'
@@ -32,10 +32,15 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
 
     const tileContainer = useRef<HTMLElement>(null)
 
+    // TODO: use useInfiniteQuery instad of useQuery.
     const { data: serverMessages } = useQuery({
         queryKey: ['room-messages', props.currRoom.roomId],
         queryFn: () =>
-            axiosServerInstance.get<Message[]>(Routes.get.messages + `/${props.currRoom.roomId}`).then(res => res.data),
+            axiosServerInstance.get<ServerMessage[]>(Routes.get.messages + `/${props.currRoom.roomId}`).then(res => {
+                const result: Message[] = res.data.map(msg => ({ ...msg, deliveryStatus: 'delivered' }))
+                return result
+            }),
+        initialData: [],
     })
 
     const [messages, messageDispatcher] = useReducer(messageListReducer, [])
@@ -96,10 +101,14 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     }, [props.currRoom.roomId])
 
     useEffect(() => {
-        socket.on('message', messageFromServer => {
+        socket.on('message', (messageFromServer, callback) => {
             if (messageFromServer.roomId === props.currRoom.roomId) {
-                messageDispatcher({ type: MessageListActionType.add, newMessage: messageFromServer })
+                messageDispatcher({
+                    type: MessageListActionType.add,
+                    newMessage: { ...messageFromServer, deliveryStatus: 'delivered' },
+                })
             }
+            callback('ok')
         })
 
         return () => {

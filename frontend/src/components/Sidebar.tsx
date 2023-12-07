@@ -57,7 +57,7 @@ export const Sidebar = (props: SidebarProps) => {
     const avatarURL = userProfile.avatarPath
 
     return (
-        <Box sx={{ display: 'grid', justifyItems: 'center', width: '7%' }}>
+        <Box sx={{ display: 'grid', justifyItems: 'center', width: '7%', flexShrink: 0 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
                 <Tooltip placement='right' title='Profile'>
                     <>

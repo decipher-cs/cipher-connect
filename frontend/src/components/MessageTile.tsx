@@ -6,13 +6,32 @@ import {
     ArrowDropDownRounded,
     MoreRounded,
     MoreHorizRounded,
+    CheckRounded,
 } from '@mui/icons-material'
-import { Avatar, Box, IconButton, InputAdornment, Paper, Skeleton, Typography } from '@mui/material'
+import {
+    Avatar,
+    Box,
+    CircularProgress,
+    IconButton,
+    InputAdornment,
+    Paper,
+    Skeleton,
+    Tooltip,
+    Typography,
+} from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
 import { MouseEvent, useContext, useRef, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useSocket } from '../hooks/useSocket'
-import { Message, MessageContentType, Room, RoomType, User, UserWithoutID } from '../types/prisma.client'
+import {
+    Message,
+    MessageContentType,
+    Room,
+    MessageDeliveryStatus,
+    RoomType,
+    User,
+    UserWithoutID,
+} from '../types/prisma.client'
 import { AudioPlayer } from './AudioPlayer'
 import { MessageTilePopover } from './MessageTilePopover'
 import { StyledTextField } from './StyledTextField'
@@ -28,7 +47,7 @@ export const MessageTile = ({
     autoScrollToBottomRef,
     roomType,
     user,
-    message: { roomId, contentType, content, key: messageKey, senderUsername, createdAt, editedAt },
+    message: { roomId, contentType, content, key: messageKey, senderUsername, createdAt, editedAt, deliveryStatus },
     ...props
 }: MessageTileProps) => {
     const {
@@ -125,20 +144,31 @@ export const MessageTile = ({
                         // display: 'grid'
                     }}
                 >
-                    <Box
-                        sx={{
-                            position: 'absolute',
-                            display: 'grid',
-                            top: '0%',
-                            bottom: '0%',
-                            insetInline: alignment === 'left' ? 'auto -50px' : '-50px auto',
-                            placeItems: 'center',
-                        }}
-                    >
-                        <IconButton onClick={handleClickOnPopoverAnchor}>
-                            <MoreHorizRounded />
-                        </IconButton>
-                    </Box>
+                    {alignment === 'right' ? (
+                        <Box
+                            sx={{
+                                position: 'absolute',
+                                display: 'flex',
+                                flexFlow: alignment === 'right' ? 'row' : 'row-reverse',
+                                top: '0%',
+                                bottom: '0%',
+                                // insetInline: alignment === 'left' ? 'auto -70px' : '-70px auto',
+                                insetInline: '-70px auto',
+                                placeItems: 'center',
+                            }}
+                        >
+                            {deliveryStatus === 'delivered' ? (
+                                <Tooltip title='message sent'>
+                                    <CheckRounded color='disabled' />
+                                </Tooltip>
+                            ) : (
+                                <CircularProgress size={20} />
+                            )}
+                            <IconButton onClick={handleClickOnPopoverAnchor}>
+                                <MoreHorizRounded />
+                            </IconButton>
+                        </Box>
+                    ) : null}
 
                     {contentType === MessageContentType.text ? (
                         <Paper

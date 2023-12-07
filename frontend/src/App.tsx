@@ -5,7 +5,16 @@ import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-quer
 import { Pages } from './components/Pages'
 import { useDarkModeToggle } from './hooks/useDarkModeToggle'
 
-export const queryClient = new QueryClient()
+export const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false,
+            refetchOnMount: true,
+            refetchOnReconnect: true,
+            networkMode: import.meta.env.DEV ? 'always' : 'online',
+        },
+    },
+})
 
 export const axiosServerInstance = axios.create({
     baseURL: '/api',

@@ -1,12 +1,21 @@
 import { Buffers } from '@react-frontend-developer/buffers'
 import { Socket } from 'socket.io-client'
 
-import { Message, Room, User, RoomConfig, UserRoom, RoomType, RoomDetails, UserWithoutID } from './prisma.client'
+import {
+    ServerMessage as Message,
+    Room,
+    User,
+    RoomConfig,
+    UserRoom,
+    RoomType,
+    RoomDetails,
+    UserWithoutID,
+} from './prisma.client'
 
 export interface ServerToClientEvents {
     noArg: () => void
-    withAck: (d: string, callback: (e: number) => void) => void
-    message: (message: Message) => void
+    // withAck: (d: string, callback: (e: number) => void) => void
+    message: (message: Message, callback: (status: 'ok') => void) => void
 
     newRoomCreated: (roomId: Room['roomId']) => void
 
@@ -28,7 +37,7 @@ export interface ServerToClientEvents {
 
 // for socket.on()
 export interface ClientToServerEvents {
-    message: (message: Message) => void
+    message: (message: Message, callback: (status: 'ok') => void) => void
     userProfileUpdated: (newSettings: Partial<User>) => void
     roomUpdated: (updatedDetails: Partial<Room>) => void
     notification: (roomId: Room['roomId']) => void

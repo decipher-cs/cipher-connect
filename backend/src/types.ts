@@ -31,7 +31,7 @@ export interface ServerToClientEvents {
     noArg: () => void
     basicEmit: (a: number, b: string, c: Buffer) => void
     withAck: (d: string, callback: (e: number) => void) => void
-    message: (message: Message) => void
+    message: (message: Message, callback: (status: 'ok') => void) => void
 
     newRoomCreated: (roomId: Room['roomId']) => void
 
@@ -55,7 +55,7 @@ export interface InterServerEvents {}
 
 // for socket.on()
 export interface ClientToServerEvents {
-    message: (message: Message) => void
+    message: (message: Message, callback: (status: 'ok') => void) => void
     userProfileUpdated: (newSettings: Partial<User>) => void
     roomUpdated: (updatedDetails: Partial<Room>) => void
     notification: (roomId: Room['roomId']) => void

@@ -27,9 +27,6 @@ export const Pages = () => {
                 .then(data => (typeof data === 'string' ? data : '')),
         retry: false,
         staleTime: import.meta.env.DEV ? 1000 * 60 * 5 : 1000 * 60 * 60 * 24, // 24 hours
-        refetchOnWindowFocus: false,
-        refetchOnMount: true,
-        refetchOnReconnect: true,
     })
 
     useEffect(() => {

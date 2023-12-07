@@ -2,12 +2,12 @@ import { ArrowRight, AttachFileRounded, MicRounded } from '@mui/icons-material'
 import { IconButton, InputAdornment, ToggleButton } from '@mui/material'
 import { useContext, useId, useState } from 'react'
 import { useAudioRecorder } from '../hooks/useAudioRecorder'
-import { Message, MessageContentType } from '../types/prisma.client'
+import { Message, MessageContentType, ServerMessage } from '../types/prisma.client'
 import { SocketWithCustomEvents, TypingStatus } from '../types/socket'
 import { MultimediaAttachmentMenu } from './MultimediaAttachmentMenu'
 import { StyledTextField } from './StyledTextField'
 import { MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
-import { RoomActionType, RoomsState } from '../reducer/roomReducer'
+import { RoomsState } from '../reducer/roomReducer'
 import { Routes } from '../types/routes'
 import filetypeinfo, { filetypeextension, filetypemime, filetypename } from 'magic-bytes.js'
 import { useSocket } from '../hooks/useSocket'
@@ -30,14 +30,16 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
         authStatus: { username, isLoggedIn },
     } = useAuth()
 
-    const [currInputText, setCurrInputText] = useState('')
+    const [currInputText, setCurrInputText] = useState(
+        import.meta.env.DEV ? 'example_' + crypto.randomUUID().slice(0, 3) : ''
+    )
 
     const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
 
     const [recordedAudioFile, setRecordedAudioFile] = useState<Blob>()
 
     const { recordingState, toggleAudioRecorderStartStop, isMicReady, micPermission } = useAudioRecorder(ev => {
-        handleMessageDelivery({ content: ev.data, contentType: MessageContentType.audio })
+        handleMessageDelivery({ content: new File([ev.data], 'audio'), contentType: MessageContentType.audio })
     })
 
     const { mutateAsync: uploadMedia, data } = useMutation({
@@ -55,24 +57,13 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
               contentType: MessageContentType.text
           }
         | {
-              content: File | Blob
+              content: File
               // MIME: string
               contentType: Exclude<MessageContentType, MessageContentType.text>
           }
 
     const handleMessageDelivery = async (args: HandleMessageDeliveryArgs) => {
         let { content, contentType } = args
-
-        if (typeof content !== 'string') {
-            const formData = new FormData()
-            formData.append('upload', content)
-            try {
-                content = await uploadMedia(formData)
-            } catch (error) {
-                // TODO: notify user of error
-                throw new Error('something wrong')
-            }
-        }
 
         const message: Message = {
             key: crypto.randomUUID(),
@@ -81,12 +72,36 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
             senderUsername: username,
             createdAt: new Date(),
             contentType,
-            content: content,
+            content: typeof content === 'string' ? content : URL.createObjectURL(content),
+            deliveryStatus: 'delivering',
         }
 
-        socket.emit('message', message)
-
         props.messageListDispatcher({ type: MessageListActionType.add, newMessage: message })
+
+        if (typeof content !== 'string') {
+            const formData = new FormData()
+            formData.append('upload', content)
+            try {
+                content = await uploadMedia(formData)
+            } catch (error) {
+                // TODO: notify user of error
+                props.messageListDispatcher({
+                    type: MessageListActionType.changeDeliveryStatus,
+                    messageId: message.key,
+                    changeStatusTo: 'failed',
+                })
+            }
+        }
+
+        const { deliveryStatus, ...messageForServer } = message
+
+        socket.emit('message', messageForServer, res => {
+            props.messageListDispatcher({
+                type: MessageListActionType.changeDeliveryStatus,
+                messageId: message.key,
+                changeStatusTo: res === 'ok' ? 'delivered' : 'failed',
+            })
+        })
     }
 
     const handleUpload = async (

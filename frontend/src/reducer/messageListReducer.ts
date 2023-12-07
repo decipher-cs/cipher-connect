@@ -8,6 +8,7 @@ export enum MessageListActionType {
     add = 'add',
     remove = 'remove',
     edit = 'edit',
+    changeDeliveryStatus = 'changeDeliveryStatus',
 }
 export type MessageListAction =
     | {
@@ -25,6 +26,11 @@ export type MessageListAction =
     | {
           type: MessageListActionType.edit
           updatedMessage: Pick<Message, 'editedAt' | 'content' | 'key'>
+      }
+    | {
+          type: MessageListActionType.changeDeliveryStatus
+          messageId: Message['key']
+          changeStatusTo: Message['deliveryStatus']
       }
 
 export const messageListReducer: React.Reducer<MessageArray, MessageListAction> = (state, action) => {
@@ -52,6 +58,14 @@ export const messageListReducer: React.Reducer<MessageArray, MessageListAction> 
                 if (message.key === action.updatedMessage.key) {
                     message.content = action.updatedMessage.content
                     message.editedAt = action.updatedMessage.editedAt
+                }
+            })
+            break
+
+        case MessageListActionType.changeDeliveryStatus:
+            messageList.forEach(message => {
+                if (message.key === action.messageId) {
+                    message.deliveryStatus = action.changeStatusTo
                 }
             })
             break

@@ -107,6 +107,8 @@ Install my-project with yarn
 - [ ] Provide option to hide password while typing.
 - [ ] Redirect client to login page on logout using res.redirect('logout')
 - [ ] Warn before running `crypto.randomUUID()` in an unsecure context (http scheme) and alert user or throw error.
+- [ ] Use useInfiniteQuery for fetching messages.
+- [ ] Have a default room that every new user has. Make it a room with the developer and a greeting message.
 
 ## License
 
