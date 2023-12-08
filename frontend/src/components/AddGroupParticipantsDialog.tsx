@@ -7,13 +7,13 @@ import {
     DialogTitle,
     DialogContent,
     CircularProgress,
+    Stack,
 } from '@mui/material'
 import { useContext, useRef, useState } from 'react'
 import { CloseRounded, DeleteRounded, DoneAllRounded, PersonAddRounded } from '@mui/icons-material'
 import { StyledTextField } from './StyledTextField'
 import { Routes } from '../types/routes'
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
-import { useFormik, FormikErrors } from 'formik'
 import { useSocket } from '../hooks/useSocket'
 import { useQuery } from '@tanstack/react-query'
 import { axiosServerInstance } from '../App'
@@ -33,7 +33,7 @@ export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRoom
 
     const {
         handleSubmit,
-        formState: { errors, isSubmitting, isValidating, isDirty, touchedFields },
+        formState: { errors, isSubmitting, isValidating, isDirty, touchedFields, defaultValues },
         control,
         register,
         reset,
@@ -42,7 +42,7 @@ export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRoom
             usernames: [{ username: '' }],
         },
         resolver: zodResolver(userListValidation),
-        mode: 'onChange',
+        mode: 'onBlur',
         reValidateMode: 'onChange',
         shouldUnregister: true,
         criteriaMode: 'firstError',
@@ -51,72 +51,77 @@ export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRoom
     const { append, remove, fields } = useFieldArray({ name: 'usernames', control })
 
     const submitUserList: SubmitHandler<UserList> = ({ usernames }) => {
-        console.log('submitted', usernames)
-        // const uniqueUsers = new Set(usernames.map(({ username }) => username))
-        // const usernameArray = Array.from(uniqueUsers)
-        // socket.emit('userJoinedRoom', props.room.roomId, usernameArray)
-        // handleClose()
+        const participants = props.room.participants.map(u => u.username)
+        const uniqueUsers = new Set(usernames.map(({ username }) => username))
+        const usernameArray = Array.from(uniqueUsers).filter(username => !participants.includes(username))
+        if (usernameArray.length >= 1) socket.emit('userJoinedRoom', props.room.roomId, usernameArray)
+        reset(defaultValues)
+        handleClose()
     }
-    console.log(touchedFields.usernames)
 
     return (
         <>
             <IconButton onClick={handleOpen}>
                 <PersonAddRounded />
             </IconButton>
-            <Dialog open={dialogOpen} onClose={handleClose} fullWidth>
+            <Dialog open={dialogOpen} onClose={handleClose}>
                 <DialogTitle
                     sx={{
                         display: 'flex',
                         justifyContent: 'space-between',
+                        gap: 4,
                     }}
                 >
                     Add members to group
-                    <Button variant='outlined' color='primary' onClick={() => append({ username: '' })}>
-                        Add More
+                    <Button variant='outlined' onClick={() => append({ username: '' })}>
+                        Add More +
                     </Button>
                 </DialogTitle>
 
-                <DialogContent>
-                    {fields.map((field, i) => (
-                        <StyledTextField
-                            key={field.id}
-                            size='small'
-                            sx={{ width: '100%', my: 1 }}
-                            {...register(`usernames.${i}.username` as const)}
-                            placeholder='Add user to group'
-                            error={errors.usernames?.[i]?.username?.message !== undefined}
-                            helperText={errors.usernames?.[i]?.username?.message ?? ' '}
-                            InputProps={{
-                                endAdornment: (
-                                    <>
-                                        {touchedFields?.usernames?.[i] &&
-                                            (isValidating ? (
-                                                <CircularProgress size={'1rem'} />
-                                            ) : errors?.usernames?.[i]?.username?.message ? (
-                                                <CloseRounded color='error' />
-                                            ) : (
-                                                <DoneAllRounded color='success' />
-                                            ))}
-                                        <IconButton onClick={() => remove(i)}>
-                                            <DeleteRounded />
-                                        </IconButton>
-                                    </>
-                                ),
-                            }}
-                        />
-                    ))}
+                <DialogContent dividers>
+                    <Stack>
+                        {fields.map((field, i) => (
+                            <StyledTextField
+                                key={field.id}
+                                variant='standard'
+                                // sx={{ width: '100%', my: 1 }}
+                                {...register(`usernames.${i}.username` as const)}
+                                placeholder='Enter username...'
+                                error={errors.usernames?.[i]?.username?.message !== undefined}
+                                helperText={errors.usernames?.[i]?.username?.message ?? ' '}
+                                InputProps={{
+                                    endAdornment: (
+                                        <>
+                                            {touchedFields?.usernames?.[i] &&
+                                                (isValidating ? (
+                                                    <CircularProgress size={'1rem'} />
+                                                ) : errors?.usernames?.[i]?.username?.message ? (
+                                                    <CloseRounded color='error' />
+                                                ) : (
+                                                    <DoneAllRounded color='success' />
+                                                ))}
+                                            <IconButton onClick={() => remove(i)}>
+                                                <DeleteRounded />
+                                            </IconButton>
+                                        </>
+                                    ),
+                                }}
+                            />
+                        ))}
+                    </Stack>
                 </DialogContent>
+
                 <DialogActions>
                     <ButtonGroup>
                         <Button
                             onClick={() => {
                                 handleClose()
-                                reset()
+                                reset(defaultValues)
                             }}
                         >
                             Cancel
                         </Button>
+                        <Button onClick={() => reset(defaultValues)}>Reset</Button>
                         <ButtonWithLoader
                             showLoader={isSubmitting}
                             type='submit'
