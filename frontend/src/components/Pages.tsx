@@ -13,20 +13,17 @@ import { Box, CircularProgress, Container, LinearProgress, Typography } from '@m
 import { Chat } from '../pages/Chat'
 
 export const Pages = () => {
-    const {
-        authoriseUser,
-        authStatus: { isLoggedIn },
-    } = useAuth()
+    const { authoriseUser } = useAuth()
 
     // Make a get request to server to check if the user already has a valid session or not.
     const { status, data: username } = useQuery({
         queryKey: ['session-status'],
         queryFn: () =>
-            axiosServerInstance
-                .get<string>(ApiRoutes.get.sessionStatus)
-                .then(data => (typeof data === 'string' ? data : '')),
+            axiosServerInstance.get<string>(ApiRoutes.get.sessionStatus).then(res => {
+                if (res.status === 201 && typeof res.data === 'string') return res.data
+                throw new Error('Server responded with wrong data type for username.')
+            }),
         retry: false,
-        staleTime: import.meta.env.DEV ? 1000 * 60 * 5 : 1000 * 60 * 60 * 24, // 24 hours
     })
 
     useEffect(() => {
