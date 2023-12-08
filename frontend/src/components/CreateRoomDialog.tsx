@@ -98,7 +98,7 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
                             exclusive
                             sx={{ pl: 2 }}
                             aria-label='room-type'
-                            value={getValues('roomType')}
+                            value={watch('roomType') ?? defaultValues.roomType}
                             onChange={(_, value) => setValue('roomType', value)}
                             color={errors.roomType?.message ? 'error' : undefined}
                         >

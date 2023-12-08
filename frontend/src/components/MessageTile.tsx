@@ -158,11 +158,13 @@ export const MessageTile = ({
                             }}
                         >
                             {deliveryStatus === 'delivered' ? (
-                                <Tooltip title='message sent'>
+                                <Tooltip title='Message Sent'>
                                     <CheckRounded color='disabled' />
                                 </Tooltip>
                             ) : (
-                                <CircularProgress size={20} />
+                                <Tooltip title='Sending...'>
+                                    <CircularProgress size={20} />
+                                </Tooltip>
                             )}
                             <IconButton onClick={handleClickOnPopoverAnchor}>
                                 <MoreHorizRounded />

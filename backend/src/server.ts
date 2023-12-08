@@ -33,7 +33,7 @@ const session = expressSession({
         dbRecordIdFunction: undefined,
     }),
     cookie: {
-        maxAge: process.env.NODE_ENV === 'production' ? ONE_DAY : 1000 * 60 * 5,
+        maxAge: process.env.NODE_ENV === 'production' ? ONE_DAY : ONE_DAY * 5,
     },
 })
 

@@ -78,30 +78,30 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
 
         props.messageListDispatcher({ type: MessageListActionType.add, newMessage: message })
 
-        if (typeof content !== 'string') {
-            const formData = new FormData()
-            formData.append('upload', content)
-            try {
+        try {
+            if (content instanceof File) {
+                const formData = new FormData()
+                formData.append('upload', content)
                 content = await uploadMedia(formData)
-            } catch (error) {
-                // TODO: notify user of error
+            }
+
+            const { deliveryStatus, ...messageForServer } = { ...message, content }
+
+            socket.emit('message', messageForServer, res => {
                 props.messageListDispatcher({
                     type: MessageListActionType.changeDeliveryStatus,
                     messageId: message.key,
-                    changeStatusTo: 'failed',
+                    changeStatusTo: res === 'ok' ? 'delivered' : 'failed',
                 })
-            }
-        }
-
-        const { deliveryStatus, ...messageForServer } = message
-
-        socket.emit('message', messageForServer, res => {
+            })
+        } catch (error) {
+            // TODO: notify user of error
             props.messageListDispatcher({
                 type: MessageListActionType.changeDeliveryStatus,
                 messageId: message.key,
-                changeStatusTo: res === 'ok' ? 'delivered' : 'failed',
+                changeStatusTo: 'failed',
             })
-        })
+        }
     }
 
     const handleUpload = async (
