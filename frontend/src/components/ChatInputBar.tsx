@@ -1,6 +1,6 @@
 import { ArrowRight, AttachFileRounded, MicRounded } from '@mui/icons-material'
 import { IconButton, InputAdornment, ToggleButton } from '@mui/material'
-import { useContext, useId, useState } from 'react'
+import { useContext, useEffect, useId, useState } from 'react'
 import { useAudioRecorder } from '../hooks/useAudioRecorder'
 import { Message, MessageContentType, ServerMessage } from '../types/prisma.client'
 import { SocketWithCustomEvents, TypingStatus } from '../types/socket'
@@ -30,6 +30,8 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
         authStatus: { username, isLoggedIn },
     } = useAuth()
 
+    const socket = useSocket()
+
     const [currInputText, setCurrInputText] = useState(
         import.meta.env.DEV ? 'example_' + crypto.randomUUID().slice(0, 3) : ''
     )
@@ -39,6 +41,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
     const [recordedAudioFile, setRecordedAudioFile] = useState<Blob>()
 
     const { recordingState, toggleAudioRecorderStartStop, isMicReady, micPermission } = useAudioRecorder(ev => {
+        console.log('hook:', props.currRoom.roomId.slice(-4, -1))
         handleMessageDelivery({ content: new File([ev.data], 'audio'), contentType: MessageContentType.audio })
     })
 
@@ -47,7 +50,12 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
         mutationFn: (fd: FormData) => axiosServerInstance.post<string>(Routes.post.media, fd).then(res => res.data),
     })
 
-    const socket = useSocket()
+    useEffect(() => {
+        return () => {
+            setCurrInputText('')
+            setMenuAnchor(null)
+        }
+    }, [])
 
     if (!isLoggedIn || !username) return <Navigate to='/login' replace />
 

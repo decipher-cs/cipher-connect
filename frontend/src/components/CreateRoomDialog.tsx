@@ -41,8 +41,8 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
 
     const defaultValues = {
         roomType: RoomType.group,
-        roomDisplayName: '',
-        participants: [{ username: '' }],
+        roomDisplayName: import.meta.env.DEV ? 'xyz_' + crypto.randomUUID().slice(0, 4) : '',
+        participants: [{ username: import.meta.env.DEV ? 'password2' : '' }],
     } satisfies CreateRoomFormValues
 
     const {
@@ -58,7 +58,7 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
         defaultValues,
         resolver: zodResolver(roomCreationFormValidation),
         mode: 'onBlur',
-        reValidateMode: 'onBlur',
+        reValidateMode: 'onChange',
         criteriaMode: 'firstError',
         shouldUnregister: true,
     })
@@ -98,13 +98,21 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
                             exclusive
                             sx={{ pl: 2 }}
                             aria-label='room-type'
-                            value={watch('roomType') ?? defaultValues.roomType}
-                            onChange={(_, value) => setValue('roomType', value)}
+                            {...register('roomType')}
+                            defaultValue={defaultValues.roomType}
+                            value={watch('roomType')}
                             color={errors.roomType?.message ? 'error' : undefined}
+                            onChange={(_, value) => {
+                                // console.log('setting', getValues('roomType'), 'to', value)
+                                setValue('roomType', value)
+                            }}
                         >
                             <ToggleButton value={RoomType.group}>Group</ToggleButton>
                             <ToggleButton value={RoomType.private}>Private</ToggleButton>
                         </ToggleButtonGroup>
+                        <Typography color='error' pl={2}>
+                            {errors.roomType?.message ?? ' '}
+                        </Typography>
                     </Box>
 
                     <Box sx={{ display: 'grid', gap: 1 }}>

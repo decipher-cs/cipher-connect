@@ -7,6 +7,7 @@ import {
     MoreRounded,
     MoreHorizRounded,
     CheckRounded,
+    DoneAllRounded,
 } from '@mui/icons-material'
 import {
     Avatar,
@@ -159,7 +160,8 @@ export const MessageTile = ({
                         >
                             {deliveryStatus === 'delivered' ? (
                                 <Tooltip title='Message Sent'>
-                                    <CheckRounded color='disabled' />
+                                    {/* <CheckRounded color='disabled' /> */}
+                                    <DoneAllRounded color='disabled' />
                                 </Tooltip>
                             ) : (
                                 <Tooltip title='Sending...'>

@@ -1,7 +1,15 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
-export const useAudioRecorder = (onRecordingFinish: (e: BlobEvent) => void) => {
-    const [audioRecorder, setAudioRecorder] = useState<MediaRecorder>()
+export const useAudioRecorder = (onRecordingFinishCallback: (e: BlobEvent) => void) => {
+    const onRecordingFinish = useRef((e: BlobEvent) => {})
+
+    onRecordingFinish.current = onRecordingFinishCallback
+
+    const handleAudioDataAvailable = (ev: BlobEvent) => {
+        onRecordingFinish.current(ev)
+    }
+
+    const audioRecorder = useRef<MediaRecorder>()
 
     const [recordingState, setRecordingState] = useState<RecordingState>('inactive')
 
@@ -9,16 +17,16 @@ export const useAudioRecorder = (onRecordingFinish: (e: BlobEvent) => void) => {
 
     const [micPermission, setMicPermission] = useState<PermissionState>('prompt')
 
+    const handleOnPause = (ev: Event) => {
+        setRecordingState('paused')
+    }
+
     const handleOnStart = (ev: Event) => {
         setRecordingState('recording')
     }
 
     const handleOnStop = (ev: Event) => {
         setRecordingState('inactive')
-    }
-
-    const handleAudioDataAvailable = (ev: BlobEvent) => {
-        onRecordingFinish(ev)
     }
 
     const getMicPermission = async () => {
@@ -29,19 +37,21 @@ export const useAudioRecorder = (onRecordingFinish: (e: BlobEvent) => void) => {
 
             setMicPermission('granted')
 
-            const audioRecorder = new MediaRecorder(mediaStream)
+            audioRecorder.current = new MediaRecorder(mediaStream)
 
-            audioRecorder.onstart = handleOnStart
+            audioRecorder.current.onstart = handleOnStart
 
-            audioRecorder.onstop = handleOnStop
+            audioRecorder.current.onstop = handleOnStop
 
-            audioRecorder.onerror = () => {
+            audioRecorder.current.onpause = handleOnPause
+
+            audioRecorder.current.onresume = handleOnStart
+
+            audioRecorder.current.onerror = () => {
                 console.log('error while recording audio')
             }
 
-            audioRecorder.ondataavailable = handleAudioDataAvailable
-
-            setAudioRecorder(audioRecorder)
+            audioRecorder.current.ondataavailable = handleAudioDataAvailable
 
             setIsMicReady(true)
         } catch (err) {
@@ -52,25 +62,28 @@ export const useAudioRecorder = (onRecordingFinish: (e: BlobEvent) => void) => {
 
     useEffect(() => {
         getMicPermission()
+
+        return () => {
+            stopRecording()
+            setRecordingState('inactive')
+        }
     }, [])
 
-    const startRecording = () => {
-        audioRecorder?.start()
-    }
+    const startRecording = () => audioRecorder.current?.start()
 
-    const stopRecording = () => audioRecorder?.stop()
+    const stopRecording = () => audioRecorder.current?.stop()
 
-    const pauseRecording = () => audioRecorder?.pause()
+    const pauseRecording = () => audioRecorder.current?.pause()
 
-    const resumeRecording = () => audioRecorder?.resume()
+    const resumeRecording = () => audioRecorder.current?.resume()
 
-    const getRecordingState = () => audioRecorder?.state
+    const getRecordingState = () => audioRecorder.current?.state
 
     const toggleAudioRecorderStartStop = () => {
-        if (!audioRecorder) throw Error('Audio device is undefined', audioRecorder)
+        if (!audioRecorder.current) throw Error('Audio device is undefined')
 
-        if (audioRecorder.state === 'inactive') startRecording()
-        else if (audioRecorder.state === 'recording') stopRecording()
+        if (audioRecorder.current.state === 'inactive') startRecording()
+        else if (audioRecorder.current.state === 'recording') stopRecording()
     }
 
     return {
