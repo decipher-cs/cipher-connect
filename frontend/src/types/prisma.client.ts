@@ -15,19 +15,10 @@ export type User = {
     userId: string
     username: string
     createTime: Date
+    passwordHash: string
     displayName: string
     avatarPath: string | null
     status: UserStatus
-}
-
-/**
- * Model PasswordHash
- *
- */
-export type PasswordHash = {
-    id: number
-    username: string
-    hash: string
 }
 
 /**
@@ -38,7 +29,7 @@ export type RoomConfig = {
     username: string
     roomId: string
     isHidden: boolean
-    hasUnreadMessages: boolean
+    isBlocked: boolean
     isNotificationMuted: boolean
 }
 
@@ -48,9 +39,9 @@ export type RoomConfig = {
  */
 export type Room = {
     roomId: string
+    roomType: RoomType
     roomDisplayName: string | null
     roomAvatar: string | null
-    roomType: RoomType
 }
 
 /**
@@ -62,7 +53,9 @@ export type UserRoom = {
     roomId: string
     joinedAt: Date
     isAdmin: boolean
-    hasUnreadMessages: boolean
+    isMarkedFavourite: boolean
+    isPinned: boolean
+    lastReadMessage: string | null
 }
 
 /**
@@ -77,6 +70,17 @@ export type ServerMessage = {
     createdAt: Date
     editedAt: Date | null
     contentType: MessageContentType
+}
+
+/**
+ * Model Session
+ *
+ */
+export type Session = {
+    id: string
+    sid: string
+    data: string
+    expiresAt: Date
 }
 
 /**
