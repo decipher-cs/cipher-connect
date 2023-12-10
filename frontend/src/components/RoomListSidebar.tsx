@@ -1,6 +1,6 @@
-import { Box, CircularProgress, IconButton, List, Tooltip, Typography } from '@mui/material'
+import { Box, CircularProgress, IconButton, InputAdornment, List, Tooltip, Typography } from '@mui/material'
 import { useContext, useEffect, useState } from 'react'
-import { AddToPhotosRounded } from '@mui/icons-material'
+import { AddToPhotosRounded, SearchRounded } from '@mui/icons-material'
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { RoomListItem } from './RoomListItem'
 import { CreateRoomDialog } from './CreateRoomDialog'
@@ -11,13 +11,16 @@ import { useSocket } from '../hooks/useSocket'
 import { RoomDetails } from '../types/prisma.client'
 import { axiosServerInstance } from '../App'
 import { useAuth } from '../hooks/useAuth'
+import { StyledTextField } from './StyledTextField'
+import { ProfileSettings } from './ProfileSettings'
 
 interface RoomListSidebar {
     roomDispatcher: React.Dispatch<RoomActions>
     rooms: RoomsState
+    selectedTab: 'messages' | 'favourates' | 'settings'
 }
 
-export const RoomListSidebar = ({ rooms, roomDispatcher }: RoomListSidebar) => {
+export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomListSidebar) => {
     const { handleClose, handleOpen, dialogOpen } = useDialog()
 
     const {
@@ -97,35 +100,115 @@ export const RoomListSidebar = ({ rooms, roomDispatcher }: RoomListSidebar) => {
                 backgroundColor: theme => theme.palette.background.light,
             }}
         >
-            <Typography pl={2} display={'inline'} sx={{ gridArea: '1 / 1 / 1 / 1', alignSelf: 'center' }}>
-                Messages
-            </Typography>
-            <Tooltip title='Create new room' placement='right'>
-                <IconButton onClick={handleOpen} sx={{ justifySelf: 'flex-end', gridArea: '1 / 1 / 1 / 1' }}>
-                    <AddToPhotosRounded />
-                </IconButton>
-            </Tooltip>
+            {selectedTab === 'messages' && (
+                <>
+                    <Typography
+                        pl={2}
+                        variant='h6'
+                        display={'inline'}
+                        sx={{ gridArea: '1 / 1 / 1 / 1', alignSelf: 'center' }}
+                    >
+                        Messages
+                    </Typography>
+                    <Tooltip title='Create new room' placement='right'>
+                        <IconButton onClick={handleOpen} sx={{ justifySelf: 'flex-end', gridArea: '1 / 1 / 1 / 1' }}>
+                            <AddToPhotosRounded />
+                        </IconButton>
+                    </Tooltip>
 
-            <CreateRoomDialog dialogOpen={dialogOpen} roomDispatcher={roomDispatcher} handleClose={handleClose} />
+                    <CreateRoomDialog
+                        dialogOpen={dialogOpen}
+                        roomDispatcher={roomDispatcher}
+                        handleClose={handleClose}
+                    />
 
-            {fetchingRoomsInProgress === true ? (
-                <CircularProgress />
-            ) : (
-                <List sx={{ overflowY: 'auto' }}>
-                    {rooms.joinedRooms.map((room, i) => {
-                        return (
-                            <RoomListItem
-                                key={room.roomId}
-                                roomIndex={i}
-                                selectedRoomIndex={rooms.selectedRoom}
-                                room={room}
-                                roomDispatcher={roomDispatcher}
-                                mutateMessageReadStatus={mutateMessageReadStatus}
-                            />
-                        )
-                    })}
-                </List>
+                    <StyledTextField
+                        sx={{ m: 2 }}
+                        placeholder='search anything'
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position='end'>
+                                    <SearchRounded color='disabled' />
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
+
+                    {fetchingRoomsInProgress === true ? (
+                        <CircularProgress />
+                    ) : (
+                        <List sx={{ overflowY: 'auto' }}>
+                            {rooms.joinedRooms.map((room, i) => {
+                                return (
+                                    <RoomListItem
+                                        key={room.roomId}
+                                        roomIndex={i}
+                                        selectedRoomIndex={rooms.selectedRoom}
+                                        room={room}
+                                        roomDispatcher={roomDispatcher}
+                                        mutateMessageReadStatus={mutateMessageReadStatus}
+                                    />
+                                )
+                            })}
+                        </List>
+                    )}
+                </>
             )}
+            {selectedTab === 'favourates' && (
+                <>
+                    <Typography
+                        pl={2}
+                        variant='h6'
+                        display={'inline'}
+                        sx={{ gridArea: '1 / 1 / 1 / 1', alignSelf: 'center' }}
+                    >
+                        Favourite Messages
+                    </Typography>
+                    <Tooltip title='Create new room' placement='right'>
+                        <IconButton onClick={handleOpen} sx={{ justifySelf: 'flex-end', gridArea: '1 / 1 / 1 / 1' }}>
+                            <AddToPhotosRounded />
+                        </IconButton>
+                    </Tooltip>
+
+                    <CreateRoomDialog
+                        dialogOpen={dialogOpen}
+                        roomDispatcher={roomDispatcher}
+                        handleClose={handleClose}
+                    />
+
+                    <StyledTextField
+                        sx={{ m: 2 }}
+                        placeholder='search anything'
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position='end'>
+                                    <SearchRounded color='disabled' />
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
+
+                    {fetchingRoomsInProgress === true ? (
+                        <CircularProgress />
+                    ) : (
+                        <List sx={{ overflowY: 'auto' }}>
+                            {rooms.joinedRooms.map((room, i) => {
+                                return (
+                                    <RoomListItem
+                                        key={room.roomId}
+                                        roomIndex={i}
+                                        selectedRoomIndex={rooms.selectedRoom}
+                                        room={room}
+                                        roomDispatcher={roomDispatcher}
+                                        mutateMessageReadStatus={mutateMessageReadStatus}
+                                    />
+                                )
+                            })}
+                        </List>
+                    )}
+                </>
+            )}
+            {selectedTab === 'settings' && <ProfileSettings />}
         </Box>
     )
 }

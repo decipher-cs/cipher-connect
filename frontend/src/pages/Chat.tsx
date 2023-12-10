@@ -21,6 +21,11 @@ export const Chat = () => {
 
     const { dialogOpen: roomInfoSidebarOpen, handleToggle: toggleRoomInfoSidebar } = useDialog()
 
+    // TODO: better typingn for tab strings
+    const [selectedTab, setSelectedTab] = useState<'messages' | 'favourates' | 'settings'>('messages')
+
+    const handleTabChange = (newTab: 'messages' | 'favourates' | 'settings') => setSelectedTab(newTab)
+
     useEffect(() => {
         socket.on('userLeftRoom', (staleUsername, roomId) => {
             if (username === staleUsername) {
@@ -60,9 +65,9 @@ export const Chat = () => {
                     alignContent: 'stretch',
                 }}
             >
-                <Sidebar />
+                <Sidebar selectedTab={selectedTab} handleTabChange={handleTabChange} />
 
-                <RoomListSidebar rooms={rooms} roomDispatcher={roomDispatcher} />
+                <RoomListSidebar rooms={rooms} roomDispatcher={roomDispatcher} selectedTab={selectedTab} />
 
                 {rooms.selectedRoom === null || rooms.joinedRooms[rooms.selectedRoom] === undefined ? (
                     <Box sx={{ display: 'grid', flex: 1, placeContent: 'center' }}>

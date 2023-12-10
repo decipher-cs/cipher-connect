@@ -80,11 +80,14 @@ model UserRoom {
 
   joinedAt          DateTime @default(now())
   isAdmin           Boolean  @default(false)
-  hasUnreadMessages Boolean  @default(true)
+  isMarkedFavourite Boolean  @default(false)
+  isPinned          Boolean  @default(false)
+  lastReadMessage   String?
 
   user       User       @relation(fields: [username], references: [username], onDelete: Cascade)
   room       Room       @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
   roomConfig RoomConfig @relation(fields: [username, roomId], references: [username, roomId], onDelete: Cascade)
+  // message    Message    @relation(fields: [lastReadMessage], references: [key])
 
   @@id([username, roomId])
 }
@@ -108,6 +111,7 @@ model Message {
 
   sender User @relation(fields: [senderUsername], references: [username], onDelete: Cascade)
   room   Room @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
+  // UserRoom UserRoom[]
 }
 
 model Session {

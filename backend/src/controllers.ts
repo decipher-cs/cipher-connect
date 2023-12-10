@@ -316,11 +316,11 @@ export const handleNewParticipants = async (req: Request, res: Response) => {
 
 export const handleMessageReadStatusChange = async (req: Request, res: Response) => {
     const { roomId, username } = req.params
-    const { hasUnreadMessages }: { hasUnreadMessages: boolean } = req.body
+    const { lastUnreadMessageKey } = req.body
     try {
-        if (!roomId || !username || hasUnreadMessages === undefined) throw new Error('Incorrect params')
+        if (!roomId || !username || !lastUnreadMessageKey) throw new Error('Incorrect params')
 
-        await updateMessageReadStatus(roomId, hasUnreadMessages, [username])
+        await updateMessageReadStatus(roomId, lastUnreadMessageKey, [username])
 
         res.sendStatus(200)
     } catch (err) {

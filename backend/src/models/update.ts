@@ -68,7 +68,7 @@ export const updateRoomParticipants = async (roomId: Room['roomId'], participant
 
 export const updateMessageReadStatus = async (
     roomId: Room['roomId'],
-    hasUnreadMessages: UserRoom['hasUnreadMessages'],
+    lastReadMessage: UserRoom['lastReadMessage'],
     usernames?: User['username'][]
 ) => {
     await prisma.userRoom.updateMany({
@@ -76,7 +76,7 @@ export const updateMessageReadStatus = async (
             roomId,
             username: usernames ? { in: usernames } : undefined,
         },
-        data: { hasUnreadMessages },
+        data: { lastReadMessage },
     })
 }
 

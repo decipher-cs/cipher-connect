@@ -54,7 +54,9 @@ Table UserRoom {
   roomId String [not null]
   joinedAt DateTime [default: `now()`, not null]
   isAdmin Boolean [not null, default: false]
-  hasUnreadMessages Boolean [not null, default: true]
+  isMarkedFavourite Boolean [not null, default: false]
+  isPinned Boolean [not null, default: false]
+  lastReadMessage String
   user User [not null]
   room Room [not null]
   roomConfig RoomConfig [not null]

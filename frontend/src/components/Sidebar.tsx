@@ -4,15 +4,19 @@ import {
     GitHub,
     LogoutRounded,
     SettingsSuggestRounded,
+    TryRounded,
 } from '@mui/icons-material'
 import {
     Avatar,
     Box,
     ButtonGroup,
     CircularProgress,
+    Divider,
     IconButton,
     Switch,
     SxProps,
+    Tab,
+    Tabs,
     ToggleButton,
     ToggleButtonGroup,
     Tooltip,
@@ -31,9 +35,12 @@ import { axiosServerInstance } from '../App'
 import { ThemeToggleSwitch } from './ThemeToggleSwitch'
 import { useAuth } from '../hooks/useAuth'
 
-interface SidebarProps {}
+interface SidebarProps {
+    selectedTab: 'messages' | 'favourates' | 'settings'
+    handleTabChange: (newTab: 'messages' | 'favourates' | 'settings') => void
+}
 
-export const Sidebar = (props: SidebarProps) => {
+export const Sidebar = ({ selectedTab, handleTabChange }: SidebarProps) => {
     const navigate = useNavigate()
 
     const { dialogOpen, handleOpen, handleClose } = useDialog()
@@ -69,7 +76,27 @@ export const Sidebar = (props: SidebarProps) => {
                         </Typography>
                     </>
                 </Tooltip>
+            </Box>
 
+            <ProfileSettingsDialog dialogOpen={dialogOpen} handleClose={handleClose} userProfile={userProfile} />
+
+            <Tabs
+                orientation='vertical'
+                value={selectedTab}
+                onChange={(_, val) => {
+                    handleTabChange(val)
+                }}
+            >
+                <Tab label='' value='messages' icon={<ChatBubbleRounded />} />
+                <Tab label='' value='favourates' icon={<TryRounded />} />
+                <Divider variant='middle' />
+                <Tab label='' value='settings' icon={<SettingsSuggestRounded />} />
+                <Divider variant='middle' />
+                <Tab label='' value='about' icon={<ContactMailRounded />} onClick={() => navigate('/about')} />
+                <Tab label='' value='logout' icon={<LogoutRounded />} onClick={() => navigate('/logout')} />
+            </Tabs>
+
+            <Box sx={{ display: 'grid', alignContent: 'flex-end', gap: 3 }}>
                 <Tooltip placement='right' title='Source code'>
                     <IconButton
                         sx={{ justifySelf: 'center' }}
@@ -79,42 +106,8 @@ export const Sidebar = (props: SidebarProps) => {
                         <GitHub />
                     </IconButton>
                 </Tooltip>
+                <ThemeToggleSwitch sx={{ alignSelf: 'flex-end' }} />
             </Box>
-
-            <ProfileSettingsDialog dialogOpen={dialogOpen} handleClose={handleClose} userProfile={userProfile} />
-
-            <ToggleButtonGroup
-                orientation='vertical'
-                sx={{ alignSelf: 'center' }}
-                exclusive
-                value={selectedItem}
-                onChange={handleSelectedItemChange}
-            >
-                <ToggleButton value='chat' onClick={() => navigate('/chat')}>
-                    <Tooltip placement='right' title='chat'>
-                        <ChatBubbleRounded />
-                    </Tooltip>
-                </ToggleButton>
-
-                <ToggleButton value='setting' onClick={handleOpen}>
-                    <Tooltip placement='right' title='settings'>
-                        <SettingsSuggestRounded />
-                    </Tooltip>
-                </ToggleButton>
-
-                <ToggleButton value='about' onClick={() => navigate('/about')}>
-                    <Tooltip placement='right' title='about'>
-                        <ContactMailRounded />
-                    </Tooltip>
-                </ToggleButton>
-
-                <ToggleButton value='logout' onClick={() => navigate('/logout')}>
-                    <Tooltip placement='right' title='logout'>
-                        <LogoutRounded />
-                    </Tooltip>
-                </ToggleButton>
-            </ToggleButtonGroup>
-            <ThemeToggleSwitch sx={{ alignSelf: 'flex-end' }} />
         </Box>
     )
 }

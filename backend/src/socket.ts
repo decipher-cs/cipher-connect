@@ -55,7 +55,7 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
                 socket.broadcast.to(message.roomId).emit('message', message, res => res === 'ok')
                 socket.broadcast.to(message.roomId).emit('notification', message.roomId)
                 addMessageToDB(message)
-                updateMessageReadStatus(message.roomId, true)
+                // updateMessageReadStatus(message.roomId, true)
                 cb('ok')
             } catch (error) {
                 console.log('error uploading to server', error)

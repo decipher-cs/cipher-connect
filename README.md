@@ -109,6 +109,7 @@ Install my-project with yarn
 - [ ] Warn before running `crypto.randomUUID()` in an unsecure context (http scheme) and alert user or throw error.
 - [ ] Use useInfiniteQuery for fetching messages.
 - [ ] Have a default room that every new user has. Make it a room with the developer and a greeting message.
+- [ ] Add option for ephemeral login which is deleted after some time. Or an option for tyring the app.
 
 ## License
 
