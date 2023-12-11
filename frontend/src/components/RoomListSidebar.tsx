@@ -100,6 +100,22 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
                 backgroundColor: theme => theme.palette.background.light,
             }}
         >
+            <List sx={{ overflowY: 'auto' }}>
+                {rooms.joinedRooms.map((room, i) => {
+                    if (room.isPinned)
+                        return (
+                            <RoomListItem
+                                key={room.roomId}
+                                roomIndex={i}
+                                selectedRoomIndex={rooms.selectedRoom}
+                                room={room}
+                                roomDispatcher={roomDispatcher}
+                                mutateMessageReadStatus={mutateMessageReadStatus}
+                            />
+                        )
+                })}
+            </List>
+
             {selectedTab === 'messages' && (
                 <>
                     <Typography
@@ -123,7 +139,7 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
                     />
 
                     <StyledTextField
-                        sx={{ m: 2 }}
+                        sx={{ m: 2, '& .MuiInputBase-root': { background: theme => theme.palette.background.default } }}
                         placeholder='search anything'
                         InputProps={{
                             endAdornment: (
@@ -164,6 +180,7 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
                     >
                         Favourite Messages
                     </Typography>
+
                     <Tooltip title='Create new room' placement='right'>
                         <IconButton onClick={handleOpen} sx={{ justifySelf: 'flex-end', gridArea: '1 / 1 / 1 / 1' }}>
                             <AddToPhotosRounded />
@@ -193,16 +210,17 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
                     ) : (
                         <List sx={{ overflowY: 'auto' }}>
                             {rooms.joinedRooms.map((room, i) => {
-                                return (
-                                    <RoomListItem
-                                        key={room.roomId}
-                                        roomIndex={i}
-                                        selectedRoomIndex={rooms.selectedRoom}
-                                        room={room}
-                                        roomDispatcher={roomDispatcher}
-                                        mutateMessageReadStatus={mutateMessageReadStatus}
-                                    />
-                                )
+                                if (room.isMarkedFavourite)
+                                    return (
+                                        <RoomListItem
+                                            key={room.roomId}
+                                            roomIndex={i}
+                                            selectedRoomIndex={rooms.selectedRoom}
+                                            room={room}
+                                            roomDispatcher={roomDispatcher}
+                                            mutateMessageReadStatus={mutateMessageReadStatus}
+                                        />
+                                    )
                             })}
                         </List>
                     )}
