@@ -84,6 +84,7 @@ Install my-project with yarn
  - [Reddit: Why doesn't res.redirect() redirects SPAs like react](https://www.reddit.com/r/learnjavascript/comments/bs9gq0/comment/eonklyl/?utm_source=share&utm_medium=web2x&context=3)
  - [TS declaration merging](https://dev.to/chris927/extending-express-types-with-typescript-declaration-merging-typescript-4-3jh)
  - [Mai Vang's article on how to deploy a full-stack app on render](https://medium.com/@vmaineng/how-to-deploy-mern-full-stack-to-render-f7ab380660b6)
+ - [Walrus operator equivalent in for-loops](https://stackoverflow.com/a/70414127)
 
 ## ToDo
 
