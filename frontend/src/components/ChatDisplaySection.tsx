@@ -1,5 +1,5 @@
-import { Box } from '@mui/material'
-import { useContext, useEffect, useReducer, useRef } from 'react'
+import { Box, Button, CircularProgress, Container } from '@mui/material'
+import { createRef, useContext, useEffect, useReducer, useRef } from 'react'
 import React, { useState } from 'react'
 import { MessageContentType, RoomWithParticipants, ServerMessage, User } from '../types/prisma.client'
 import { MessageTile } from './MessageTile'
@@ -11,7 +11,7 @@ import { Routes } from '../types/routes'
 import { SocketWithCustomEvents, TypingStatus } from '../types/socket'
 import { RoomsState } from '../reducer/roomReducer'
 import { useSocket } from '../hooks/useSocket'
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { axiosServerInstance } from '../App'
 import { PulseLoader } from 'react-spinners'
 import { AudioPlayer } from './AudioPlayer'
@@ -30,40 +30,46 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
 
     const scrollToBottomRef = useRef<HTMLDivElement>(null)
 
-    const tileContainer = useRef<HTMLElement>(null)
-
-    // TODO: use useInfiniteQuery instad of useQuery.
-    const { data: serverMessages } = useQuery({
-        queryKey: ['room-messages', props.currRoom.roomId],
-        queryFn: () =>
-            axiosServerInstance.get<ServerMessage[]>(Routes.get.messages + `/${props.currRoom.roomId}`).then(res => {
-                const result: Message[] = res.data.map(msg => ({ ...msg, deliveryStatus: 'delivered' }))
-                return result
-            }),
-        initialData: [],
-    })
+    const messageContainer = useRef<HTMLDivElement>(null)
 
     const [messages, messageDispatcher] = useReducer(messageListReducer, [])
 
-    useEffect(() => {
-        if (serverMessages)
-            messageDispatcher({ type: MessageListActionType.initializeMessages, newMessages: serverMessages })
-    }, [serverMessages])
+    const socket = useSocket()
 
-    // TODO: cache this using usecallback or useMemo
-    const timeSortedMessages = messages.slice().sort((a, b) => {
-        const aInMilliseconds = new Date(a.createdAt).valueOf()
-        const bInMilliseconds = new Date(b.createdAt).valueOf()
-        return aInMilliseconds - bInMilliseconds
+    const {
+        data: serverMessages,
+        status,
+        error,
+        fetchNextPage,
+        isFetchingNextPage,
+        hasNextPage,
+    } = useInfiniteQuery({
+        queryKey: ['messages', props.currRoom.roomId],
+        queryFn: ({ pageParam }) =>
+            axiosServerInstance
+                .get<ServerMessage[]>(
+                    Routes.get.messages +
+                        `/${props.currRoom.roomId}?messageQuantity=10&${pageParam ? 'cursor=' + pageParam : ''}`
+                )
+                .then((res): Message[] => res.data.map(msg => ({ ...msg, deliveryStatus: 'delivered' }))),
+
+        getNextPageParam: (lastPage, _) => lastPage.at(-1)?.key,
     })
 
-    const socket = useSocket()
+    useEffect(() => {
+        if (!serverMessages) return
+        messageDispatcher({
+            type: MessageListActionType.initializeMessages,
+            newMessages: serverMessages.pages.flat().reverse(),
+        })
+    }, [serverMessages?.pages, serverMessages?.pageParams])
 
     const [usersCurrentlyTyping, setUsersCurrentlyTyping] = useState<User['username'][] | null>(null)
 
     useEffect(() => {
         if (scrollToBottomRef.current === null) return
         scrollToBottomRef.current.scrollIntoView(true)
+    // }, [])
     }, [messages])
 
     useEffect(() => {
@@ -133,10 +139,10 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
             <RoomBanner
                 toggleRoomInfoSidebar={props.toggleRoomInfoSidebar}
                 room={props.currRoom}
-                searchContainerRef={tileContainer}
+                searchContainerRef={messageContainer}
             />
             <Box
-                ref={tileContainer}
+                ref={messageContainer}
                 sx={{
                     display: 'grid',
                     alignContent: 'flex-start',
@@ -149,8 +155,10 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                     pb: 2,
                 }}
             >
-                {timeSortedMessages.map((message, i) => {
+                {hasNextPage && isFetchingNextPage ? <CircularProgress sx={{ justifySelf: 'center' }} /> : null}
+                {messages.map((message, i) => {
                     if (message.roomId !== props.currRoom.roomId) return
+
                     return (
                         <MessageTile
                             key={message.key}
@@ -161,8 +169,13 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                                     ({ username }) => username === message.senderUsername
                                 )[0]
                             }
+                            indexInList={i}
                             // If newest message in the list, put ref on it to auto-scroll to bottom
+                            //
                             autoScrollToBottomRef={i === messages.length - 1 ? scrollToBottomRef : null}
+                            handleScrollToTop={() => {
+                                if (hasNextPage && !isFetchingNextPage) fetchNextPage()
+                            }}
                         />
                     )
                 })}
@@ -172,6 +185,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                     {usersCurrentlyTyping.join(', ') + ' typing'} <PulseLoader size={3} />
                 </Box>
             ) : null}
+
             <ChatInputBar messageListDispatcher={messageDispatcher} currRoom={props.currRoom} />
         </>
     )

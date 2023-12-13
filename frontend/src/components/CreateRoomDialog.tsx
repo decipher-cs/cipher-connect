@@ -102,10 +102,7 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
                             defaultValue={defaultValues.roomType}
                             value={watch('roomType')}
                             color={errors.roomType?.message ? 'error' : undefined}
-                            onChange={(_, value) => {
-                                // console.log('setting', getValues('roomType'), 'to', value)
-                                setValue('roomType', value)
-                            }}
+                            onChange={(_, value) => setValue('roomType', value)}
                         >
                             <ToggleButton value={RoomType.group}>Group</ToggleButton>
                             <ToggleButton value={RoomType.private}>Private</ToggleButton>

@@ -1,5 +1,5 @@
-import { Box, Button, CircularProgress, Collapse, Switch, Typography } from '@mui/material'
-import { useContext, useEffect, useReducer, useRef, useState } from 'react'
+import { Box, Collapse, Typography } from '@mui/material'
+import { useEffect, useReducer, useRef, useState } from 'react'
 import { ChatDisplaySection } from '../components/ChatDisplaySection'
 import { RoomInfo } from '../components/RoomInfo'
 import { Sidebar } from '../components/Sidebar'

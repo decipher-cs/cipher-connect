@@ -13,9 +13,21 @@ import {
     ListItem,
     ListItemAvatar,
     ListItemText,
+    Checkbox,
 } from '@mui/material'
 import { useContext, useEffect, useState } from 'react'
-import { CancelRounded, InfoRounded, NotificationsRounded } from '@mui/icons-material'
+import {
+    BookmarkBorderRounded,
+    BookmarkRounded,
+    CancelRounded,
+    InfoRounded,
+    NotificationsRounded,
+    PinRounded,
+    PushPinOutlined,
+    PushPinRounded,
+    StarRounded,
+    TryRounded,
+} from '@mui/icons-material'
 import { Routes } from '../types/routes'
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { ConfirmationDialog } from './ConfirmationDialog'
@@ -63,7 +75,7 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
     })
 
     const { mutateAsync: changeNotificationSetting, data: changedRoomConfig } = useMutation({
-        mutationFn: (newConfig: Partial<Pick<RoomConfig, 'isNotificationMuted' | 'isHidden' | 'hasUnreadMessages'>>) =>
+        mutationFn: (newConfig: Partial<Pick<RoomConfig, 'isNotificationMuted' | 'isHidden' | 'isBlocked'>>) =>
             axiosServerInstance
                 .put<Partial<RoomConfig>>(Routes.put.roomConfig, {
                     username,
@@ -137,7 +149,13 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
 
                 <Typography sx={{ justifySelf: 'flex-start' }}>Room Info</Typography>
 
-                <IconButton onClick={handleToggleRoomInfoSidebar} sx={{ justifySelf: 'flex-end', ml: 'auto' }}>
+                <Checkbox
+                    sx={{ justifySelf: 'flex-end', ml: 'auto' }}
+                    checkedIcon={<PushPinRounded />}
+                    icon={<PushPinOutlined />}
+                />
+
+                <IconButton onClick={handleToggleRoomInfoSidebar} sx={{ justifySelf: 'flex-end' }}>
                     <CancelRounded />
                 </IconButton>
             </Stack>
@@ -176,12 +194,17 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
                 Mute Notifications
                 <Switch
                     sx={{ ml: 'auto' }}
-                    color='primary'
                     checked={room.isNotificationMuted}
                     onChange={(_, checked) => {
                         changeNotificationSetting({ isNotificationMuted: checked })
                     }}
                 />
+            </Stack>
+
+            <Stack direction='row' alignItems='center' gap={2}>
+                <TryRounded />
+                Mark As Favorite
+                <Checkbox sx={{ ml: 'auto' }} checkedIcon={<BookmarkRounded />} icon={<BookmarkBorderRounded />} />
             </Stack>
 
             <Divider />

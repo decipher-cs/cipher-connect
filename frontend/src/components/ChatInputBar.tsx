@@ -41,7 +41,6 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
     const [recordedAudioFile, setRecordedAudioFile] = useState<Blob>()
 
     const { recordingState, toggleAudioRecorderStartStop, isMicReady, micPermission } = useAudioRecorder(ev => {
-        console.log('hook:', props.currRoom.roomId.slice(-4, -1))
         handleMessageDelivery({ content: new File([ev.data], 'audio'), contentType: MessageContentType.audio })
     })
 
@@ -152,10 +151,6 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
         <>
             <StyledTextField
                 sx={{
-                    background: theme =>
-                        theme.palette.mode === 'dark'
-                            ? theme.palette.background.light
-                            : theme.palette.primary.contrastText,
                     width: '80%',
                     justifySelf: 'center',
                     mb: 1,

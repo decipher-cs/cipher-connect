@@ -21,7 +21,7 @@ import {
     Typography,
 } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
-import { MouseEvent, useContext, useRef, useState } from 'react'
+import { MouseEvent, useContext, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useSocket } from '../hooks/useSocket'
 import {
@@ -38,6 +38,8 @@ import { MessageTilePopover } from './MessageTilePopover'
 import { StyledTextField } from './StyledTextField'
 
 export type MessageTileProps = {
+    indexInList: number
+    handleScrollToTop: () => void
     autoScrollToBottomRef: React.RefObject<HTMLDivElement> | null
     message: Message
     user: UserWithoutID
@@ -45,9 +47,11 @@ export type MessageTileProps = {
 }
 
 export const MessageTile = ({
+    handleScrollToTop,
     autoScrollToBottomRef,
     roomType,
     user,
+    indexInList,
     message: { roomId, contentType, content, key: messageKey, senderUsername, createdAt, editedAt, deliveryStatus },
     ...props
 }: MessageTileProps) => {
@@ -89,11 +93,29 @@ export const MessageTile = ({
         return creationDate.toLocaleString('en', { timeStyle: 'short', hour12: false })
     }
 
+    const tileContainerRef = useRef()
+
+    useEffect(() => {
+        const elem = tileContainerRef?.current
+        if (!elem || indexInList !== 0) return
+
+        const observer = new IntersectionObserver(entries => {
+            entries[0].isIntersecting && handleScrollToTop()
+        })
+
+        observer.observe(elem)
+
+        return () => {
+            observer.disconnect()
+        }
+    }, [indexInList, tileContainerRef.current])
+
     if (!content) return null
 
     return (
         <>
             <Box
+                ref={indexInList === 0 ? tileContainerRef : null}
                 sx={{
                     justifySelf: alignment === 'left' ? 'flex-start' : 'flex-end',
                     background: 'transparent',
@@ -125,7 +147,6 @@ export const MessageTile = ({
                 >
                     {messageDeliveryTimeAndDate()}
                 </Typography>
-
                 <MessageTilePopover
                     open={isPopoverOpen}
                     handleClose={closePopover}
@@ -189,7 +210,7 @@ export const MessageTile = ({
                                         ? theme.palette.getContrastText('#108ca6')
                                         : theme.palette.text.primary,
                             }}
-                            ref={autoScrollToBottomRef}
+                             ref={autoScrollToBottomRef}
                         >
                             {textEditModeEnabled ? (
                                 <StyledTextField
