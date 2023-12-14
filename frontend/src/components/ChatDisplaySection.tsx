@@ -1,5 +1,5 @@
 import { Box, Button, CircularProgress, Container } from '@mui/material'
-import { createRef, useContext, useEffect, useReducer, useRef } from 'react'
+import { createRef, forwardRef, useContext, useEffect, useLayoutEffect, useReducer, useRef } from 'react'
 import React, { useState } from 'react'
 import { MessageContentType, RoomWithParticipants, ServerMessage, User } from '../types/prisma.client'
 import { MessageTile } from './MessageTile'
@@ -17,6 +17,8 @@ import { PulseLoader } from 'react-spinners'
 import { AudioPlayer } from './AudioPlayer'
 import Mark from 'mark.js'
 import { useAuth } from '../hooks/useAuth'
+import { VariableSizeList as VartializedList } from 'react-window'
+import { Components, Virtuoso } from 'react-virtuoso'
 
 export interface ChatDisplaySectionProps {
     currRoom: RoomsState['joinedRooms'][0]
@@ -51,7 +53,10 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                     Routes.get.messages +
                         `/${props.currRoom.roomId}?messageQuantity=10&${pageParam ? 'cursor=' + pageParam : ''}`
                 )
-                .then((res): Message[] => res.data.map(msg => ({ ...msg, deliveryStatus: 'delivered' }))),
+                .then(res => {
+                    const result: Message[] = res.data.map(msg => ({ ...msg, deliveryStatus: 'delivered' }))
+                    return result
+                }),
 
         getNextPageParam: (lastPage, _) => lastPage.at(-1)?.key,
     })
@@ -66,10 +71,14 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
 
     const [usersCurrentlyTyping, setUsersCurrentlyTyping] = useState<User['username'][] | null>(null)
 
-    useEffect(() => {
+    const scrollChatToBottom = () => {
         if (scrollToBottomRef.current === null) return
         scrollToBottomRef.current.scrollIntoView(true)
-    // }, [])
+    }
+
+    useEffect(() => {
+        scrollChatToBottom()
+        // }, [])
     }, [messages])
 
     useEffect(() => {
@@ -141,22 +150,15 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                 room={props.currRoom}
                 searchContainerRef={messageContainer}
             />
-            <Box
-                ref={messageContainer}
-                sx={{
-                    display: 'grid',
-                    alignContent: 'flex-start',
-                    width: '100%',
 
-                    overflowY: 'scroll',
-                    px: 2,
-                    gap: 3,
-                    pt: 10,
-                    pb: 2,
-                }}
-            >
-                {hasNextPage && isFetchingNextPage ? <CircularProgress sx={{ justifySelf: 'center' }} /> : null}
-                {messages.map((message, i) => {
+            {/* {hasNextPage && isFetchingNextPage ? <CircularProgress sx={{ justifySelf: 'center' }} /> : null} */}
+            <Virtuoso
+                data={messages}
+                overscan={20}
+                atTopStateChange={() => hasNextPage && !isFetchingNextPage && fetchNextPage()}
+                // components={{ Item: MessageVirtualizedContainer }}
+                itemContent={(i, message) => {
+                    // const message = messages[i]
                     if (message.roomId !== props.currRoom.roomId) return
 
                     return (
@@ -174,12 +176,13 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                             //
                             autoScrollToBottomRef={i === messages.length - 1 ? scrollToBottomRef : null}
                             handleScrollToTop={() => {
-                                if (hasNextPage && !isFetchingNextPage) fetchNextPage()
+                                // if (hasNextPage && !isFetchingNextPage) fetchNextPage()
                             }}
                         />
                     )
-                })}
-            </Box>
+                }}
+            />
+
             {usersCurrentlyTyping !== null && usersCurrentlyTyping.length > 0 ? (
                 <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2 }}>
                     {usersCurrentlyTyping.join(', ') + ' typing'} <PulseLoader size={3} />
@@ -190,3 +193,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         </>
     )
 }
+
+const MessageVirtualizedContainer: Components['Item'] = forwardRef(({ children, ...props }) => {
+    return <div {...props}>{children}</div>
+})
