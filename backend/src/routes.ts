@@ -22,12 +22,16 @@ import {
     handleAvatarChange,
     handleRoomConfigChange,
     doesValidUserSessionExist,
+    isServerOnline,
 } from './controllers.js'
 import { media } from './server.js'
 import { isUserAuthenticated } from './middleware/auth.js'
 
 // To be used for type safety on the client side
-const routes = {
+export const routes = {
+    all: {
+        healthCheck: '/health-check',
+    },
     get: {
         messages: '/Messages',
         roomParticipants: '/room-participants',

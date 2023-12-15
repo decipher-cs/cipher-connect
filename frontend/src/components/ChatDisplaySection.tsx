@@ -17,7 +17,6 @@ import { PulseLoader } from 'react-spinners'
 import { AudioPlayer } from './AudioPlayer'
 import Mark from 'mark.js'
 import { useAuth } from '../hooks/useAuth'
-import { VariableSizeList as VartializedList } from 'react-window'
 import { Components, Virtuoso } from 'react-virtuoso'
 
 export interface ChatDisplaySectionProps {

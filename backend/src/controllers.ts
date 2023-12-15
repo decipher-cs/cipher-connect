@@ -433,6 +433,10 @@ export const doesValidUserSessionExist = async (req: Request, res: Response) => 
     return
 }
 
+export const isServerOnline = async (req: Request, res: Response) => {
+    res.sendStatus(200)
+}
+
 export const test = async (req: Request, res: Response) => {
     console.log('test point hit', req.session.id)
     res.sendStatus(201)

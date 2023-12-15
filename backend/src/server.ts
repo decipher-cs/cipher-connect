@@ -2,12 +2,13 @@ import http from 'http'
 import express from 'express'
 import * as dotenv from 'dotenv'
 import { Server } from 'socket.io'
-import { initRoutes } from './routes.js'
+import { initRoutes, routes } from './routes.js'
 import { initSocketIO } from './socket.js'
 import multer from 'multer'
 import { PrismaClient } from '@prisma/client'
 import expressSession from 'express-session'
 import { PrismaSessionStore } from '@quixo3/prisma-session-store'
+import { isServerOnline } from './controllers.js'
 
 dotenv.config()
 
@@ -52,6 +53,9 @@ app.use('/api', router)
 
 initRoutes(router)
 initSocketIO(io)
+
+// check if server is working by pinging this route. Route should always return 200
+app.all(routes.all.healthCheck, isServerOnline)
 
 app.get('*', (_, res) => {
     res.sendFile('client/index.html', { root: '.' })
