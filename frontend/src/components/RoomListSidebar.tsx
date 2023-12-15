@@ -194,7 +194,7 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
                     />
 
                     <StyledTextField
-                        sx={{ m: 2 }}
+                        sx={{ m: 2, '& .MuiInputBase-root': { background: theme => theme.palette.background.default } }}
                         placeholder='search anything'
                         InputProps={{
                             endAdornment: (

@@ -35,7 +35,7 @@ export const Pages = () => {
     return (
         <>
             <BrowserRouter>
-                <Routes>
+                <Routes >
                     <Route
                         path='/chat'
                         element={

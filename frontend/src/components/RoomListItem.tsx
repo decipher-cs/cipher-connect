@@ -55,8 +55,8 @@ export const RoomListItem = memo((props: RoomListItemProps) => {
                         unreadMessages: false,
                     })
 
-                    if (props.room.hasUnreadMessages === true)
-                        props.mutateMessageReadStatus({ roomId: props.room.roomId, messageStatus: false })
+                    // if (props.room.lastReadMessage === true)
+                    // props.mutateMessageReadStatus({ roomId: props.room.roomId, messageStatus: false })
                 } catch (error) {
                     throw new Error('Error during room selection')
                 }
@@ -72,9 +72,9 @@ export const RoomListItem = memo((props: RoomListItemProps) => {
                 <ListItemText primary={displayName} secondary={props.room.roomType} />
             </ListItem>
 
-            {props.room.hasUnreadMessages === true && props.room.isNotificationMuted === false ? (
-                <MarkUnreadChatAltIcon />
-            ) : null}
+            {/* {props.room.hasUnreadMessages === true && props.room.isNotificationMuted === false ? ( */}
+            {/*     <MarkUnreadChatAltIcon /> */}
+            {/* ) : null} */}
         </ListItemButton>
     )
 })

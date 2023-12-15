@@ -131,6 +131,7 @@ export const MessageTile = (props: MessageTileProps) => {
                     color='grey'
                 >
                     {messageDeliveryTimeAndDate()}
+                    {editedAt && '(edited)'}
                 </Typography>
 
                 <Box

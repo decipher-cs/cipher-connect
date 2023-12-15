@@ -63,7 +63,7 @@ export type RoomActions =
     | {
           type: RoomActionType.changeRoomConfig
           roomId: RoomsState['joinedRooms'][0]['roomId']
-          newConfig: Partial<Pick<RoomConfig, 'isNotificationMuted' | 'isHidden' | 'hasUnreadMessages'>>
+          newConfig: Partial<Pick<RoomConfig, 'isNotificationMuted' | 'isHidden'>>
       }
 
 export const roomReducer: React.Reducer<RoomsState, RoomActions> = (state, action) => {
@@ -110,14 +110,14 @@ export const roomReducer: React.Reducer<RoomsState, RoomActions> = (state, actio
             room.selectedRoom = action.newRoomIndex
             break
 
-        case RoomActionType.changeNotificationStatus:
-            // if (selectedRoom !== null && selectedRoom.roomId === action.roomId) {
-            //     selectedRoom.hasUnreadMessages = action.unreadMessages
-            // }
-            room.joinedRooms.forEach(room => {
-                if (room.roomId === action.roomId) room.hasUnreadMessages = action.unreadMessages
-            })
-            break
+        // case RoomActionType.changeNotificationStatus:
+        // if (selectedRoom !== null && selectedRoom.roomId === action.roomId) {
+        //     selectedRoom.hasUnreadMessages = action.unreadMessages
+        // }
+        // room.joinedRooms.forEach(room => {
+        // if (room.roomId === action.roomId) room.hasUnreadMessages = action.unreadMessages
+        // })
+        // break
 
         case RoomActionType.alterRoomProperties:
             if (!room.selectedRoom) break

@@ -47,6 +47,8 @@ interface RoomInfoProps {
     roomDispatcher: (value: RoomActions) => void
 }
 
+type RoomConfigMutableEntries = Pick<RoomConfig, 'isNotificationMuted' | 'isHidden' | 'isPinned' | 'isMarkedFavourite'>
+
 export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ...props }: RoomInfoProps) => {
     const {
         authStatus: { username },
@@ -75,7 +77,7 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
     })
 
     const { mutateAsync: changeNotificationSetting, data: changedRoomConfig } = useMutation({
-        mutationFn: (newConfig: Partial<Pick<RoomConfig, 'isNotificationMuted' | 'isHidden' | 'isBlocked'>>) =>
+        mutationFn: (newConfig: Partial<RoomConfigMutableEntries>) =>
             axiosServerInstance
                 .put<Partial<RoomConfig>>(Routes.put.roomConfig, {
                     username,

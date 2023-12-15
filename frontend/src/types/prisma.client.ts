@@ -29,8 +29,9 @@ export type RoomConfig = {
     username: string
     roomId: string
     isHidden: boolean
-    isBlocked: boolean
     isNotificationMuted: boolean
+    isMarkedFavourite: boolean
+    isPinned: boolean
 }
 
 /**
@@ -53,8 +54,7 @@ export type UserRoom = {
     roomId: string
     joinedAt: Date
     isAdmin: boolean
-    isMarkedFavourite: boolean
-    isPinned: boolean
+    isBlocked: boolean
     lastReadMessage: string | null
 }
 

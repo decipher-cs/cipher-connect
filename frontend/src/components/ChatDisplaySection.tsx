@@ -171,13 +171,8 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                                     ({ username }) => username === message.senderUsername
                                 )[0]
                             }
-                            indexInList={i}
                             // If newest message in the list, put ref on it to auto-scroll to bottom
-                            //
                             autoScrollToBottomRef={i === messages.length - 1 ? scrollToBottomRef : null}
-                            handleScrollToTop={() => {
-                                // if (hasNextPage && !isFetchingNextPage) fetchNextPage()
-                            }}
                         />
                     )
                 }}
