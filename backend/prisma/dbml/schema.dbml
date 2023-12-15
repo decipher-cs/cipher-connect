@@ -27,8 +27,9 @@ Table RoomConfig {
   username String [not null]
   roomId String [not null]
   isHidden Boolean [not null, default: false]
-  isBlocked Boolean [not null, default: false]
   isNotificationMuted Boolean [not null, default: false]
+  isMarkedFavourite Boolean [not null, default: false]
+  isPinned Boolean [not null, default: false]
   user User [not null]
   room Room [not null]
   userRoom UserRoom
@@ -54,8 +55,7 @@ Table UserRoom {
   roomId String [not null]
   joinedAt DateTime [default: `now()`, not null]
   isAdmin Boolean [not null, default: false]
-  isMarkedFavourite Boolean [not null, default: false]
-  isPinned Boolean [not null, default: false]
+  isBlocked Boolean [not null, default: false]
   lastReadMessage String
   user User [not null]
   room Room [not null]

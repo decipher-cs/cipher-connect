@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../../prisma/"
 }
 
 generator client2 {
@@ -45,8 +46,9 @@ model RoomConfig {
   roomId   String
 
   isHidden            Boolean @default(false)
-  isBlocked           Boolean @default(false)
   isNotificationMuted Boolean @default(false)
+  isMarkedFavourite   Boolean @default(false)
+  isPinned            Boolean @default(false)
 
   user     User      @relation(fields: [username], references: [username], onDelete: Cascade)
   room     Room      @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
@@ -78,11 +80,10 @@ model UserRoom {
   username String
   roomId   String
 
-  joinedAt          DateTime @default(now())
-  isAdmin           Boolean  @default(false)
-  isMarkedFavourite Boolean  @default(false)
-  isPinned          Boolean  @default(false)
-  lastReadMessage   String?
+  joinedAt        DateTime @default(now())
+  isAdmin         Boolean  @default(false)
+  isBlocked       Boolean  @default(false)
+  lastReadMessage String?
 
   user       User       @relation(fields: [username], references: [username], onDelete: Cascade)
   room       Room       @relation(fields: [roomId], references: [roomId], onDelete: Cascade)

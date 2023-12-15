@@ -72,9 +72,9 @@ export const initRoutes = (app: Router) => {
 
     app.get(routes.get.user + '/:username', isUserAuthenticated, returnUser)
 
-    app.get(routes.get.roomParticipants, isUserAuthenticated, fetchRoomPariticpants)
-
     app.get(routes.get.messages + '/:roomId', isUserAuthenticated, fetchMessages)
+
+    app.get(routes.get.roomParticipants, isUserAuthenticated, fetchRoomPariticpants)
 
     app.get(routes.get.isUsernameValid + '/:username', isUserAuthenticated, handleUserExistsCheck)
 

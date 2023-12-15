@@ -183,14 +183,21 @@ export const returnUsers = async (req: Request, res: Response) => {
 
 export const fetchMessages = async (req: Request, res: Response) => {
     const { roomId } = req.params
+    let { cursor, messageQuantity } = req.query
     if (roomId === undefined) {
         res.sendStatus(400)
         return
     }
-    const messages = await getMessagesFromRoom(roomId)
+
+    messageQuantity = Number(messageQuantity) ? messageQuantity : undefined
+    cursor = cursor ? String(cursor) : undefined
+
+    const messages = await getMessagesFromRoom(roomId, cursor, Number(messageQuantity))
+
     if (messages === undefined) {
         res.sendStatus(400)
     } else res.send(messages)
+
     return
 }
 

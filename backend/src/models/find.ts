@@ -75,15 +75,18 @@ export const getRoomPariticpants = async (roomId: string) => {
     })
 }
 
-export const getMessagesFromRoom = async (roomId: string) => {
-    const messages = await prisma.room.findUnique({
+export const getMessagesFromRoom = async (roomId: string, cursor?: string, takeSize?: number) => {
+    const messages = await prisma.message.findMany({
         where: { roomId },
-        select: {
-            message: true,
+        orderBy: {
+            createdAt: 'desc',
         },
+        cursor: cursor ? { key: cursor } : undefined,
+        take: takeSize,
+        skip: 1,
     })
 
-    return messages?.message
+    return messages
 }
 
 export const checkIfPrivateRoomExists = async (userA: string, userB: string) => {
@@ -156,25 +159,29 @@ export const getUserRoomConfig = async (username: User['username'], roomId: Room
 export const getRoomDetails = async (
     id: { username: User['username'] } | { roomId: Room['roomId'] }
 ): Promise<RoomDetails[]> => {
-    const rooms = await prisma.userRoom.findMany({
-        where: id,
-        include: {
-            roomConfig: true,
-            room: {
-                include: {
-                    user: true,
+    try {
+        const rooms = await prisma.userRoom.findMany({
+            where: id,
+            include: {
+                roomConfig: true,
+                room: {
+                    include: {
+                        user: true,
+                    },
                 },
             },
-        },
-    })
+        })
+        return rooms.map(defaultRoom => {
+            const { room: denestedRoom, roomConfig, ...rest } = defaultRoom
 
-    return rooms.map(defaultRoom => {
-        const { room: denestedRoom, roomConfig, ...rest } = defaultRoom
+            const { user, ...room } = denestedRoom
 
-        const { user, ...room } = denestedRoom
-
-        return { ...rest, ...room, ...roomConfig, participants: user }
-    })
+            return { ...rest, ...room, ...roomConfig, participants: user }
+        })
+    } catch (err) {
+        console.log('Error while fetching user rooms', err)
+        return []
+    }
 }
 
 export const getUniqueRoomDetails = async (

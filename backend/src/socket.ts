@@ -1,5 +1,6 @@
 import { Server } from 'socket.io'
 import { Message, Room, User, RoomConfig, RoomType } from '@prisma/client'
+
 import {
     ClientToServerEvents,
     ServerToClientEvents,
@@ -35,7 +36,7 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
     })
 
     io.on('connection', socket => {
-        if (socket.data.username === undefined) throw new Error('Socket.data.username is undefined')
+        if (!socket.data.username) throw new Error('Socket.data.username is undefined')
 
         const username = socket.data.username
 
