@@ -21,7 +21,7 @@ import {
     Typography,
 } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
-import { MouseEvent, useContext, useEffect, useRef, useState } from 'react'
+import { MouseEvent, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useSocket } from '../hooks/useSocket'
 import {
@@ -38,28 +38,31 @@ import { MessageTilePopover } from './MessageTilePopover'
 import { StyledTextField } from './StyledTextField'
 
 export type MessageTileProps = {
-    indexInList: number
-    handleScrollToTop: () => void
     autoScrollToBottomRef: React.RefObject<HTMLDivElement> | null
     message: Message
     user: UserWithoutID
     roomType: RoomType
 }
 
-export const MessageTile = ({
-    handleScrollToTop,
-    autoScrollToBottomRef,
-    roomType,
-    user,
-    indexInList,
-    message: { roomId, contentType, content, key: messageKey, senderUsername, createdAt, editedAt, deliveryStatus },
-    ...props
-}: MessageTileProps) => {
+export const MessageTile = (props: MessageTileProps) => {
+    const { autoScrollToBottomRef, roomType, user, message } = props
+
+    const {
+        roomId,
+        contentType,
+        content,
+        key: messageKey,
+        senderUsername,
+        createdAt,
+        editedAt,
+        deliveryStatus,
+    } = message
+
     const {
         authStatus: { username, isLoggedIn },
     } = useAuth()
 
-    const tileRef = useRef(null)
+    const [editableInputValue, setEditableInputValue] = useState(content)
 
     const alignment: 'left' | 'right' = senderUsername === username ? 'right' : 'left'
 
@@ -67,20 +70,18 @@ export const MessageTile = ({
 
     const handleClickOnPopoverAnchor = (e: MouseEvent<HTMLElement>) => setPopoverAnchor(e.currentTarget)
 
-    const socket = useSocket()
-
     const isPopoverOpen = Boolean(popoverAnchor)
-
-    const closePopover = () => setPopoverAnchor(null)
 
     const [textEditModeEnabled, setTextEditMode] = useState(false)
 
-    const [editableInputValue, setEditableInputValue] = useState(content)
+    const socket = useSocket()
 
     const handleTextEditConfirm = () => {
         socket.emit('textMessageUpdated', messageKey, editableInputValue.trim(), roomId)
         setTextEditMode(false)
     }
+
+    const closePopover = () => setPopoverAnchor(null)
 
     const messageDeliveryTimeAndDate = () => {
         const creationDate = new Date(createdAt)
@@ -93,49 +94,33 @@ export const MessageTile = ({
         return creationDate.toLocaleString('en', { timeStyle: 'short', hour12: false })
     }
 
-    const tileContainerRef = useRef()
-
-    useEffect(() => {
-        const elem = tileContainerRef?.current
-        if (!elem || indexInList !== 0) return
-
-        const observer = new IntersectionObserver(entries => {
-            entries[0].isIntersecting && handleScrollToTop()
-        })
-
-        observer.observe(elem)
-
-        return () => {
-            observer.disconnect()
-        }
-    }, [indexInList, tileContainerRef.current])
-
     if (!content) return null
 
     return (
         <>
             <Box
-                ref={indexInList === 0 ? tileContainerRef : null}
                 sx={{
-                    justifySelf: alignment === 'left' ? 'flex-start' : 'flex-end',
-                    background: 'transparent',
-                    backgroundColor: 'transparend',
+                    px: 1.5,
+                    ml: alignment === 'left' ? '0px' : 'auto',
                     position: 'relative',
+                    py: 1,
                     maxWidth: '90%',
                     width: 'fit-content',
                     display: 'grid',
                     gridTemplateRows: 'auto auto',
                     gridTemplateColumns: 'auto auto auto',
-                    columnGap: 2,
+                    columnGap: 0,
                     rowGap: 1,
+                    gap: 1.5,
                 }}
             >
                 {senderUsername !== username && roomType === RoomType.group ? (
                     <>
-                        <Avatar src={user?.avatarPath ?? ''} sx={{ gridRow: '1 / 3', width: 50, height: 50 }} />
+                        <Avatar src={user?.avatarPath ?? ''} sx={{ gridRow: '1 / 3', width: 45, height: 45 }} />
                         <Typography>{user.username}</Typography>
                     </>
                 ) : null}
+
                 <Typography
                     variant='caption'
                     sx={{
@@ -147,17 +132,7 @@ export const MessageTile = ({
                 >
                     {messageDeliveryTimeAndDate()}
                 </Typography>
-                <MessageTilePopover
-                    open={isPopoverOpen}
-                    handleClose={closePopover}
-                    anchor={popoverAnchor}
-                    messageId={messageKey}
-                    roomId={roomId}
-                    textEditModeEnabled={textEditModeEnabled}
-                    toggleEditMode={() => setTextEditMode(p => !p)}
-                    contentType={contentType}
-                    senderUsername={senderUsername}
-                />
+
                 <Box
                     sx={{
                         gridRow: '2',
@@ -210,7 +185,6 @@ export const MessageTile = ({
                                         ? theme.palette.getContrastText('#108ca6')
                                         : theme.palette.text.primary,
                             }}
-                             ref={autoScrollToBottomRef}
                         >
                             {textEditModeEnabled ? (
                                 <StyledTextField
@@ -237,9 +211,37 @@ export const MessageTile = ({
                     )}
                 </Box>
             </Box>
+
+            <MessageTilePopover
+                open={isPopoverOpen}
+                handleClose={closePopover}
+                anchor={popoverAnchor}
+                messageId={messageKey}
+                roomId={roomId}
+                textEditModeEnabled={textEditModeEnabled}
+                toggleEditMode={() => setTextEditMode(p => !p)}
+                contentType={contentType}
+                senderUsername={senderUsername}
+            />
         </>
     )
 }
+
+// { content, contentType, key: messageKey, roomId }
+// const TextDisplay = ({ message }: { message: Message }) => {
+//     const {
+//         roomId,
+//         contentType,
+//         content,
+//         key: messageKey,
+//         senderUsername,
+//         createdAt,
+//         editedAt,
+//         deliveryStatus,
+//     } = message
+//
+//     return ()
+// }
 
 const MediaDisplay = ({ content, contentType }: Pick<Message, 'contentType' | 'content'>) => {
     // TODO: append file extension and MIME on explicit download. Put a download button.
