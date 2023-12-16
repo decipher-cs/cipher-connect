@@ -1,7 +1,6 @@
-// generator client {
-//   provider = "prisma-client-js"
-//   output   = "../../prisma/"
-// }
+generator client {
+  provider = "prisma-client-js"
+}
 
 generator client2 {
   provider = "prisma-dbml-generator"
@@ -36,25 +35,8 @@ model User {
 
   refreshTokens RefreshToken[]
   message       Message[]
-  roomConfig    RoomConfig[]
   userRoom      UserRoom[]
   rooms         Room[]
-}
-
-model RoomConfig {
-  username String
-  roomId   String
-
-  isHidden            Boolean @default(false)
-  isNotificationMuted Boolean @default(false)
-  isMarkedFavourite   Boolean @default(false)
-  isPinned            Boolean @default(false)
-
-  user     User      @relation(fields: [username], references: [username], onDelete: Cascade)
-  room     Room      @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
-  userRoom UserRoom?
-
-  @@id([username, roomId])
 }
 
 enum RoomType {
@@ -70,10 +52,9 @@ model Room {
   roomDisplayName String? @db.VarChar(16)
   roomAvatar      String? @db.MediumText
 
-  message        Message[]
-  userRoomConfig RoomConfig[]
-  userRoom       UserRoom[]
-  user           User[]
+  message  Message[]
+  userRoom UserRoom[]
+  user     User[]
 }
 
 model UserRoom {
@@ -85,10 +66,13 @@ model UserRoom {
   isBlocked       Boolean  @default(false)
   lastReadMessage String?
 
-  user       User       @relation(fields: [username], references: [username], onDelete: Cascade)
-  room       Room       @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
-  roomConfig RoomConfig @relation(fields: [username, roomId], references: [username, roomId], onDelete: Cascade)
-  // message    Message    @relation(fields: [lastReadMessage], references: [key])
+  isHidden            Boolean @default(false)
+  isNotificationMuted Boolean @default(false)
+  isMarkedFavourite   Boolean @default(false)
+  isPinned            Boolean @default(false)
+
+  user User @relation(fields: [username], references: [username], onDelete: Cascade)
+  room Room @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
 
   @@id([username, roomId])
 }
@@ -112,7 +96,6 @@ model Message {
 
   sender User @relation(fields: [senderUsername], references: [username], onDelete: Cascade)
   room   Room @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
-  // UserRoom UserRoom[]
 }
 
 model Session {

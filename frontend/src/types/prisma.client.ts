@@ -22,19 +22,6 @@ export type User = {
 }
 
 /**
- * Model RoomConfig
- *
- */
-export type RoomConfig = {
-    username: string
-    roomId: string
-    isHidden: boolean
-    isNotificationMuted: boolean
-    isMarkedFavourite: boolean
-    isPinned: boolean
-}
-
-/**
  * Model Room
  *
  */
@@ -56,6 +43,10 @@ export type UserRoom = {
     isAdmin: boolean
     isBlocked: boolean
     lastReadMessage: string | null
+    isHidden: boolean
+    isNotificationMuted: boolean
+    isMarkedFavourite: boolean
+    isPinned: boolean
 }
 
 /**
@@ -112,8 +103,8 @@ export type Message = ServerMessage & { deliveryStatus: MessageDeliveryStatus }
 
 export type UserWithoutID = Omit<User, 'userId'>
 
-export type RoomWithParticipants = Room & { participants: UserWithoutID[] }
+export type RoomWithParticipants = Room & { participants: User['username'][] }
 
-export type RoomWithParticipantsAndConfig = RoomWithParticipants & RoomConfig
+export type RoomOptions = UserRoom
 
-export type RoomDetails = RoomWithParticipantsAndConfig & UserRoom
+export type RoomDetails = RoomWithParticipants & RoomOptions

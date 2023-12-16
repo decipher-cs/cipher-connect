@@ -18,25 +18,8 @@ Table User {
   status UserStatus [not null, default: 'available']
   refreshTokens RefreshToken [not null]
   message Message [not null]
-  roomConfig RoomConfig [not null]
   userRoom UserRoom [not null]
   rooms Room [not null]
-}
-
-Table RoomConfig {
-  username String [not null]
-  roomId String [not null]
-  isHidden Boolean [not null, default: false]
-  isNotificationMuted Boolean [not null, default: false]
-  isMarkedFavourite Boolean [not null, default: false]
-  isPinned Boolean [not null, default: false]
-  user User [not null]
-  room Room [not null]
-  userRoom UserRoom
-
-  indexes {
-    (username, roomId) [pk]
-  }
 }
 
 Table Room {
@@ -45,7 +28,6 @@ Table Room {
   roomDisplayName String
   roomAvatar String
   message Message [not null]
-  userRoomConfig RoomConfig [not null]
   userRoom UserRoom [not null]
   user User [not null]
 }
@@ -57,9 +39,12 @@ Table UserRoom {
   isAdmin Boolean [not null, default: false]
   isBlocked Boolean [not null, default: false]
   lastReadMessage String
+  isHidden Boolean [not null, default: false]
+  isNotificationMuted Boolean [not null, default: false]
+  isMarkedFavourite Boolean [not null, default: false]
+  isPinned Boolean [not null, default: false]
   user User [not null]
   room Room [not null]
-  roomConfig RoomConfig [not null]
 
   indexes {
     (username, roomId) [pk]
@@ -106,15 +91,9 @@ Enum MessageContentType {
 
 Ref: RefreshToken.username > User.username
 
-Ref: RoomConfig.username > User.username [delete: Cascade]
-
-Ref: RoomConfig.roomId > Room.roomId [delete: Cascade]
-
 Ref: UserRoom.username > User.username [delete: Cascade]
 
 Ref: UserRoom.roomId > Room.roomId [delete: Cascade]
-
-Ref: UserRoom.(username, roomId) - RoomConfig.(username, roomId) [delete: Cascade]
 
 Ref: Message.senderUsername > User.username [delete: Cascade]
 
