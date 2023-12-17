@@ -11,12 +11,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model RefreshToken {
-  tokenOwnerIdRelation User   @relation(fields: [username], references: [username])
-  tokenValue           String @id
-  username             String
-}
-
 enum UserStatus {
   available
   dnd
@@ -33,7 +27,6 @@ model User {
   avatarPath  String?    @db.MediumText
   status      UserStatus @default(available)
 
-  refreshTokens RefreshToken[]
   message       Message[]
   userRoom      UserRoom[]
   rooms         Room[]
