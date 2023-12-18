@@ -1,8 +1,8 @@
-import { Message, Room, RoomConfig, User, UserRoom } from '@prisma/client'
+import { Message, Room, UserRoom } from '@prisma/client'
 import { prisma } from '../server.js'
-import { UserWithoutID } from '../types.js'
+import { User } from '../types.js'
 
-export const updateUser = async (username: string, user: Partial<UserWithoutID>) => {
+export const updateUser = async (username: string, user: Partial<User>) => {
     return await prisma.user.update({ where: { username }, data: { ...user } })
 }
 
@@ -13,24 +13,32 @@ export const updateRoom = async (roomId: string, room: Partial<Room>) => {
     })
 }
 
-export const updateRoomConfig = async (
+export const updateUserRoom = async (
     roomId: Room['roomId'],
     username: User['username'],
-    newConfig: Partial<Pick<RoomConfig, 'isHidden' | 'isBlocked' | 'isNotificationMuted'>>
-): Promise<Partial<RoomConfig>> => {
-    const changedConfig = await prisma.roomConfig.update({
-        where: { username_roomId: { roomId, username } },
-        data: { ...newConfig },
-        select: {
-            username: true,
-            roomId: true,
-            isHidden: newConfig.isHidden !== undefined,
-            isNotificationMuted: newConfig.isNotificationMuted !== undefined,
-            isBlocked: newConfig.isBlocked !== undefined,
-        },
-    })
-
-    return changedConfig
+    newConfig: Partial<
+        Pick<
+            UserRoom,
+            | 'isHidden'
+            | 'isBlocked'
+            | 'isNotificationMuted'
+            | 'isAdmin'
+            | 'isPinned'
+            | 'lastReadMessage'
+            | 'isMarkedFavourite'
+            | 'joinedAt'
+        >
+    >
+): Promise<Boolean> => {
+    try {
+        const changedConfig = await prisma.userRoom.updateMany({
+            where: { roomId, username },
+            data: { ...newConfig },
+        })
+        return changedConfig.count >= 1
+    } catch (error) {
+        return false
+    }
 }
 
 export const updateRoomImage = async (roomId: string, pathToImg: string) => {
@@ -47,13 +55,6 @@ export const updateRoomParticipants = async (roomId: Room['roomId'], participant
         where: { roomId },
         data: {
             user: { connect: usernameObj },
-
-            userRoomConfig: {
-                connectOrCreate: participantsUsernames.map(username => ({
-                    where: { username_roomId: { username, roomId } },
-                    create: { username },
-                })),
-            },
 
             userRoom: {
                 connectOrCreate: participantsUsernames.map(username => ({

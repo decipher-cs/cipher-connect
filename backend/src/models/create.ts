@@ -1,8 +1,8 @@
-import { Message, User } from '@prisma/client'
+import { Message } from '@prisma/client'
 import { prisma } from '../server.js'
-import { UserWithoutID } from '../types.js'
+import { User } from '../types.js'
 
-export const createNewUser = async (username: string, passwordHash: string): Promise<UserWithoutID | null> => {
+export const createNewUser = async (username: string, passwordHash: string): Promise<User | null> => {
     try {
         const result = await prisma.user.create({
             data: { username, passwordHash, displayName: username },
@@ -42,11 +42,6 @@ export const createPrivateRoom = async (participant1: string, participant2: stri
         data: {
             roomType: 'private',
             user: { connect: [{ username: participant1 }, { username: participant2 }] },
-            userRoomConfig: {
-                createMany: {
-                    data: [{ username: participant1 }, { username: participant2 }],
-                },
-            },
             userRoom: {
                 createMany: {
                     data: [{ username: participant1 }, { username: participant2 }],
@@ -65,11 +60,6 @@ export const createGroup = async (usernames: User['username'][], roomDisplayName
             roomType: 'group',
             user: {
                 connect: usernames.map(username => ({ username })),
-            },
-            userRoomConfig: {
-                createMany: {
-                    data: usernames.map(username => ({ username })),
-                },
             },
             userRoom: {
                 createMany: {
