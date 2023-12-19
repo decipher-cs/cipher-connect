@@ -50,6 +50,7 @@ https://cipher-connect.onrender.com/
 - Custom Hooks
 - React-query
 - `crypto.randomUUID()` only runs when the URL scheme is https or client is running on localhost
+- Don't use ORMs, or at the very least avoid prisma. The overhead and absolute unnecessary computation outweighs the any benefits whatsoever. 
 
 
 ## Installation
@@ -85,6 +86,7 @@ Install my-project with yarn
  - [TS declaration merging](https://dev.to/chris927/extending-express-types-with-typescript-declaration-merging-typescript-4-3jh)
  - [Mai Vang's article on how to deploy a full-stack app on render](https://medium.com/@vmaineng/how-to-deploy-mern-full-stack-to-render-f7ab380660b6)
  - [Walrus operator equivalent in for-loops](https://stackoverflow.com/a/70414127)
+ - [Axios interceptors to retry failed requests](https://javascript.plainenglish.io/how-to-retry-requests-using-axios-64c2da8340a7)
 
 ## ToDo
 
