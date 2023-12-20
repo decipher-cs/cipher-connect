@@ -1,17 +1,18 @@
 {
-  "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "nodenext",
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "noEmitOnError": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "typeRoots": [
-      "./environment.d.ts"
-    ]
-  }
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "esnext",
+        "moduleResolution": "nodenext",
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "noEmitOnError": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "strict": true,
+        "strictNullChecks": true,
+        "skipLibCheck": true,
+        "typeRoots": ["./environment.d.ts"]
+    },
+    "include": ["src", "./environment.d.ts"],
+    "exclude": ["node_modules", "assets", "dist"]
 }

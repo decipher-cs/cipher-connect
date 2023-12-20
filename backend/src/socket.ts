@@ -1,22 +1,15 @@
 import { Server } from 'socket.io'
-import { Message, Room, User, RoomConfig, RoomType } from '@prisma/client'
+import { Message, Room, RoomType } from '@prisma/client'
 
 import {
     ClientToServerEvents,
     ServerToClientEvents,
     InterServerEvents,
     SocketData,
-    UserWithoutID,
+    User,
     TypingStatus,
 } from './types.js'
-import {
-    checkIfPrivateRoomExists,
-    getRoomDetails,
-    getRoomIDsByUsername,
-    getUser,
-    getUserRoomConfig,
-    getUsers,
-} from './models/find.js'
+import { checkIfPrivateRoomExists, getManyRoomDetails, getRoomIDsByUsername, getUser, getUsers } from './models/find.js'
 import { addMessageToDB, createGroup, createPrivateRoom } from './models/create.js'
 import { updateMessageReadStatus, updateTextMessageContent, updateUser } from './models/update.js'
 import { updateRoomParticipants } from './models/update.js'
@@ -44,8 +37,8 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
 
         const joinedRooms: Room['roomId'][] = []
         // Get all rooms user is participating in.
-        getRoomIDsByUsername(username).then(rooms =>
-            rooms?.forEach(({ roomId }) => {
+        getRoomIDsByUsername(username).then(roomIds =>
+            roomIds?.forEach(roomId => {
                 socket.join(roomId)
                 joinedRooms.push(roomId)
             })

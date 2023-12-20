@@ -1,12 +1,12 @@
-import { Message, Room, User, RoomConfig, UserRoom, RoomType } from '@prisma/client'
+import { Message, Room, User as UserInDB, UserRoom } from '@prisma/client'
 
-export type UserWithoutID = Omit<User, 'userId' | 'passwordHash'>
+export type User = Pick<UserInDB, 'username' | 'status' | 'createTime' | 'avatarPath' | 'displayName'>
 
-export type RoomWithParticipants = Room & { participants: UserWithoutID[] }
+export type RoomWithParticipants = Room & { participants: User['username'][] }
 
-export type RoomWithParticipantsAndConfig = RoomWithParticipants & RoomConfig
+export type RoomOptions = UserRoom
 
-export type RoomDetails = RoomWithParticipantsAndConfig & UserRoom
+export type RoomDetails = RoomWithParticipants & UserRoom
 
 export type Nullable<T> = { [U in keyof T]: null | T[U] }
 
@@ -38,7 +38,7 @@ export interface ServerToClientEvents {
     userProfileUpdated: (newSettings: Partial<User>) => void
     notification: (roomId: string) => void
     userLeftRoom: (username: User['username'], roomId: Room['roomId']) => void
-    userJoinedRoom: (roomId: Room['roomId'], participants: UserWithoutID[]) => void
+    userJoinedRoom: (roomId: Room['roomId'], participants: User[]) => void
     roomDeleted: (roomId: Room['roomId']) => void
     typingStatusChanged: (status: TypingStatus, roomId: Room['roomId'], username: User['username']) => void
     messageDeleted: (messageKey: Message['key'], roomId: Room['roomId']) => void

@@ -58,7 +58,8 @@ initSocketIO(io)
 app.all(routes.all.healthCheck, isServerOnline)
 
 app.get('*', (_, res) => {
-    res.sendFile('client/index.html', { root: '.' })
+    res.sendFile('frontend/dist/index.html', { root: './../' })
+    // res.sendFile('client/index.html', { root: '.' })
 })
 
 server.listen(PORT, () => console.log('Server started on port', PORT))

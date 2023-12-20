@@ -27,9 +27,10 @@ model User {
   avatarPath  String?    @db.MediumText
   status      UserStatus @default(available)
 
-  message       Message[]
-  userRoom      UserRoom[]
-  rooms         Room[]
+  message     Message[]
+  userRoom    UserRoom[]
+  rooms       Room[]
+  UserMessage UserMessage[]
 }
 
 enum RoomType {
@@ -45,9 +46,10 @@ model Room {
   roomDisplayName String? @db.VarChar(16)
   roomAvatar      String? @db.MediumText
 
-  message  Message[]
-  userRoom UserRoom[]
-  user     User[]
+  message     Message[]
+  userRoom    UserRoom[]
+  user        User[]
+  UserMessage UserMessage[]
 }
 
 model UserRoom {
@@ -89,6 +91,21 @@ model Message {
 
   sender User @relation(fields: [senderUsername], references: [username], onDelete: Cascade)
   room   Room @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
+}
+
+model UserMessage {
+  username String
+  roomId   String
+
+  isHidden            Boolean @default(false)
+  isNotificationMuted Boolean @default(false)
+  isMarkedFavourite   Boolean @default(false)
+  isPinned            Boolean @default(false)
+
+  user User @relation(fields: [username], references: [username], onDelete: Cascade)
+  room Room @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
+
+  @@id([username, roomId])
 }
 
 model Session {

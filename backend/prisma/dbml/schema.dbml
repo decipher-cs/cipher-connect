@@ -2,12 +2,6 @@
 //// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 //// ------------------------------------------------------
 
-Table RefreshToken {
-  tokenOwnerIdRelation User [not null]
-  tokenValue String [pk]
-  username String [not null]
-}
-
 Table User {
   userId String [pk]
   username String [unique, not null]
@@ -16,10 +10,10 @@ Table User {
   displayName String [not null]
   avatarPath String
   status UserStatus [not null, default: 'available']
-  refreshTokens RefreshToken [not null]
   message Message [not null]
   userRoom UserRoom [not null]
   rooms Room [not null]
+  UserMessage UserMessage [not null]
 }
 
 Table Room {
@@ -30,6 +24,7 @@ Table Room {
   message Message [not null]
   userRoom UserRoom [not null]
   user User [not null]
+  UserMessage UserMessage [not null]
 }
 
 Table UserRoom {
@@ -63,6 +58,21 @@ Table Message {
   room Room [not null]
 }
 
+Table UserMessage {
+  username String [not null]
+  roomId String [not null]
+  isHidden Boolean [not null, default: false]
+  isNotificationMuted Boolean [not null, default: false]
+  isMarkedFavourite Boolean [not null, default: false]
+  isPinned Boolean [not null, default: false]
+  user User [not null]
+  room Room [not null]
+
+  indexes {
+    (username, roomId) [pk]
+  }
+}
+
 Table Session {
   id String [pk]
   sid String [unique, not null]
@@ -89,8 +99,6 @@ Enum MessageContentType {
   file
 }
 
-Ref: RefreshToken.username > User.username
-
 Ref: UserRoom.username > User.username [delete: Cascade]
 
 Ref: UserRoom.roomId > Room.roomId [delete: Cascade]
@@ -98,3 +106,7 @@ Ref: UserRoom.roomId > Room.roomId [delete: Cascade]
 Ref: Message.senderUsername > User.username [delete: Cascade]
 
 Ref: Message.roomId > Room.roomId [delete: Cascade]
+
+Ref: UserMessage.username > User.username [delete: Cascade]
+
+Ref: UserMessage.roomId > Room.roomId [delete: Cascade]
