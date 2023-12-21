@@ -23,9 +23,9 @@ import {
     Typography,
 } from '@mui/material'
 import { useContext, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { useSocket } from '../hooks/useSocket'
-import { User, UserWithoutID } from '../types/prisma.client'
+import { User } from '../types/prisma.client'
 import { Routes } from '../types/routes'
 import { ProfileSettingsDialog } from './ProfileSettingsDialog'
 import { useQuery, useMutation, useQueries } from '@tanstack/react-query'
@@ -43,32 +43,20 @@ interface SidebarProps {
 export const Sidebar = ({ selectedTab, handleTabChange }: SidebarProps) => {
     const navigate = useNavigate()
 
-    const { dialogOpen, handleOpen, handleClose } = useDialog()
-
     const {
-        authStatus: { username, isLoggedIn },
+        authStatus: { username, isLoggedIn, userDetails },
     } = useAuth()
 
-    const { data: userProfile } = useQuery({
-        queryKey: ['userProfile'],
-        queryFn: () => axiosServerInstance.get<UserWithoutID>(Routes.get.user + `/${username}`).then(res => res.data),
-    })
+    if (!isLoggedIn || !userDetails) return <Navigate to='/login' />
 
-    const [selectedItem, setSelectedItem] = useState('chat')
-
-    const handleSelectedItemChange = (event: React.MouseEvent<HTMLElement, MouseEvent>, value: string) =>
-        setSelectedItem(value)
-
-    if (!userProfile) return <CircularProgress />
-
-    const avatarURL = userProfile.avatarPath
+    const avatarURL = userDetails.avatarPath
 
     return (
         <Box sx={{ display: 'grid', justifyItems: 'center', width: '7%', flexShrink: 0, flexGrow: 0 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
                 <Tooltip placement='right' title='Profile'>
                     <>
-                        <IconButton sx={{ justifySelf: 'center' }} onClick={handleOpen}>
+                        <IconButton sx={{ justifySelf: 'center' }} onClick={() => handleTabChange('settings')}>
                             <Avatar src={avatarURL ?? ''} />
                         </IconButton>
                         <Typography variant='caption' textOverflow='ellipsis'>
@@ -78,20 +66,19 @@ export const Sidebar = ({ selectedTab, handleTabChange }: SidebarProps) => {
                 </Tooltip>
             </Box>
 
-            <ProfileSettingsDialog dialogOpen={dialogOpen} handleClose={handleClose} userProfile={userProfile} />
-
             <Tabs
                 orientation='vertical'
                 value={selectedTab}
                 onChange={(_, val) => {
                     handleTabChange(val)
                 }}
+                // sx={{ borderColor: 'divider' }}
             >
                 <Tab label='' value='messages' icon={<ChatBubbleRounded />} />
                 <Tab label='' value='favourates' icon={<TryRounded />} />
-                <Divider variant='middle' />
+                {/* <Divider variant='middle' /> */}
                 <Tab label='' value='settings' icon={<SettingsSuggestRounded />} />
-                <Divider variant='middle' />
+                {/* <Divider variant='middle' /> */}
                 <Tab label='' value='about' icon={<ContactMailRounded />} onClick={() => navigate('/about')} />
                 <Tab label='' value='logout' icon={<LogoutRounded />} onClick={() => navigate('/logout')} />
             </Tabs>

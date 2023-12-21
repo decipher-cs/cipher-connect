@@ -1,6 +1,24 @@
-import { Box, CircularProgress, IconButton, InputAdornment, List, Tooltip, Typography } from '@mui/material'
+import {
+    Box,
+    IconButton,
+    InputAdornment,
+    List,
+    ListItem,
+    ListSubheader,
+    Skeleton,
+    Stack,
+    Tooltip,
+    Typography,
+} from '@mui/material'
 import { useContext, useEffect, useRef, useState } from 'react'
-import { AddToPhotosRounded, BrokenImageRounded, SearchRounded } from '@mui/icons-material'
+import {
+    AddToPhotosRounded,
+    BrokenImageRounded,
+    ChatBubbleRounded,
+    PushPinRounded,
+    SearchRounded,
+    TryRounded,
+} from '@mui/icons-material'
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { RoomListItem } from './RoomListItem'
 import { CreateRoomDialog } from './CreateRoomDialog'
@@ -30,38 +48,23 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
 
     const socket = useSocket()
 
-    /* const {
+    const {
         data: fetchedRooms,
         isFetching: fetchingRoomsInProgress,
-        refetch: syncRoomsWithServer,
+        status: roomFetchStatus,
+        // refetch: syncRoomsWithServer,
     } = useQuery({
-        queryKey: ['userRooms'],
-        queryFn: () =>
-            axiosServerInstance.get<RoomDetails[]>(Routes.get.userRooms + `/${username}`).then(res => res.data),
-        initialData: [],
-    }) */
-
-    const [fetchStatus, setFetchStatus] = useState<'fetching' | 'error' | 'success'>('fetching')
+        queryKey: ['fetchedRooms', username],
+        queryFn: async () => {
+            const response = await axiosServerInstance.get<RoomDetails[]>(Routes.get.userRooms + `/${username}`)
+            return response.data
+        },
+    })
 
     useEffect(() => {
-        const controller = new AbortController()
-
-        axiosServerInstance
-            .get<RoomDetails[]>(Routes.get.userRooms + `/${username}`, { signal: controller.signal, retry: 3 })
-            .then(res => {
-                const fetchedRooms = res.data
-                if (fetchedRooms) {
-                    roomDispatcher({ type: RoomActionType.addRoom, rooms: [...fetchedRooms] })
-                    setFetchStatus('success')
-                } else setFetchStatus('error')
-            })
-            .catch(err => setFetchStatus('error'))
-
-        return () => {
-            controller.abort()
-        }
-    }, [])
-
+        if (roomFetchStatus === 'success' && fetchedRooms)
+            roomDispatcher({ type: RoomActionType.initilizeRooms, rooms: [...fetchedRooms] })
+    }, [fetchedRooms])
 
     const { mutate: mutateMessageReadStatus } = useMutation({
         mutationFn: (value: { roomId: string; messageStatus: boolean }) =>
@@ -106,9 +109,7 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
     //     }
     // }, [])
 
-    if (fetchStatus === 'fetching') return <CircularProgress />
-
-    if (fetchStatus === 'error') return <BrokenImageRounded />
+    if (roomFetchStatus === 'error') return <BrokenImageRounded sx={{ justifySelf: 'center', mt: '100%' }} />
 
     return (
         <>
@@ -123,71 +124,99 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
 
             <CreateRoomDialog dialogOpen={dialogOpen} roomDispatcher={roomDispatcher} handleClose={handleClose} />
 
-            <StyledTextField
-                sx={{ m: 2, '& .MuiInputBase-root': { background: theme => theme.palette.background.default } }}
-                placeholder='search anything'
-                InputProps={{
-                    endAdornment: (
-                        <InputAdornment position='end'>
-                            <SearchRounded color='disabled' />
-                        </InputAdornment>
-                    ),
-                }}
-            />
+            {selectedTab !== 'settings' ? (
+                <StyledTextField
+                    sx={{ m: 2, '& .MuiInputBase-root': { background: theme => theme.palette.background.default } }}
+                    placeholder='search for a room'
+                    InputProps={{
+                        endAdornment: (
+                            <InputAdornment position='end'>
+                                <SearchRounded color='disabled' />
+                            </InputAdornment>
+                        ),
+                    }}
+                />
+            ) : null}
 
-            <List sx={{ overflowY: 'auto' }}>
-                {rooms.joinedRooms.map((room, i) => {
-                    if (room.isPinned)
-                        return (
-                            <RoomListItem
-                                key={room.roomId}
-                                thisRoomIndex={i}
-                                selectedRoomIndex={rooms.selectedRoomIndex}
-                                usersInfo={rooms.usersInfo}
-                                room={room}
-                                roomDispatcher={roomDispatcher}
-                                mutateMessageReadStatus={mutateMessageReadStatus}
-                            />
-                        )
-                })}
-            </List>
-
-            {selectedTab === 'messages' && (
-                <List sx={{ overflowY: 'auto' }}>
-                    {rooms.joinedRooms.map((room, i) => {
-                        if (!room.isPinned)
-                            return (
-                                <RoomListItem
-                                    key={room.roomId}
-                                    thisRoomIndex={i}
-                                    selectedRoomIndex={rooms.selectedRoomIndex}
-                                    room={room}
-                                    usersInfo={rooms.usersInfo}
-                                    roomDispatcher={roomDispatcher}
-                                    mutateMessageReadStatus={mutateMessageReadStatus}
-                                />
-                            )
-                    })}
+            {roomFetchStatus === 'loading' ? (
+                <List>
+                    {Array(7)
+                        .fill('')
+                        .map((_, i) => (
+                            <ListItem divider disableGutters key={i}>
+                                <Skeleton width={'100%'} height={56} animation='wave' variant='rectangular'></Skeleton>
+                            </ListItem>
+                        ))}
                 </List>
-            )}
+            ) : (
+                <>
+                    <List sx={{ overflowY: 'auto' }}>
+                        <ListSubheader>
+                            <PushPinRounded fontSize='inherit' sx={{ mr: 1 }} />
+                            pinned rooms
+                        </ListSubheader>
+                        {rooms.joinedRooms.map((room, i) => {
+                            if (room.isPinned)
+                                return (
+                                    <RoomListItem
+                                        key={room.roomId}
+                                        thisRoomIndex={i}
+                                        selectedRoomIndex={rooms.selectedRoomIndex}
+                                        usersInfo={rooms.usersInfo}
+                                        room={room}
+                                        roomDispatcher={roomDispatcher}
+                                        mutateMessageReadStatus={mutateMessageReadStatus}
+                                    />
+                                )
+                        })}
+                    </List>
 
-            {selectedTab === 'favourates' && (
-                <List sx={{ overflowY: 'auto' }}>
-                    {rooms.joinedRooms.map((room, i) => {
-                        if (room.isMarkedFavourite && !room.isPinned)
-                            return (
-                                <RoomListItem
-                                    key={room.roomId}
-                                    thisRoomIndex={i}
-                                    selectedRoomIndex={rooms.selectedRoomIndex}
-                                    room={room}
-                                    roomDispatcher={roomDispatcher}
-                                    usersInfo={rooms.usersInfo}
-                                    mutateMessageReadStatus={mutateMessageReadStatus}
-                                />
-                            )
-                    })}
-                </List>
+                    {selectedTab === 'messages' && (
+                        <List sx={{ overflowY: 'auto' }}>
+                            <ListSubheader>
+                                <ChatBubbleRounded fontSize='inherit' sx={{ mr: 1 }} />
+                                All Rooms
+                            </ListSubheader>
+                            {rooms.joinedRooms.map((room, i) => {
+                                if (!room.isPinned)
+                                    return (
+                                        <RoomListItem
+                                            key={room.roomId}
+                                            thisRoomIndex={i}
+                                            selectedRoomIndex={rooms.selectedRoomIndex}
+                                            room={room}
+                                            usersInfo={rooms.usersInfo}
+                                            roomDispatcher={roomDispatcher}
+                                            mutateMessageReadStatus={mutateMessageReadStatus}
+                                        />
+                                    )
+                            })}
+                        </List>
+                    )}
+
+                    {selectedTab === 'favourates' && (
+                        <List sx={{ overflowY: 'auto' }}>
+                            <ListSubheader>
+                                <TryRounded fontSize='inherit' sx={{ mr: 1 }} />
+                                Bookmarked Rooms
+                            </ListSubheader>
+                            {rooms.joinedRooms.map((room, i) => {
+                                if (room.isMarkedFavourite && !room.isPinned)
+                                    return (
+                                        <RoomListItem
+                                            key={room.roomId}
+                                            thisRoomIndex={i}
+                                            selectedRoomIndex={rooms.selectedRoomIndex}
+                                            room={room}
+                                            roomDispatcher={roomDispatcher}
+                                            usersInfo={rooms.usersInfo}
+                                            mutateMessageReadStatus={mutateMessageReadStatus}
+                                        />
+                                    )
+                            })}
+                        </List>
+                    )}
+                </>
             )}
 
             {selectedTab === 'settings' && <ProfileSettings />}
