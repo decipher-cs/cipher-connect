@@ -20,7 +20,6 @@ import { useDarkModeToggle } from './hooks/useDarkModeToggle'
 import { useDialog } from './hooks/useDialog'
 import { useEffect } from 'react'
 import axios, { AxiosError, isAxiosError } from 'axios'
-import axiosRetry from 'axios-retry'
 
 export const queryClient = new QueryClient({
     defaultOptions: {
