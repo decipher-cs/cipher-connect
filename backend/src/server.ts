@@ -9,6 +9,7 @@ import { PrismaClient } from '@prisma/client'
 import expressSession from 'express-session'
 import { PrismaSessionStore } from '@quixo3/prisma-session-store'
 import { isServerOnline } from './controllers.js'
+import { ClientToServerEvents, InterServerEvents, ServerToClientEvents } from '../../@types/socket.js'
 
 dotenv.config()
 
@@ -39,7 +40,7 @@ const session = expressSession({
 })
 
 const server = http.createServer(app)
-const io = new Server(server, {
+export const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents>(server, {
     path: '/api/socket.io',
 })
 
@@ -59,7 +60,7 @@ app.all(routes.all.healthCheck, isServerOnline)
 
 app.get('*', (_, res) => {
     res.sendFile('frontend/dist/index.html', { root: './../' })
+    //__dirname
     // res.sendFile('client/index.html', { root: '.' })
 })
-
 server.listen(PORT, () => console.log('Server started on port', PORT))

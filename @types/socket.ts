@@ -1,5 +1,6 @@
-import { Socket } from '../frontend/node_modules/socket.io-client'
-import { Message, Room, User, UserRoom, RoomType } from '../prisma/index.d'
+import { Message, Room, User as UserWithPassword, UserRoom, RoomType } from '../prisma/index.d.js'
+
+type User = Omit<UserWithPassword, 'passwordHash' | 'userId'>
 
 export interface ServerToClientEvents {
     roomMembersChanged: (roomId: Room['roomId'], updatedMemberIds: User['username'][]) => void
@@ -62,6 +63,6 @@ export enum TypingStatus {
     notTyping = 'not-typing',
 }
 
-export type Nullable<T> = { [U in keyof T]: null | T[U] }
-
-export type SocketWithCustomEvents = Socket<ServerToClientEvents, ClientToServerEvents>
+export interface SocketData {
+    username: string
+}
