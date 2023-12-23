@@ -2,6 +2,11 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator client1 {
+  provider = "prisma-client-js"
+  output   = "../../prisma/"
+}
+
 generator client2 {
   provider = "prisma-dbml-generator"
 }
