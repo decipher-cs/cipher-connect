@@ -1,5 +1,5 @@
 import { Box, Collapse, Typography } from '@mui/material'
-import { useEffect, useReducer, useRef, useState } from 'react'
+import { useEffect, useId, useReducer, useRef, useState } from 'react'
 import { ChatDisplaySection } from '../components/ChatDisplaySection'
 import { RoomInfo } from '../components/RoomInfo'
 import { Sidebar } from '../components/Sidebar'
@@ -10,6 +10,7 @@ import { useDialog } from '../hooks/useDialog'
 import { useAuth } from '../hooks/useAuth'
 import { Navigate } from 'react-router-dom'
 import { axiosServerInstance } from '../App'
+import { Routes } from '../types/routes'
 
 export const Chat = () => {
     const socket = useSocket()

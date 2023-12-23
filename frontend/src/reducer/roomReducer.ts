@@ -2,21 +2,17 @@ import { Room, UserRoom } from '../types/prisma.client'
 import { User, RoomDetails } from '../types/prisma.client'
 
 export type RoomsState = {
-    selectedRoom: null | number
+    selectedRoomIndex: null | number
     joinedRooms: RoomDetails[]
+    usersInfo: { [username: User['username']]: User }
 }
 
 export enum RoomActionType {
-    initializeRoom = 'initializeRoom',
     addRoom = 'addRoom',
     removeRoom = 'removeRoom',
-    hide = 'hide',
+    hideRoom = 'hide',
     addParticipants = 'addParticipant',
     removeParticipants = 'removeParticipant',
-    changeRoom = 'changeRoom',
-    alterRoomProperties = 'alterRoomProperties',
-    changeNotificationStatus = 'changeNotificationStatus',
-    changeRoomConfig = 'changeRoomConfig',
     changeSelectedRoom = 'changeRoom',
     removeAllRooms = 'removeAllRooms',
     initilizeRooms = 'initilizeRooms',
