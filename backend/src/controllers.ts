@@ -14,9 +14,18 @@ import { createGroup, createNewUser, createPrivateRoom } from './models/create.j
 import { deleteRoom, deleteUserRoom } from './models/delete.js'
 import { updateMessageReadStatus, updateRoom, updateRoomParticipants, updateUser } from './models/update.js'
 import { User } from './types.js'
+import {
+    updateMessageReadStatus,
+    updateRoom,
+    updateRoomParticipants,
+    updateUser,
+    updateUserRoom,
+} from './models/update.js'
 import { UTApi } from 'uploadthing/server'
 import * as dotenv from 'dotenv'
 import { error } from 'console'
+import { Room, User, UserRoom } from '@prisma/client'
+import { io } from './server.js'
 
 dotenv.config()
 const utapi = new UTApi()
@@ -255,14 +264,16 @@ export const handleGettingUniqueRoomDetails = async (req: Request, res: Response
 export const handlePrivateRoomCreation = async (req: Request, res: Response) => {
     const { participants }: { participants: [string, string] } = req.body
 
-    if (participants.length !== 2) {
+    if (participants.length !== 2 || !req.session.username) {
         res.sendStatus(400)
         return
     }
 
     try {
         const roomId = await createPrivateRoom(...participants)
-        // const roomDetails: RoomDetails[] = await getRoomDetails(roomId)
+
+        io.to(participants).except(req.session.username).emit('roomMembersChanged', roomId, participants)
+
         res.send(roomId)
     } catch (err) {
         res.sendStatus(400)
@@ -270,15 +281,16 @@ export const handlePrivateRoomCreation = async (req: Request, res: Response) => 
 }
 
 export const handleGroupCreation = async (req: Request, res: Response) => {
-    const { participants, roomDisplayName }: { participants: [string, string]; roomDisplayName: string } = req.body
+    const { participants, roomDisplayName }: { participants: string[]; roomDisplayName: string } = req.body
 
-    if (participants.length < 2) {
+    if (participants.length < 2 || !req.session.username) {
         res.sendStatus(400)
         return
     }
 
     try {
         const roomId = await createGroup(participants, roomDisplayName)
+        io.to(participants).except(req.session.username).emit('roomMembersChanged', roomId, participants)
         // const roomDetails: RoomDetails[] = await getRoomDetails(roomId)
         res.send(roomId)
     } catch (err) {
@@ -420,17 +432,17 @@ export const handleAvatarChange = async (req: Request, res: Response) => {
     }
 }
 
-export const handleRoomConfigChange = async (req: Request, res: Response) => {
-    // const { roomId, ...newConfig }: RoomConfig = req.body
-    // const { username } = req.session
-    //
-    // if (!username) {
-    //     res.status(400)
-    //     return
-    // }
-    //
-    // const changedConfig = await updateRoomConfig(roomId, username, newConfig)
-    // res.json(changedConfig)
+export const handleUserRoomOptionsChange = async (req: Request, res: Response) => {
+    const { roomId, ...newConfig } = req.body as Partial<UserRoom>
+    const { username } = req.session
+
+    if (!username || !roomId) {
+        res.sendStatus(401)
+        return
+    }
+    const changeSuccessful = await updateUserRoom(roomId, username, newConfig)
+    if (changeSuccessful) res.sendStatus(200)
+    else res.sendStatus(500)
 }
 
 export const doesValidUserSessionExist = async (req: Request, res: Response) => {
@@ -451,7 +463,8 @@ export const isServerOnline = async (req: Request, res: Response) => {
 }
 
 export const test = async (req: Request, res: Response) => {
-    console.log('test point hit', req.session.id)
-    res.sendStatus(201)
+    console.log('test point hit')
+    io.emit('test', 'socket working!')
+    res.sendStatus(200)
     return
 }
