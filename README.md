@@ -51,6 +51,9 @@ https://cipher-connect.onrender.com/
 - React-query
 - `crypto.randomUUID()` only runs when the URL scheme is https or client is running on localhost
 - Don't use ORMs, or at the very least avoid prisma. The overhead and absolute unnecessary computation outweighs the any benefits whatsoever. 
+- Better commits = good DX
+- Git branches is a very good tool.
+- Git experience can be improved significantly using ["lazygit"](https://github.com/jesseduffield/lazygit)
 
 
 ## Installation
