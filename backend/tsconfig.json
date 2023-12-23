@@ -3,16 +3,30 @@
         "target": "esnext",
         "module": "esnext",
         "moduleResolution": "nodenext",
-        "rootDir": "./src",
+        "rootDirs": [
+            "./src",
+            "../@types"
+        ],
         "outDir": "./dist",
+        "baseUrl": ".",
         "noEmitOnError": true,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
         "strict": true,
         "strictNullChecks": true,
         "skipLibCheck": true,
-        "typeRoots": ["./environment.d.ts"]
+        "typeRoots": [
+            "./environment.d.ts"
+        ]
     },
-    "include": ["src", "./environment.d.ts"],
-    "exclude": ["node_modules", "assets", "dist"]
+    "include": [
+        "src",
+        "./environment.d.ts",
+        "../@types/**.*"
+    ],
+    "exclude": [
+        "node_modules",
+        "assets",
+        "dist"
+    ]
 }
