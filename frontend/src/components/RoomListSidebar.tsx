@@ -51,6 +51,7 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
     const {
         data: fetchedRooms,
         isFetching: fetchingRoomsInProgress,
+        refetch,
         status: roomFetchStatus,
         // refetch: syncRoomsWithServer,
     } = useQuery({
@@ -74,6 +75,24 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
                 })
                 .then(res => res.data),
     })
+
+    useEffect(() => {
+        socket.on('roomMembersChanged', (roomId, updatedMemberIds) => {
+            console.log('fookba')
+            if (rooms.joinedRooms.find(r => r.roomId === roomId)) {
+                // TODO: update participants
+            } else {
+                console.log('refetching')
+                refetch()
+                // TODO: handle by dispatcing action
+                // roomDispatcher({type: RoomActionType.addRoom, rooms: })
+            }
+        })
+
+        return () => {
+            socket.removeListener('roomMembersChanged')
+        }
+    }, [])
 
     // useEffect(() => {
     //     socket.on('notification', roomId => {
