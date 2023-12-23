@@ -13,7 +13,8 @@ export const RequireAuth = (props: React.PropsWithChildren) => {
     useEffect(() => {
         const intercepter = axiosServerInstance.interceptors.response.use(undefined, interceptedError => {
             if (interceptedError instanceof AxiosError) {
-                const { response } = interceptedError
+                const { response, config } = interceptedError
+
                 if (response?.status === 401) resetUserAuth()
             }
             return Promise.reject(interceptedError)
