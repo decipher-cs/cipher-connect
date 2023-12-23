@@ -3,12 +3,13 @@ import { useEffect, useReducer, useRef, useState } from 'react'
 import { ChatDisplaySection } from '../components/ChatDisplaySection'
 import { RoomInfo } from '../components/RoomInfo'
 import { Sidebar } from '../components/Sidebar'
-import { RoomActionType, roomReducer } from '../reducer/roomReducer'
+import { RoomActions, RoomActionType, roomReducer, RoomsState } from '../reducer/roomReducer'
 import { RoomListSidebar } from '../components/RoomListSidebar'
 import { useSocket } from '../hooks/useSocket'
 import { useDialog } from '../hooks/useDialog'
 import { useAuth } from '../hooks/useAuth'
 import { Navigate } from 'react-router-dom'
+import { axiosServerInstance } from '../App'
 
 export const Chat = () => {
     const socket = useSocket()
@@ -17,9 +18,9 @@ export const Chat = () => {
         authStatus: { username, isLoggedIn },
     } = useAuth()
 
-    const [rooms, roomDispatcher] = useReducer(roomReducer, { selectedRoom: null, joinedRooms: [] })
-
     const { dialogOpen: roomInfoSidebarOpen, handleToggle: toggleRoomInfoSidebar } = useDialog()
+
+    const [rooms, roomDispatcher] = useReducer(roomReducer, { selectedRoomIndex: null, joinedRooms: [], usersInfo: {} })
 
     // TODO: better typingn for tab strings
     const [selectedTab, setSelectedTab] = useState<'messages' | 'favourates' | 'settings'>('messages')
@@ -36,7 +37,7 @@ export const Chat = () => {
         })
 
         socket.on('userJoinedRoom', async (roomId, participants) => {
-            roomDispatcher({ type: RoomActionType.addParticipants, roomId, participants })
+            // roomDispatcher({ type: RoomActionType.addParticipants, roomId, participants })
         })
 
         socket.on('roomDeleted', roomId => {
@@ -67,9 +68,22 @@ export const Chat = () => {
             >
                 <Sidebar selectedTab={selectedTab} handleTabChange={handleTabChange} />
 
-                <RoomListSidebar rooms={rooms} roomDispatcher={roomDispatcher} selectedTab={selectedTab} />
+                <Box
+                    sx={{
+                        flexShrink: 0,
+                        flexGrow: 0,
+                        width: '25%',
+                        minWidth: 'max-content',
 
-                {rooms.selectedRoom === null || rooms.joinedRooms[rooms.selectedRoom] === undefined ? (
+                        display: 'grid',
+                        alignContent: 'flex-start',
+                        backgroundColor: theme => theme.palette.background.light,
+                    }}
+                >
+                    <RoomListSidebar rooms={rooms} roomDispatcher={roomDispatcher} selectedTab={selectedTab} />
+                </Box>
+
+                {rooms.selectedRoomIndex === null || !rooms.joinedRooms[rooms.selectedRoomIndex] ? (
                     <Box sx={{ display: 'grid', flex: 1, placeContent: 'center' }}>
                         <Typography variant='h6' align='center'>
                             Join A Room To See The Chat
@@ -92,8 +106,9 @@ export const Chat = () => {
                             }}
                         >
                             <ChatDisplaySection
-                                currRoom={rooms.joinedRooms[rooms.selectedRoom]}
+                                currRoom={rooms.joinedRooms[rooms.selectedRoomIndex]}
                                 toggleRoomInfoSidebar={toggleRoomInfoSidebar}
+                                users={rooms.usersInfo}
                             />
                         </Box>
                         <Collapse
@@ -103,7 +118,7 @@ export const Chat = () => {
                             component={Box}
                         >
                             <RoomInfo
-                                room={rooms.joinedRooms[rooms.selectedRoom]}
+                                room={rooms.joinedRooms[rooms.selectedRoomIndex]}
                                 handleToggleRoomInfoSidebar={toggleRoomInfoSidebar}
                                 roomDispatcher={roomDispatcher}
                             />
