@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator client1 {
+  provider = "prisma-client-js"
+  output   = "../../prisma/"
+}
+
+generator client2 {
+  provider = "prisma-dbml-generator"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  available
+  dnd
+  hidden
+}
+
+model User {
+  userId       String   @id @unique @default(cuid())
+  username     String   @unique @db.VarChar(16)
+  createTime   DateTime @default(now()) @db.Timestamp(0)
+  passwordHash String   @db.MediumText
+
+  displayName String     @db.VarChar(16)
+  avatarPath  String?    @db.MediumText
+  status      UserStatus @default(available)
+
+  message     Message[]
+  userRoom    UserRoom[]
+  rooms       Room[]
+  UserMessage UserMessage[]
+}
+
+enum RoomType {
+  private
+  group
+}
+
+model Room {
+  roomId String @id @default(cuid())
+
+  roomType RoomType
+
+  roomDisplayName String? @db.VarChar(16)
+  roomAvatar      String? @db.MediumText
+
+  message     Message[]
+  userRoom    UserRoom[]
+  user        User[]
+  UserMessage UserMessage[]
+}
+
+model UserRoom {
+  username String
+  roomId   String
+
+  joinedAt        DateTime @default(now())
+  isAdmin         Boolean  @default(false)
+  isBlocked       Boolean  @default(false)
+  lastReadMessage String?
+
+  isHidden            Boolean @default(false)
+  isNotificationMuted Boolean @default(false)
+  isMarkedFavourite   Boolean @default(false)
+  isPinned            Boolean @default(false)
+
+  user User @relation(fields: [username], references: [username], onDelete: Cascade)
+  room Room @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
+
+  @@id([username, roomId])
+}
+
+enum MessageContentType {
+  audio
+  video
+  text
+  image
+  file
+}
+
+model Message {
+  key            String             @id @unique @default(cuid())
+  senderUsername String
+  roomId         String
+  content        String             @db.MediumText
+  createdAt      DateTime           @default(now())
+  editedAt       DateTime?          @updatedAt
+  contentType    MessageContentType
+
+  sender User @relation(fields: [senderUsername], references: [username], onDelete: Cascade)
+  room   Room @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
+}
+
+model UserMessage {
+  username String
+  roomId   String
+
+  isHidden            Boolean @default(false)
+  isNotificationMuted Boolean @default(false)
+  isMarkedFavourite   Boolean @default(false)
+  isPinned            Boolean @default(false)
+
+  user User @relation(fields: [username], references: [username], onDelete: Cascade)
+  room Room @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
+
+  @@id([username, roomId])
+}
+
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String   @db.MediumText
+  expiresAt DateTime
+}
