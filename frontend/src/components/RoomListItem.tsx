@@ -13,31 +13,28 @@ import { useAuth } from '../hooks/useAuth'
 interface RoomListItemProps {
     room: RoomsState['joinedRooms'][0]
     roomDispatcher: React.Dispatch<RoomActions>
-    selectedRoomIndex: RoomsState['selectedRoom']
-    roomIndex: number
+    selectedRoomIndex: RoomsState['selectedRoomIndex']
+    thisRoomIndex: number
+    usersInfo: RoomsState['usersInfo']
     mutateMessageReadStatus: UseMutateFunction<any, unknown, { roomId: string; messageStatus: boolean }, unknown>
 }
 
 export const RoomListItem = memo((props: RoomListItemProps) => {
+    const { selectedRoomIndex, room, usersInfo, roomDispatcher, thisRoomIndex, ...rest } = props
+
     const {
-        authStatus: { username, isLoggedIn },
+        authStatus: { username },
     } = useAuth()
 
-    const displayName = (() => {
-        return props.room.roomType === 'private' && props.room.roomAvatar === null
-            ? props.room.participants.filter(p => p.username !== username)[0]?.username
-            : props.room.roomDisplayName
-    })()
+    const displayName =
+        room.roomType === 'private' ? room.participants.filter(name => name !== username)[0] : room.roomDisplayName
 
     const displayImage = (() => {
-        if (props.room.roomType === 'group' && props.room.roomAvatar) return props.room.roomAvatar
+        if (room.roomType === 'group') return room.roomAvatar ?? undefined
 
-        const otherMember = props.room.participants.find(p => p.username === displayName)
+        const otherMember = room.participants.filter(name => name !== username)[0]
 
-        if (props.room.roomType === 'private' && otherMember?.avatarPath) {
-            return otherMember.avatarPath
-        }
-        return undefined
+        return usersInfo[otherMember].avatarPath ?? undefined
     })()
 
     return (
@@ -45,15 +42,16 @@ export const RoomListItem = memo((props: RoomListItemProps) => {
             divider
             onClick={async () => {
                 try {
-                    if (props.roomIndex === props.selectedRoomIndex) return
+                    // console.log(thisRoomIndex, selectedRoomIndex)
+                    if (thisRoomIndex === selectedRoomIndex) return
 
-                    props.roomDispatcher({ type: RoomActionType.changeRoom, newRoomIndex: props.roomIndex })
+                    props.roomDispatcher({ type: RoomActionType.changeSelectedRoom, newlySelectedIndex: thisRoomIndex })
 
-                    props.roomDispatcher({
-                        type: RoomActionType.changeNotificationStatus,
-                        roomId: props.room.roomId,
-                        unreadMessages: false,
-                    })
+                    // props.roomDispatcher({
+                    //     type: RoomActionType.changeNotificationStatus,
+                    //     roomId: props.room.roomId,
+                    //     unreadMessages: false,
+                    // })
 
                     // if (props.room.lastReadMessage === true)
                     // props.mutateMessageReadStatus({ roomId: props.room.roomId, messageStatus: false })
@@ -61,7 +59,7 @@ export const RoomListItem = memo((props: RoomListItemProps) => {
                     throw new Error('Error during room selection')
                 }
             }}
-            selected={props.selectedRoomIndex === props.roomIndex}
+            selected={selectedRoomIndex === thisRoomIndex}
         >
             <ListItem disableGutters disablePadding>
                 <ListItemIcon>

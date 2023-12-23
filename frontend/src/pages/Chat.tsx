@@ -11,6 +11,7 @@ import { useAuth } from '../hooks/useAuth'
 import { Navigate } from 'react-router-dom'
 import { axiosServerInstance } from '../App'
 import { Routes } from '../types/routes'
+import { RoomDetails } from '../types/prisma.client'
 
 export const Chat = () => {
     const socket = useSocket()
