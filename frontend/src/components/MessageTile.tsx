@@ -33,6 +33,7 @@ import {
     User,
     UserWithoutID,
 } from '../types/prisma.client'
+import { RoomsState } from '../reducer/roomReducer'
 import { AudioPlayer } from './AudioPlayer'
 import { MessageTilePopover } from './MessageTilePopover'
 import { StyledTextField } from './StyledTextField'
@@ -40,12 +41,15 @@ import { StyledTextField } from './StyledTextField'
 export type MessageTileProps = {
     autoScrollToBottomRef: React.RefObject<HTMLDivElement> | null
     message: Message
-    user: UserWithoutID
+    // senderUser: User
     roomType: RoomType
+    users: RoomsState['usersInfo']
 }
 
 export const MessageTile = (props: MessageTileProps) => {
-    const { autoScrollToBottomRef, roomType, user, message } = props
+    const { autoScrollToBottomRef, roomType, users, message } = props
+
+    const user = users[message.senderUsername]
 
     const {
         roomId,

@@ -112,8 +112,6 @@ export const ProfileSettings = ({ ...props }: ProfileSettingsDialogProps) => {
 
     return (
         <>
-            <Typography variant='h6'>Profile Settings</Typography>
-
             {sourceImage ? <ImageEditorDialog {...imageEditroDialogProps} sourceImage={sourceImage} /> : null}
 
             <List component='form' onSubmit={() => handleSubmit(handleProfileSubmit)}>
@@ -161,7 +159,7 @@ export const ProfileSettings = ({ ...props }: ProfileSettingsDialogProps) => {
                         {...register('displayName')}
                         placeholder='Enter a name...'
                         error={errors.displayName?.message !== undefined}
-                        helperText={errors.displayName?.message}
+                        helperText={errors?.displayName?.message ?? ' '}
                     />
                 </StyledListItem>
 

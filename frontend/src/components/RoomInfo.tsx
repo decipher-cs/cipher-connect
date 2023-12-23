@@ -47,7 +47,10 @@ interface RoomInfoProps {
     roomDispatcher: (value: RoomActions) => void
 }
 
-type RoomConfigMutableEntries = Pick<RoomConfig, 'isNotificationMuted' | 'isHidden' | 'isPinned' | 'isMarkedFavourite'>
+type UserRoomMutableOptions = Pick<
+    UserRoom,
+    'isNotificationMuted' | 'isHidden' | 'isPinned' | 'isMarkedFavourite' | 'isBlocked'
+>
 
 export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ...props }: RoomInfoProps) => {
     const {
@@ -61,6 +64,29 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
     const { handleToggle: toggleLeaveGroupDialog, dialogOpen: openLeaveGroupDialog } = useDialog()
 
     const { handleToggle: toggleDeleteGroupDialog, dialogOpen: openDeleteGroupDialog } = useDialog()
+
+    const { mutateAsync: updateUserRoom } = useMutation({
+        mutationKey: ['UserRoomMutableOptions', room.roomId],
+        mutationFn: async (newConfig: Partial<UserRoomMutableOptions>) => {
+            const res = await axiosServerInstance.put(Routes.put.userRoom, { roomId: room.roomId, ...newConfig })
+            return res
+        },
+        onMutate: newConfig => {
+            roomDispatcher({
+                type: RoomActionType.changeRoomSettings,
+                roomId: room.roomId,
+                newRoomProperties: newConfig,
+            })
+        },
+        onError: (err, oldConfig, context) => {
+            console.log(err, oldConfig, context)
+            // roomDispatcher({
+            //     type: RoomActionType.changeRoomSettings,
+            //     roomId: room.roomId,
+            //     newRoomProperties: oldConfig,
+            // })
+        },
+    })
 
     const { mutateAsync: uploadAvatar } = useMutation({
         mutationKey: ['uploadAvatar'],
@@ -76,60 +102,60 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
         },
     })
 
-    const { mutateAsync: changeNotificationSetting, data: changedRoomConfig } = useMutation({
-        mutationFn: (newConfig: Partial<RoomConfigMutableEntries>) =>
-            axiosServerInstance
-                .put<Partial<RoomConfig>>(Routes.put.roomConfig, {
-                    username,
-                    roomId: room.roomId,
-                    ...newConfig,
-                } satisfies Partial<RoomConfig>)
-                .then(res => res.data),
-        onMutate: changedConfig => {
-            if (changedConfig.isNotificationMuted !== undefined) {
-                roomDispatcher({
-                    type: RoomActionType.changeRoomConfig,
-                    roomId: room.roomId,
-                    newConfig: { isNotificationMuted: changedConfig.isNotificationMuted },
-                })
-            }
-        },
-        onSuccess: changedConfig => {
-            if (changedConfig.isNotificationMuted !== undefined)
-                roomDispatcher({
-                    type: RoomActionType.changeRoomConfig,
-                    roomId: room.roomId,
-                    newConfig: { isNotificationMuted: changedConfig.isNotificationMuted },
-                })
-        },
-    })
+    // const { mutateAsync: changeNotificationSetting, data: changedRoomConfig } = useMutation({
+    //     mutationFn: (newConfig: Partial<RoomConfigMutableEntries>) =>
+    //         axiosServerInstance
+    //             .put<Partial<RoomConfig>>(Routes.put.roomConfig, {
+    //                 username,
+    //                 roomId: room.roomId,
+    //                 ...newConfig,
+    //             } satisfies Partial<RoomConfig>)
+    //             .then(res => res.data),
+    //     onMutate: changedConfig => {
+    //         if (changedConfig.isNotificationMuted !== undefined) {
+    //             roomDispatcher({
+    //                 type: RoomActionType.changeRoomConfig,
+    //                 roomId: room.roomId,
+    //                 newConfig: { isNotificationMuted: changedConfig.isNotificationMuted },
+    //             })
+    //         }
+    //     },
+    //     onSuccess: changedConfig => {
+    //         if (changedConfig.isNotificationMuted !== undefined)
+    //             roomDispatcher({
+    //                 type: RoomActionType.changeRoomConfig,
+    //                 roomId: room.roomId,
+    //                 newConfig: { isNotificationMuted: changedConfig.isNotificationMuted },
+    //             })
+    //     },
+    // })
 
-    const handleImageUpload = async (newAvatar: File) => {
-        if (!newAvatar) return
+    // const handleImageUpload = async (newAvatar: File) => {
+    //     if (!newAvatar) return
+    //
+    //     const roomId = room.roomId
+    //
+    //     const fd = new FormData()
+    //
+    //     fd.append('upload', newAvatar)
+    //     fd.append('roomId', roomId)
+    //
+    //     const newPath = await uploadAvatar(fd)
+    //
+    //     roomDispatcher({
+    //         type: RoomActionType.alterRoomProperties,
+    //         roomId,
+    //         newRoomProperties: { roomAvatar: newPath },
+    //     })
+    //
+    //     socket.emit('roomUpdated', { roomAvatar: newPath })
+    // }
 
-        const roomId = room.roomId
-
-        const fd = new FormData()
-
-        fd.append('upload', newAvatar)
-        fd.append('roomId', roomId)
-
-        const newPath = await uploadAvatar(fd)
-
-        roomDispatcher({
-            type: RoomActionType.alterRoomProperties,
-            roomId,
-            newRoomProperties: { roomAvatar: newPath },
-        })
-
-        socket.emit('roomUpdated', { roomAvatar: newPath })
-    }
-
-    useEffect(() => {
-        if (editedImageData?.file) {
-            handleImageUpload(editedImageData?.file)
-        }
-    }, [editedImageData?.file])
+    // useEffect(() => {
+    //     if (editedImageData?.file) {
+    //         handleImageUpload(editedImageData?.file)
+    //     }
+    // }, [editedImageData?.file])
 
     return (
         <Box
@@ -155,6 +181,10 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
                     sx={{ justifySelf: 'flex-end', ml: 'auto' }}
                     checkedIcon={<PushPinRounded />}
                     icon={<PushPinOutlined />}
+                    checked={room.isPinned}
+                    onChange={(_, checked) => {
+                        updateUserRoom({ isPinned: checked })
+                    }}
                 />
 
                 <IconButton onClick={handleToggleRoomInfoSidebar} sx={{ justifySelf: 'flex-end' }}>
@@ -198,7 +228,8 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
                     sx={{ ml: 'auto' }}
                     checked={room.isNotificationMuted}
                     onChange={(_, checked) => {
-                        changeNotificationSetting({ isNotificationMuted: checked })
+                        // changeNotificationSetting({ isNotificationMuted: checked })
+                        updateUserRoom({ isNotificationMuted: checked })
                     }}
                 />
             </Stack>
@@ -206,7 +237,14 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
             <Stack direction='row' alignItems='center' gap={2}>
                 <TryRounded />
                 Mark As Favorite
-                <Checkbox sx={{ ml: 'auto' }} checkedIcon={<BookmarkRounded />} icon={<BookmarkBorderRounded />} />
+                <Checkbox
+                    sx={{ ml: 'auto' }}
+                    checkedIcon={<BookmarkRounded />}
+                    icon={<BookmarkBorderRounded />}
+                    onChange={(e, checked) => {
+                        updateUserRoom({ isMarkedFavourite: checked })
+                    }}
+                />
             </Stack>
 
             <Divider />
@@ -217,7 +255,7 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
             </Stack>
 
             <List dense sx={{ maxHeight: '220px', overflow: 'auto' }}>
-                {room.participants.map(({ username }, i) => (
+                {room.participants.map((username, i) => (
                     <ListItem key={i}>
                         <ListItemAvatar>
                             <Avatar sizes='14px' sx={{ height: '24px', width: '24px' }} src='' />

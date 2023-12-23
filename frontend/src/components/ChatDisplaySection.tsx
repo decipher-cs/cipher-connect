@@ -22,9 +22,12 @@ import { Components, Virtuoso } from 'react-virtuoso'
 export interface ChatDisplaySectionProps {
     currRoom: RoomsState['joinedRooms'][0]
     toggleRoomInfoSidebar: () => void
+    users: RoomsState['usersInfo']
 }
 
 export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
+    const { currRoom, users, toggleRoomInfoSidebar } = props
+
     const {
         authStatus: { username },
     } = useAuth()
@@ -45,12 +48,12 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         isFetchingNextPage,
         hasNextPage,
     } = useInfiniteQuery({
-        queryKey: ['messages', props.currRoom.roomId],
+        queryKey: ['messages', currRoom.roomId],
         queryFn: ({ pageParam }) =>
             axiosServerInstance
                 .get<ServerMessage[]>(
                     Routes.get.messages +
-                        `/${props.currRoom.roomId}?messageQuantity=10&${pageParam ? 'cursor=' + pageParam : ''}`
+                        `/${currRoom.roomId}?messageQuantity=10&${pageParam ? 'cursor=' + pageParam : ''}`
                 )
                 .then(res => {
                     const result: Message[] = res.data.map(msg => ({ ...msg, deliveryStatus: 'delivered' }))
@@ -82,7 +85,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
 
     useEffect(() => {
         socket.on('typingStatusChanged', (status, roomId, username) => {
-            if (roomId !== props.currRoom.roomId) return
+            if (roomId !== currRoom.roomId) return
             if (status === TypingStatus.typing) {
                 setUsersCurrentlyTyping(p => {
                     if (p === null) return [username]
@@ -100,11 +103,11 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         return () => {
             socket.removeListener('typingStatusChanged')
         }
-    }, [usersCurrentlyTyping, props.currRoom.roomId])
+    }, [usersCurrentlyTyping, currRoom.roomId])
 
     useEffect(() => {
         socket.on('messageDeleted', (messageKey, roomId) => {
-            if (props.currRoom.roomId === roomId) {
+            if (currRoom.roomId === roomId) {
                 messageDispatcher({ type: MessageListActionType.remove, messageKey })
             }
         })
@@ -112,11 +115,11 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         return () => {
             socket.removeListener('messageDeleted')
         }
-    }, [props.currRoom.roomId])
+    }, [currRoom.roomId])
 
     useEffect(() => {
         socket.on('message', (messageFromServer, callback) => {
-            if (messageFromServer.roomId === props.currRoom.roomId) {
+            if (messageFromServer.roomId === currRoom.roomId) {
                 messageDispatcher({
                     type: MessageListActionType.add,
                     newMessage: { ...messageFromServer, deliveryStatus: 'delivered' },
@@ -128,11 +131,11 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         return () => {
             socket.removeListener('message')
         }
-    }, [props.currRoom.roomId])
+    }, [currRoom.roomId])
 
     useEffect(() => {
         socket.on('textMessageUpdated', (key, content, roomId, editedAt) => {
-            if (roomId === props.currRoom.roomId) {
+            if (roomId === currRoom.roomId) {
                 messageDispatcher({ type: MessageListActionType.edit, updatedMessage: { content, key, editedAt } })
             }
         })
@@ -140,13 +143,13 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         return () => {
             socket.removeListener('textMessageUpdated')
         }
-    }, [props.currRoom.roomId])
+    }, [currRoom.roomId])
 
     return (
         <>
             <RoomBanner
-                toggleRoomInfoSidebar={props.toggleRoomInfoSidebar}
-                room={props.currRoom}
+                toggleRoomInfoSidebar={toggleRoomInfoSidebar}
+                room={currRoom}
                 searchContainerRef={messageContainer}
             />
 
@@ -158,18 +161,14 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                 // components={{ Item: MessageVirtualizedContainer }}
                 itemContent={(i, message) => {
                     // const message = messages[i]
-                    if (message.roomId !== props.currRoom.roomId) return
+                    if (message.roomId !== currRoom.roomId) return
 
                     return (
                         <MessageTile
                             key={message.key}
                             message={message}
-                            roomType={props.currRoom.roomType}
-                            user={
-                                props.currRoom.participants.filter(
-                                    ({ username }) => username === message.senderUsername
-                                )[0]
-                            }
+                            roomType={currRoom.roomType}
+                            users={users}
                             // If newest message in the list, put ref on it to auto-scroll to bottom
                             autoScrollToBottomRef={i === messages.length - 1 ? scrollToBottomRef : null}
                         />
@@ -183,11 +182,11 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                 </Box>
             ) : null}
 
-            <ChatInputBar messageListDispatcher={messageDispatcher} currRoom={props.currRoom} />
+            <ChatInputBar messageListDispatcher={messageDispatcher} currRoom={currRoom} />
         </>
     )
 }
 
-const MessageVirtualizedContainer: Components['Item'] = forwardRef(({ children, ...props }) => {
-    return <div {...props}>{children}</div>
-})
+// const MessageVirtualizedContainer: Components['Item'] = forwardRef(({ children, ...props }) => {
+//     return <div {...props}>{children}</div>
+// })

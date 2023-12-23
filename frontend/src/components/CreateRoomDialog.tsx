@@ -25,6 +25,9 @@ import { roomCreationFormValidation } from '../schemaValidators/yupFormValidator
 import { ButtonWithLoader } from './ButtonWithLoader'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { axiosServerInstance } from '../App'
+import { Routes } from '../types/routes'
+import { useAuth } from '../hooks/useAuth'
 
 const MAX_ALLOWED_USERS_IN_PRIVATE_ROOM = 1
 
@@ -65,21 +68,42 @@ export const CreateRoomDialog = ({ dialogOpen, handleClose }: CreateRoomDialogPr
 
     const { fields, append, remove } = useFieldArray({ control, name: 'participants' })
 
+    const {
+        authStatus: { username },
+    } = useAuth()
+
     const handleFormSubmit: SubmitHandler<CreateRoomFormValues> = ({ participants, roomType, roomDisplayName }) => {
         const uniqueUsernamesSet = new Set(participants.map(({ username }) => username))
         const uniqueUsernames = [...uniqueUsernamesSet]
 
+        if (!username) throw new Error('username is undefined')
+
         if (roomType === RoomType.private) {
-            const member = participants.at(0)?.username
-            if (member) socket.emit('newRoomCreated', { roomType: RoomType.private, participant: member })
+            axiosServerInstance.post(Routes.post.privateRoom, {
+                participants: [...uniqueUsernames, username],
+            } satisfies {
+                participants: string[]
+            })
         } else if (roomType === RoomType.group) {
-            socket.emit('newRoomCreated', {
-                roomType: RoomType.group,
-                participants: uniqueUsernames,
-                displayName: roomDisplayName,
-                avatarPath: null,
+            axiosServerInstance.post(Routes.post.group, {
+                participants: [...uniqueUsernames, username],
+                roomDisplayName: roomDisplayName,
+            } satisfies {
+                participants: string[]
+                roomDisplayName: string
             })
         }
+        // if (roomType === RoomType.private) {
+        //     const member = participants.at(0)?.username
+        //     if (member) socket.emit('newRoomCreated', { roomType: RoomType.private, participant: member })
+        // } else if (roomType === RoomType.group) {
+        //     socket.emit('newRoomCreated', {
+        //         roomType: RoomType.group,
+        //         participants: uniqueUsernames,
+        //         displayName: roomDisplayName,
+        //         avatarPath: null,
+        //     })
+        // }
         reset(defaultValues)
         handleClose()
     }

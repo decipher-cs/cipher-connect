@@ -16,26 +16,26 @@ export const Pages = () => {
     const { authoriseUser } = useAuth()
 
     // Make a get request to server to check if the user already has a valid session or not.
-    const { status, data: username } = useQuery({
+    const { status, data: user } = useQuery({
         queryKey: ['session-status'],
         queryFn: () =>
-            axiosServerInstance.get<string>(ApiRoutes.get.sessionStatus).then(res => {
-                if (res.status === 201 && typeof res.data === 'string') return res.data
-                throw new Error('Server responded with wrong data type for username.')
+            axiosServerInstance.get<User>(ApiRoutes.get.sessionStatus).then(res => {
+                if (res.status === 201) return res.data
+                else throw new Error('Server responded with wrong data type for username.')
             }),
         retry: false,
     })
 
     useEffect(() => {
-        if (status === 'success' && username) {
-            authoriseUser(username)
+        if (status === 'success' && user) {
+            authoriseUser(user.username, user)
         }
-    }, [username, status])
+    }, [user, status])
 
     return (
         <>
             <BrowserRouter>
-                <Routes >
+                <Routes>
                     <Route
                         path='/chat'
                         element={
