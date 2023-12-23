@@ -62,6 +62,7 @@ export const darkTheme = createTheme({
         MuiButtonGroup: { defaultProps: { color: 'primary', size: 'small' } },
         MuiToggleButtonGroup: { defaultProps: { color: 'primary', size: 'small' } },
         MuiTextField: { defaultProps: { size: 'small' } },
+        MuiListSubheader: { styleOverrides: { sticky: { background: 'transparent' } } },
     },
 })
 
@@ -87,5 +88,6 @@ export const lightTheme = createTheme({
         MuiButtonGroup: { defaultProps: { color: 'primary', size: 'small' } },
         MuiToggleButtonGroup: { defaultProps: { color: 'primary', size: 'small' } },
         MuiTextField: { defaultProps: { size: 'small' } },
+        MuiListSubheader: { styleOverrides: { sticky: { background: 'transparent' } } },
     },
 })
