@@ -10,6 +10,7 @@ import { axiosServerInstance } from '../App'
 import axios, { AxiosError } from 'axios'
 import { ButtonWithLoader } from '../components/ButtonWithLoader'
 import { useAuth } from '../hooks/useAuth'
+import { User } from '../types/prisma.client'
 
 export const Login = () => {
     const {
@@ -41,10 +42,11 @@ export const Login = () => {
 
     const handleUserLogin: SubmitHandler<z.infer<typeof loginAndSignupValidation>> = async ({ username, password }) => {
         try {
-            const response = await axiosServerInstance.post(formType, { username, password })
+            const response = await axiosServerInstance.post<User>(formType, { username, password })
 
             if (response.status === 201) {
-                authoriseUser(username)
+                const { data } = response
+                authoriseUser(data.username, data)
                 navigate('/chat')
             }
         } catch (error) {
