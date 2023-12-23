@@ -20,9 +20,9 @@ import {
     handleUserProfileUpdation,
     handleMediaUpload,
     handleAvatarChange,
-    handleRoomConfigChange,
     doesValidUserSessionExist,
     isServerOnline,
+    handleUserRoomOptionsChange,
 } from './controllers.js'
 import { media } from './server.js'
 import { isUserAuthenticated } from './middleware/auth.js'
@@ -55,7 +55,7 @@ export const routes = {
     put: {
         messageReadStatus: '/message-read-status',
         user: '/user',
-        roomConfig: '/room-config',
+        userRoom: '/user-room',
     },
     delete: {
         userRoom: '/user-room',
@@ -100,7 +100,7 @@ export const initRoutes = (app: Router) => {
 
     app.put(routes.put.user, isUserAuthenticated, media, handleUserProfileUpdation)
 
-    app.put(routes.put.roomConfig, isUserAuthenticated, handleRoomConfigChange)
+    app.put(routes.put.userRoom, isUserAuthenticated, handleUserRoomOptionsChange)
 
     app.delete(routes.delete.userRoom + '/:username/:roomId', isUserAuthenticated, handleUserLeavesRoom)
 

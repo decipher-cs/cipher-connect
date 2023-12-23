@@ -1,14 +1,7 @@
 import { Server } from 'socket.io'
 import { Message, Room, RoomType } from '@prisma/client'
 
-import {
-    ClientToServerEvents,
-    ServerToClientEvents,
-    InterServerEvents,
-    SocketData,
-    User,
-    TypingStatus,
-} from './types.js'
+import { ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData, TypingStatus } from './types.js'
 import { checkIfPrivateRoomExists, getManyRoomDetails, getRoomIDsByUsername, getUser, getUsers } from './models/find.js'
 import { addMessageToDB, createGroup, createPrivateRoom } from './models/create.js'
 import { updateMessageReadStatus, updateTextMessageContent, updateUser } from './models/update.js'
