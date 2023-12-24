@@ -280,7 +280,6 @@ export const handlePrivateRoomCreation = async (req: Request, res: Response) => 
 
 export const handleGroupCreation = async (req: Request, res: Response) => {
     const { participants, roomDisplayName }: { participants: string[]; roomDisplayName: string } = req.body
-    console.log(req.body)
 
     if (participants.length < 2 || !req.session.username) {
         res.sendStatus(400)
@@ -327,15 +326,20 @@ export const handleUserExistsCheck = async (req: Request, res: Response) => {
     const userExists = await checkIfUserExists(username)
     res.send(userExists)
 }
+
 export const handleNewParticipants = async (req: Request, res: Response) => {
     type Body = { roomId: string; participants: string[] }
 
     const { roomId, participants }: Body = req.body
 
     try {
-        await updateRoomParticipants(roomId, participants)
+        const result = await updateRoomParticipants(roomId, participants)
+        if (!result) throw new Error('error while adding participants to room')
+        io.to(participants).emit('roomCreated')
+        io.to([roomId]).emit('roomParticipantsChanged', roomId, 'membersJoined', participants)
         res.sendStatus(200)
     } catch (err) {
+        console.log(err)
         res.sendStatus(400)
     }
     return
