@@ -1,4 +1,8 @@
+// To be used for type safety on the client side
 export const Routes = {
+    all: {
+        healthCheck: '/health-check',
+    },
     get: {
         messages: '/Messages',
         roomParticipants: '/room-participants',

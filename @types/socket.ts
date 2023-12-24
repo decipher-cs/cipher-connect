@@ -4,6 +4,7 @@ type User = Omit<UserWithPassword, 'passwordHash' | 'userId'>
 
 export interface ServerToClientEvents {
     roomMembersChanged: (roomId: Room['roomId'], updatedMemberIds: User['username'][]) => void
+    roomCreated: () => void
     test: (val?: string) => void
 
     noArg: () => void
