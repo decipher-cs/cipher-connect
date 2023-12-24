@@ -8,7 +8,7 @@ import { RoomBanner } from './RoomBanner'
 import { Message } from '../types/prisma.client'
 import { MessageListAction, MessageListActionType, messageListReducer } from '../reducer/messageListReducer'
 import { Routes } from '../types/routes'
-import { SocketWithCustomEvents, TypingStatus } from '../types/socket'
+import { TypingStatus } from '../types/socket'
 import { RoomsState } from '../reducer/roomReducer'
 import { useSocket } from '../hooks/useSocket'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
@@ -151,6 +151,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                 toggleRoomInfoSidebar={toggleRoomInfoSidebar}
                 room={currRoom}
                 searchContainerRef={messageContainer}
+                users={users}
             />
 
             {/* {hasNextPage && isFetchingNextPage ? <CircularProgress sx={{ justifySelf: 'center' }} /> : null} */}
