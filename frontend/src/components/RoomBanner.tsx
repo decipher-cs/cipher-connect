@@ -26,9 +26,11 @@ import { useAuth } from '../hooks/useAuth'
 
 export const RoomBanner = ({
     searchContainerRef,
+    users,
     ...props
 }: {
     toggleRoomInfoSidebar: () => void
+    users: RoomsState['usersInfo']
     room: RoomsState['joinedRooms'][0]
     searchContainerRef: RefObject<HTMLElement>
 }) => {
@@ -39,12 +41,15 @@ export const RoomBanner = ({
     const [searchFieldVisible, setSearchFieldVisible] = useState(false)
 
     const privateRoomCompanion =
-        props.room.roomType === 'private' ? props.room.participants.find(p => p.username !== username) : null
+        props.room.roomType === 'private'
+            ? props.room.participants.find(participantUsername => participantUsername !== username)
+            : null
 
     const displayName =
-        props.room.roomType === 'private' ? privateRoomCompanion?.displayName : props.room.roomDisplayName
+        props.room.roomType === 'private' ? users[privateRoomCompanion ?? '']?.displayName : props.room.roomDisplayName
 
-    const imgSrc = props.room.roomType === 'private' ? privateRoomCompanion?.avatarPath : props.room.roomAvatar
+    const imgSrc =
+        props.room.roomType === 'private' ? users[privateRoomCompanion ?? '']?.avatarPath : props.room.roomAvatar
 
     const [searchTerm, setSearchTerm] = useState('')
 

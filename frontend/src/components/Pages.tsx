@@ -11,6 +11,7 @@ import { useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { Box, CircularProgress, Container, LinearProgress, Typography } from '@mui/material'
 import { Chat } from '../pages/Chat'
+import { User } from '../types/prisma.client'
 
 export const Pages = () => {
     const { authoriseUser } = useAuth()
