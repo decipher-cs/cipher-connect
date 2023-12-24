@@ -117,11 +117,16 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
 
     useEffect(() => {
         socket.on('roomParticipantsChanged', (roomId, changeType, updatedMemberIds) => {
+            console.log('changed in', roomId)
             if (!rooms.joinedRooms.find(p => p.roomId === roomId)) {
+                console.log('refetching because participants chagned')
                 refetch()
-            } else if (changeType === 'membersJoined') {
+            }
+            if (changeType === 'membersJoined') {
+                console.log('dispatching!!')
                 roomDispatcher({ type: RoomActionType.addParticipantsToRoom, roomId, participants: updatedMemberIds })
-            } else if (changeType === 'membersLeft') {
+            }
+            if (changeType === 'membersLeft') {
                 roomDispatcher({
                     type: RoomActionType.removeParticipantsFromRoom,
                     roomId,
