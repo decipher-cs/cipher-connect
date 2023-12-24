@@ -106,7 +106,6 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
 
     useEffect(() => {
         socket.on('roomCreated', () => {
-            console.log('created')
             // roomDispatcher({type: RoomActionType.addRoom, rooms: })
             refetch()
         })
@@ -117,20 +116,22 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
     }, [])
 
     useEffect(() => {
-        socket.on('roomMembersChanged', (roomId, updatedMemberIds) => {
-            console.log('members changed')
-            if (rooms.joinedRooms.find(r => r.roomId === roomId)) {
-                // TODO: update participants
-            } else {
-                console.log('refetching')
+        socket.on('roomParticipantsChanged', (roomId, changeType, updatedMemberIds) => {
+            if (!rooms.joinedRooms.find(p => p.roomId === roomId)) {
                 refetch()
-                // TODO: handle by dispatcing action
-                // roomDispatcher({type: RoomActionType.addRoom, rooms: })
+            } else if (changeType === 'membersJoined') {
+                roomDispatcher({ type: RoomActionType.addParticipantsToRoom, roomId, participants: updatedMemberIds })
+            } else if (changeType === 'membersLeft') {
+                roomDispatcher({
+                    type: RoomActionType.removeParticipantsFromRoom,
+                    roomId,
+                    usernamesToRemove: updatedMemberIds,
+                })
             }
         })
 
         return () => {
-            socket.removeListener('roomMembersChanged')
+            socket.removeListener('roomParticipantsChanged')
         }
     }, [])
 
