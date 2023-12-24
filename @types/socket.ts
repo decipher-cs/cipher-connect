@@ -3,7 +3,11 @@ import { Message, Room, User as UserWithPassword, UserRoom, RoomType } from '../
 type User = Omit<UserWithPassword, 'passwordHash' | 'userId'>
 
 export interface ServerToClientEvents {
-    roomMembersChanged: (roomId: Room['roomId'], updatedMemberIds: User['username'][]) => void
+    roomParticipantsChanged: (
+        roomId: Room['roomId'],
+        whatChanged: 'membersJoined' | 'membersLeft',
+        updatedMemberIds: User['username'][]
+    ) => void
     roomCreated: () => void
     test: (val?: string) => void
 
