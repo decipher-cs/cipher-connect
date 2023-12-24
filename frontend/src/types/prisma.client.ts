@@ -1,17 +1,8 @@
 /**
- * Model RefreshToken
- *
- */
-export type RefreshToken = {
-    tokenValue: string
-    username: string
-}
-
-/**
  * Model User
  *
  */
-export type User = {
+export type UserInDb = {
     userId: string
     username: string
     createTime: Date
@@ -64,6 +55,19 @@ export type ServerMessage = {
 }
 
 /**
+ * Model UserMessage
+ *
+ */
+export type UserMessage = {
+    username: string
+    roomId: string
+    isHidden: boolean
+    isNotificationMuted: boolean
+    isMarkedFavourite: boolean
+    isPinned: boolean
+}
+
+/**
  * Model Session
  *
  */
@@ -101,10 +105,6 @@ export type MessageDeliveryStatus = 'delivered' | 'delivering' | 'failed'
 
 export type Message = ServerMessage & { deliveryStatus: MessageDeliveryStatus }
 
-export type UserWithoutID = Omit<User, 'userId'>
+export type UserWithoutID = Omit<UserInDb, 'userId'>
 
-export type RoomWithParticipants = Room & { participants: User['username'][] }
-
-export type RoomOptions = UserRoom
-
-export type RoomDetails = RoomWithParticipants & RoomOptions
+export * from '../../../@types/commonTypes'
