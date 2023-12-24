@@ -2,7 +2,7 @@ import http from 'http'
 import express from 'express'
 import * as dotenv from 'dotenv'
 import { Server } from 'socket.io'
-import { initRoutes, routes } from './routes.js'
+import { initRoutes } from './routes.js'
 import { initSocketIO } from './socket.js'
 import multer from 'multer'
 import { PrismaClient } from '@prisma/client'
@@ -10,6 +10,7 @@ import expressSession from 'express-session'
 import { PrismaSessionStore } from '@quixo3/prisma-session-store'
 import { isServerOnline } from './controllers.js'
 import { ClientToServerEvents, InterServerEvents, ServerToClientEvents } from '../../@types/socket.js'
+import { Routes as routes } from '../../@types/ExpressRoutes.js'
 
 dotenv.config()
 

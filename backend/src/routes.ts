@@ -26,53 +26,18 @@ import {
 } from './controllers.js'
 import { media } from './server.js'
 import { isUserAuthenticated } from './middleware/auth.js'
-
-// To be used for type safety on the client side
-export const routes = {
-    all: {
-        healthCheck: '/health-check',
-    },
-    get: {
-        messages: '/Messages',
-        roomParticipants: '/room-participants',
-        userRooms: '/user-rooms',
-        userRoom: '/user-room',
-        users: '/users',
-        user: '/user',
-        isUsernameValid: '/is-username-valid',
-        logout: '/logout',
-        sessionStatus: '/session-status',
-    },
-    post: {
-        login: '/login',
-        signup: '/signup',
-        avatar: '/avatar',
-        media: '/Media',
-        privateRoom: '/private-room',
-        group: '/group',
-        participants: '/participants',
-    },
-    put: {
-        messageReadStatus: '/message-read-status',
-        user: '/user',
-        userRoom: '/user-room',
-    },
-    delete: {
-        userRoom: '/user-room',
-        room: '/room',
-    },
-} as const
+import { Routes as routes } from '../../@types/ExpressRoutes.js'
 
 export const initRoutes = (app: Router) => {
     app.get(routes.get.sessionStatus, doesValidUserSessionExist)
 
     app.get(routes.get.logout, logoutUser)
 
+    app.get(routes.get.users, isUserAuthenticated, returnUsers)
+
     app.get(routes.get.userRooms + '/:username', isUserAuthenticated, handleGettingRoomDetails)
 
     app.get(routes.get.userRoom + '/:username/:roomId', isUserAuthenticated, handleGettingUniqueRoomDetails)
-
-    app.get(routes.get.users, isUserAuthenticated, returnUsers)
 
     app.get(routes.get.user + '/:username', isUserAuthenticated, returnUser)
 
