@@ -113,7 +113,7 @@ export const roomReducer: React.Reducer<RoomsState, RoomActions> = (state, actio
             joinedRooms.forEach((room, i) => {
                 if (room.roomId === roomId) joinedRooms[i] = { ...room, ...newRoomProperties } satisfies RoomDetails
             })
-            return {...state, ...joinedRooms} satisfies RoomsState
+            return { ...state, ...joinedRooms } satisfies RoomsState
         }
 
         case RoomActionType.addRoom: {

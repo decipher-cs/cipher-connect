@@ -38,8 +38,8 @@ import { axiosServerInstance } from '../App'
 import { useImageEditor } from '../hooks/useImageEditor'
 import { ImageEditorDialog } from './ImageEditorDialog'
 import { useDialog } from '../hooks/useDialog'
-import { RoomConfig } from '../types/prisma.client'
 import { useAuth } from '../hooks/useAuth'
+import { UserRoom } from '../types/prisma.client'
 
 interface RoomInfoProps {
     room: RoomsState['joinedRooms'][0]

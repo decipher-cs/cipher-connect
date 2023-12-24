@@ -26,7 +26,7 @@ import { useDialog } from '../hooks/useDialog'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Routes } from '../types/routes'
 import { useSocket } from '../hooks/useSocket'
-import { RoomDetails } from '../types/prisma.client'
+import { RoomDetails, User } from '../types/prisma.client'
 import { axiosServerInstance, queryClient } from '../App'
 import { useAuth } from '../hooks/useAuth'
 import { StyledTextField } from './StyledTextField'
@@ -63,6 +63,34 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
     })
 
     useEffect(() => {
+        if (!fetchedRooms) return
+
+        const usersToBeFetched: Set<User['username']> = new Set()
+
+        fetchedRooms.forEach(room => {
+            room.participants.forEach(username => {
+                if (!rooms?.usersInfo[username]) {
+                    usersToBeFetched.add(username)
+                }
+            })
+        })
+
+        if (usersToBeFetched.size >= 1) {
+            axiosServerInstance
+                .get<User[]>(Routes.get.users, {
+                    params: { usernames: Array.from(usersToBeFetched) },
+                })
+                .then(res => {
+                    const users = res.data
+                    roomDispatcher({ type: RoomActionType.addUsers, details: users })
+                    return users
+                })
+        }
+
+        return () => {}
+    }, [fetchedRooms])
+
+    useEffect(() => {
         if (roomFetchStatus === 'success' && fetchedRooms)
             roomDispatcher({ type: RoomActionType.initilizeRooms, rooms: [...fetchedRooms] })
     }, [fetchedRooms])
@@ -77,8 +105,20 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
     })
 
     useEffect(() => {
+        socket.on('roomCreated', () => {
+            console.log('created')
+            // roomDispatcher({type: RoomActionType.addRoom, rooms: })
+            refetch()
+        })
+
+        return () => {
+            socket.removeListener('roomCreated')
+        }
+    }, [])
+
+    useEffect(() => {
         socket.on('roomMembersChanged', (roomId, updatedMemberIds) => {
-            console.log('fookba')
+            console.log('members changed')
             if (rooms.joinedRooms.find(r => r.roomId === roomId)) {
                 // TODO: update participants
             } else {

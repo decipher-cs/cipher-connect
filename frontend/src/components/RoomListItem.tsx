@@ -34,7 +34,7 @@ export const RoomListItem = memo((props: RoomListItemProps) => {
 
         const otherMember = room.participants.filter(name => name !== username)[0]
 
-        return usersInfo[otherMember].avatarPath ?? undefined
+        return usersInfo[otherMember]?.avatarPath ?? undefined
     })()
 
     return (
