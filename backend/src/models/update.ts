@@ -51,20 +51,24 @@ export const updateRoomImage = async (roomId: string, pathToImg: string) => {
 export const updateRoomParticipants = async (roomId: Room['roomId'], participantsUsernames: User['username'][]) => {
     const usernameObj = participantsUsernames.map(username => ({ username }))
 
-    const updatedRoom = await prisma.room.update({
-        where: { roomId },
-        data: {
-            user: { connect: usernameObj },
+    try {
+        const updatedRoom = await prisma.room.update({
+            where: { roomId },
+            data: {
+                user: { connect: usernameObj },
 
-            userRoom: {
-                connectOrCreate: participantsUsernames.map(username => ({
-                    where: { username_roomId: { username, roomId } },
-                    create: { username },
-                })),
+                userRoom: {
+                    connectOrCreate: participantsUsernames.map(username => ({
+                        where: { username_roomId: { username, roomId } },
+                        create: { username },
+                    })),
+                },
             },
-        },
-    })
-    return updatedRoom.roomId
+        })
+        return updatedRoom
+    } catch (error) {
+        return null
+    }
 }
 
 export const updateMessageReadStatus = async (
