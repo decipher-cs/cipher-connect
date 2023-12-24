@@ -12,8 +12,6 @@ import {
 } from './models/find.js'
 import { createGroup, createNewUser, createPrivateRoom } from './models/create.js'
 import { deleteRoom, deleteUserRoom } from './models/delete.js'
-import { updateMessageReadStatus, updateRoom, updateRoomParticipants, updateUser } from './models/update.js'
-import { User } from './types.js'
 import {
     updateMessageReadStatus,
     updateRoom,
@@ -272,7 +270,7 @@ export const handlePrivateRoomCreation = async (req: Request, res: Response) => 
     try {
         const roomId = await createPrivateRoom(...participants)
 
-        io.to(participants).except(req.session.username).emit('roomMembersChanged', roomId, participants)
+        io.to(participants).emit('roomCreated')
 
         res.send(roomId)
     } catch (err) {
@@ -282,6 +280,7 @@ export const handlePrivateRoomCreation = async (req: Request, res: Response) => 
 
 export const handleGroupCreation = async (req: Request, res: Response) => {
     const { participants, roomDisplayName }: { participants: string[]; roomDisplayName: string } = req.body
+    console.log(req.body)
 
     if (participants.length < 2 || !req.session.username) {
         res.sendStatus(400)
@@ -290,7 +289,7 @@ export const handleGroupCreation = async (req: Request, res: Response) => {
 
     try {
         const roomId = await createGroup(participants, roomDisplayName)
-        io.to(participants).except(req.session.username).emit('roomMembersChanged', roomId, participants)
+        io.to(participants).emit('roomCreated')
         // const roomDetails: RoomDetails[] = await getRoomDetails(roomId)
         res.send(roomId)
     } catch (err) {
