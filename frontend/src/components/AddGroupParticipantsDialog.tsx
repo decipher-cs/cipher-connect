@@ -27,6 +27,8 @@ import { ButtonWithLoader } from './ButtonWithLoader'
 type UserList = z.infer<typeof userListValidation>
 
 export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRooms'][0] }) => {
+    const { room } = props
+
     const { dialogOpen, handleClose, handleOpen } = useDialog()
 
     const socket = useSocket()
@@ -39,7 +41,7 @@ export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRoom
         reset,
     } = useForm<UserList>({
         defaultValues: {
-            usernames: [{ username: '' }],
+            usernames: [{ username: import.meta.env.DEV ? 'password4' : '' }],
         },
         resolver: zodResolver(userListValidation),
         mode: 'onBlur',
@@ -51,11 +53,22 @@ export const AddGroupParticipantsDialog = (props: { room: RoomsState['joinedRoom
     const { append, remove, fields } = useFieldArray({ name: 'usernames', control })
 
     const submitUserList: SubmitHandler<UserList> = ({ usernames }) => {
-        const participants = props.room.participants.map(u => u.username)
-        const uniqueUsers = new Set(usernames.map(({ username }) => username))
-        const usernameArray = Array.from(uniqueUsers).filter(username => !participants.includes(username))
-        if (usernameArray.length >= 1) socket.emit('userJoinedRoom', props.room.roomId, usernameArray)
+        const uniqueUsers = new Set(usernames.map(usernames => usernames.username))
+
+        const usernameArray = Array.from(uniqueUsers).filter(username => !room.participants.includes(username))
+
+        // if (usernameArray.length >= 1) socket.emit('userJoinedRoom', props.room.roomId, usernameArray)
+        if (usernameArray.length >= 1)
+            axiosServerInstance.post(Routes.post.participants, {
+                roomId: room.roomId,
+                participants: usernameArray,
+            } satisfies {
+                roomId: string
+                participants: string[]
+            })
+
         reset(defaultValues)
+
         handleClose()
     }
 
