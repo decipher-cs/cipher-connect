@@ -147,18 +147,21 @@ export const roomReducer: React.Reducer<RoomsState, RoomActions> = (state, actio
             return state satisfies RoomsState
         }
         case RoomActionType.addParticipantsToRoom: {
-            joinedRooms.forEach(room => {
+            console.log('reducing')
+            joinedRooms.forEach((room, i) => {
                 if (room.roomId === action.roomId) {
-                    room.participants = [...room.participants, ...action.participants]
-                }
-                // console.log(room.participants)
-            })
-            joinedRooms.forEach(room => {
-                if (room.roomId === action.roomId) {
-                    console.log(room.participants)
+                    joinedRooms[i].participants = [...room.participants, ...action.participants]
                 }
             })
-            return state satisfies RoomsState
+            joinedRooms.forEach((room, i) => {
+                console.log(action.roomId)
+                if (room.roomId === action.roomId) {
+                    // room.participants = [...room.participants, ...action.participants]
+                    joinedRooms[i].participants = ['weare']
+                    console.log(joinedRooms[i].participants)
+                }
+            })
+            return { ...state, joinedRooms } satisfies RoomsState
         }
 
         case RoomActionType.changeSelectedRoom: {

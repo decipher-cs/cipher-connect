@@ -336,7 +336,7 @@ export const handleNewParticipants = async (req: Request, res: Response) => {
         const result = await updateRoomParticipants(roomId, participants)
         if (!result) throw new Error('error while adding participants to room')
         io.to(participants).emit('roomCreated')
-        io.to([roomId]).emit('roomParticipantsChanged', roomId, 'membersJoined', participants)
+        io.in(roomId).emit('roomParticipantsChanged', roomId, 'membersJoined', participants)
         res.sendStatus(200)
     } catch (err) {
         console.log(err)
