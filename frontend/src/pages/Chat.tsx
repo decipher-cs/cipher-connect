@@ -35,7 +35,12 @@ export const Chat = () => {
                 // TODO: maybe this should direclty be after the onClick leave room and not here. event staying close to action
                 roomDispatcher({ type: RoomActionType.removeRoom, roomId })
             }
-            if (username) roomDispatcher({ type: RoomActionType.removeParticipants, roomId, username: staleUsername })
+            if (username)
+                roomDispatcher({
+                    type: RoomActionType.removeParticipantsFromRoom,
+                    roomId,
+                    usernamesToRemove: [staleUsername],
+                })
         })
 
         socket.on('userJoinedRoom', async (roomId, participants) => {
