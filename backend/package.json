@@ -7,7 +7,7 @@
     "type": "module",
     "scripts": {
         "build": "yarn prisma db push && yarn prisma generate && tsc",
-        "dev": "tsc-watch -p ./tsconfig.json --onSuccess \"node ./dist/server.js\"",
+        "dev": "tsc-watch -p ./tsconfig.json --onSuccess \"node ./dist/backend/src/server.js\"",
         "start": "node ./dist/server.js",
         "push": "prisma db push",
         "generate": "prisma generate",
