@@ -107,4 +107,11 @@ export type Message = ServerMessage & { deliveryStatus: MessageDeliveryStatus }
 
 export type UserWithoutID = Omit<UserInDb, 'userId'>
 
-export * from '../../../@types/commonTypes'
+// export * from '../../../@types/commonTypes'
+export type User = Omit<UserInDb, 'passwordHash' | 'userId'>
+
+export type RoomWithParticipants = Room & { participants: User['username'][] }
+
+export type RoomOptions = UserRoom
+
+export type RoomDetails = RoomWithParticipants & UserRoom
