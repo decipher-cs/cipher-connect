@@ -63,5 +63,6 @@ app.get('*', (_, res) => {
     res.sendFile('frontend/dist/index.html', { root: './../' })
     //__dirname
     // res.sendFile('client/index.html', { root: '.' })
+    res.sendFile('client/index.html', { root: '.' })
 })
 server.listen(PORT, () => console.log('Server started on port', PORT))
