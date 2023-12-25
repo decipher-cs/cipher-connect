@@ -27,6 +27,7 @@ import {
 import { media } from './server.js'
 import { isUserAuthenticated } from './middleware/auth.js'
 import { Routes as routes } from '../../@types/ExpressRoutes.js'
+import { uploadMediaToUploadthing } from './middleware/uploadToUploadthing.js'
 
 export const initRoutes = (app: Router) => {
     app.get(routes.get.sessionStatus, doesValidUserSessionExist)
@@ -51,9 +52,9 @@ export const initRoutes = (app: Router) => {
 
     app.post(routes.post.signup, createUser)
 
-    app.post(routes.post.media, isUserAuthenticated, media, handleMediaUpload)
+    app.post(routes.post.media, isUserAuthenticated, media, uploadMediaToUploadthing, handleMediaUpload)
 
-    app.post(routes.post.avatar, isUserAuthenticated, media, handleAvatarChange)
+    app.post(routes.post.avatar, isUserAuthenticated, media, uploadMediaToUploadthing, handleAvatarChange)
 
     app.post(routes.post.privateRoom, isUserAuthenticated, handlePrivateRoomCreation)
 
@@ -63,7 +64,7 @@ export const initRoutes = (app: Router) => {
 
     app.put(routes.put.messageReadStatus + '/:roomId/:username', isUserAuthenticated, handleMessageReadStatusChange)
 
-    app.put(routes.put.user, isUserAuthenticated, media, handleUserProfileUpdation)
+    app.put(routes.put.user, isUserAuthenticated, media, uploadMediaToUploadthing, handleUserProfileUpdation)
 
     app.put(routes.put.userRoom, isUserAuthenticated, handleUserRoomOptionsChange)
 

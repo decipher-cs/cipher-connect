@@ -1,4 +1,7 @@
 import { SessionData } from 'express-session'
+import { Request } from 'express'
+import { UploadFileResponse } from 'uploadthing/client'
+
 declare global {
     namespace NodeJS {
         interface ProcessEnv {
@@ -7,6 +10,11 @@ declare global {
             SESSION_SECRET: string | undefined
             UPLOADTHING_SECRET: string | undefined
             DATABASE_URL: string | undefined
+        }
+    }
+    declare namespace Express {
+        export interface Request {
+            mediaUploadData?: Omit<UploadFileResponse<null>, 'serverData'>
         }
     }
 }
