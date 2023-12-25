@@ -64,8 +64,11 @@ export const loginUser = async (req: Request, res: Response) => {
             res.status(500).json(response)
             return
         }
+
         req.session.username = username
+
         response = { message: undefined }
+
         getUser(username)
             .then(user => {
                 if (!user) throw error('no user with this username')

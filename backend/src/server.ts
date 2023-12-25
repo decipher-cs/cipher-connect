@@ -11,6 +11,8 @@ import { PrismaSessionStore } from '@quixo3/prisma-session-store'
 import { isServerOnline } from './controllers.js'
 import { ClientToServerEvents, InterServerEvents, ServerToClientEvents } from '../../@types/socket.js'
 import { Routes as routes } from '../../@types/ExpressRoutes.js'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 dotenv.config()
 
@@ -60,9 +62,7 @@ initSocketIO(io)
 app.all(routes.all.healthCheck, isServerOnline)
 
 app.get('*', (_, res) => {
-    res.sendFile('frontend/dist/index.html', { root: './../' })
-    //__dirname
-    // res.sendFile('client/index.html', { root: '.' })
     res.sendFile('client/index.html', { root: '.' })
 })
+
 server.listen(PORT, () => console.log('Server started on port', PORT))

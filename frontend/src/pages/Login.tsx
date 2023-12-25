@@ -54,7 +54,9 @@ export const Login = () => {
                 const errMessage = error.response.data.message
                 setError('username', { message: errMessage })
                 setError('password', { message: errMessage })
-            } else setError('root', { message: 'Unknown server error. Try again.' })
+            } else {
+                setError('root', { message: 'Unknown server error. Try again.' })
+            }
         }
     }
 
