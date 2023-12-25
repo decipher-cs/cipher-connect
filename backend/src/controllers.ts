@@ -146,30 +146,6 @@ export const storeMediaToFS = async (req: Request, res: Response) => {
     return
 }
 
-export const storeAvatarToFS = async (req: Request, res: Response) => {
-    const { username } = req.session
-    const { roomId } = req.body
-
-    if (req.file === undefined) {
-        res.sendStatus(400)
-        return
-    }
-
-    const { filename }: Express.Multer.File = req.file
-
-    if (username) await updateUser(username, { avatarPath: filename })
-    else if (roomId) {
-        const room = await updateRoom(roomId, { roomAvatar: filename })
-        console.log(room)
-    } else {
-        res.sendStatus(400)
-        return
-    }
-
-    res.json(filename)
-    return
-}
-
 export const returnUser = async (req: Request, res: Response) => {
     let { username } = req.params
     if (username === undefined) {
@@ -365,23 +341,13 @@ export const handleMessageReadStatusChange = async (req: Request, res: Response)
 export const handleUserProfileUpdation = async (req: Request, res: Response) => {
     const { username } = req.session
     const { status, displayName }: Partial<Pick<User, 'displayName' | 'username' | 'status'>> = req.body
-    const { buffer } = req.file ?? { buffer: undefined }
-    let avatarPath: string | undefined
 
     try {
         if (!username) throw new Error('No username provided while updating profile')
 
-        if (buffer) {
-            const blob = new Blob([buffer])
+        const uploadData = req.mediaUploadData
 
-            const { data, error } = await utapi.uploadFiles(blob)
-
-            if (error || !data) throw new Error('Error uploading file')
-
-            avatarPath = data.url
-        }
-
-        await updateUser(username, { displayName, status, avatarPath })
+        await updateUser(username, { displayName, status, avatarPath: uploadData?.url })
 
         res.sendStatus(200)
     } catch (err) {
@@ -392,19 +358,11 @@ export const handleUserProfileUpdation = async (req: Request, res: Response) => 
 
 export const handleMediaUpload = async (req: Request, res: Response) => {
     try {
-        if (!req.file) throw new Error('no file to upload')
+        const uploadData = req.mediaUploadData
 
-        const { buffer, mimetype, originalname, size } = req.file
+        if (!uploadData) throw new Error('Error while uploading avatar to uploadthing.')
 
-        if (!buffer) throw new Error('empty buffer for file')
-
-        const blob = new Blob([buffer], { type: mimetype })
-
-        const { data, error } = await utapi.uploadFiles(blob, { metadata: { mimetype, name: originalname } })
-
-        if (error || !data) throw new Error('Error uploading file')
-
-        res.send(data.url)
+        res.send(uploadData.url)
     } catch (err) {
         res.sendStatus(400)
         throw err
@@ -414,25 +372,18 @@ export const handleMediaUpload = async (req: Request, res: Response) => {
 export const handleAvatarChange = async (req: Request, res: Response) => {
     const { roomId } = req.body
     const { username } = req.session
+    const uploadData = req.mediaUploadData
 
     try {
-        if (!req.file) throw new Error('no file to upload')
+        if (!uploadData) throw new Error('Error while uploading avatar to uploadthing.')
 
-        const { buffer, mimetype, originalname, size } = req.file
+        const { url } = uploadData
 
-        if (!buffer) throw new Error('empty buffer for file')
+        if (roomId) await updateRoom(roomId, { roomAvatar: url })
+        else if (username) await updateUser(username, { avatarPath: url })
+        else throw new Error('No username/ roomId provided while uploading avatar')
 
-        const blob = new Blob([buffer], { type: mimetype })
-
-        const { data, error } = await utapi.uploadFiles(blob, { metadata: { mimetype, name: originalname } })
-
-        if (error || !data) throw new Error('Error uploading file')
-
-        if (username) await updateUser(username, { avatarPath: data.url })
-        else if (roomId) await updateRoom(roomId, { roomAvatar: data.url })
-        else throw new Error()
-
-        res.json(data.url)
+        res.send(url)
     } catch (err) {
         res.sendStatus(400)
     }
