@@ -40,6 +40,7 @@ import { ImageEditorDialog } from './ImageEditorDialog'
 import { useDialog } from '../hooks/useDialog'
 import { useAuth } from '../hooks/useAuth'
 import { UserRoom } from '../types/prisma.client'
+import { formToJSON } from 'axios'
 
 interface RoomInfoProps {
     room: RoomsState['joinedRooms'][0]
@@ -48,8 +49,8 @@ interface RoomInfoProps {
 }
 
 type UserRoomMutableOptions = Pick<
-    UserRoom,
-    'isNotificationMuted' | 'isHidden' | 'isPinned' | 'isMarkedFavourite' | 'isBlocked'
+    RoomsState['joinedRooms'][0],
+    'isNotificationMuted' | 'isHidden' | 'isPinned' | 'isMarkedFavourite' | 'isBlocked' | 'roomAvatar'
 >
 
 export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ...props }: RoomInfoProps) => {
@@ -88,14 +89,8 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
         },
     })
 
-    const { mutateAsync: uploadAvatar } = useMutation({
-        mutationKey: ['uploadAvatar'],
-        mutationFn: (data: FormData) =>
-            axiosServerInstance.post<string>(Routes.post.avatar, data).then(res => res.data),
-    })
-
     const { mutateAsync: deleteRoom } = useMutation({
-        mutationKey: ['uploadAvatar'],
+        mutationKey: ['deleteRoom'],
         mutationFn: () => axiosServerInstance.delete(Routes.delete.room).then(res => res.data),
         onSuccess: () => {
             // invalidate query  some query and cause a refetch
@@ -130,32 +125,31 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
     //     },
     // })
 
-    // const handleImageUpload = async (newAvatar: File) => {
-    //     if (!newAvatar) return
-    //
-    //     const roomId = room.roomId
-    //
-    //     const fd = new FormData()
-    //
-    //     fd.append('upload', newAvatar)
-    //     fd.append('roomId', roomId)
-    //
-    //     const newPath = await uploadAvatar(fd)
-    //
-    //     roomDispatcher({
-    //         type: RoomActionType.alterRoomProperties,
-    //         roomId,
-    //         newRoomProperties: { roomAvatar: newPath },
-    //     })
-    //
-    //     socket.emit('roomUpdated', { roomAvatar: newPath })
-    // }
+    const handleImageUpload = async (newAvatar: File) => {
+        if (!newAvatar) return
 
-    // useEffect(() => {
-    //     if (editedImageData?.file) {
-    //         handleImageUpload(editedImageData?.file)
-    //     }
-    // }, [editedImageData?.file])
+        const roomId = room.roomId
+
+        const fd = new FormData()
+
+        fd.append('upload', newAvatar)
+        fd.append('roomId', roomId)
+
+        const response = await axiosServerInstance.post<string>(Routes.post.avatar, fd)
+        const newPath = response.data
+
+        // roomDispatcher({
+        //     type: RoomActionType.alterRoomProperties,
+        //     roomId,
+        //     newRoomProperties: { roomAvatar: newPath },
+        // })
+    }
+
+    useEffect(() => {
+        if (editedImageData?.file) {
+            handleImageUpload(editedImageData?.file)
+        }
+    }, [editedImageData?.file])
 
     return (
         <Box
