@@ -35,7 +35,7 @@ export const queryClient = new QueryClient({
 export const axiosServerInstance = axios.create({
     baseURL: '/api',
     withCredentials: true,
-    timeout: 1000 * 1,
+    timeout: 1000 * 60,
     retryDelayInMs: 1000 * 60,
 })
 

@@ -50,7 +50,7 @@ export const Login = () => {
                 navigate('/chat')
             }
         } catch (error) {
-            if (error instanceof AxiosError && error.response) {
+            if (error instanceof AxiosError && error?.response?.data?.message) {
                 const errMessage = error.response.data.message
                 setError('username', { message: errMessage })
                 setError('password', { message: errMessage })
