@@ -19,14 +19,20 @@ import {
     updateUser,
     updateUserRoom,
 } from './models/update.js'
-import { UTApi } from 'uploadthing/server'
-import * as dotenv from 'dotenv'
 import { error } from 'console'
 import { Room, User, UserRoom } from '@prisma/client'
 import { io } from './server.js'
 
-dotenv.config()
-const utapi = new UTApi()
+export const isServerOnline = async (req: Request, res: Response) => {
+    res.sendStatus(200)
+}
+
+export const test = async (req: Request, res: Response) => {
+    console.log('test point hit')
+    io.emit('test', 'socket working!')
+    res.sendStatus(200)
+    return
+}
 
 export const loginUser = async (req: Request, res: Response) => {
     if (req.session.username) {
@@ -132,18 +138,6 @@ export const logoutUser = async (req: Request, res: Response) => {
         if (!err) res.sendStatus(200)
         else res.sendStatus(500)
     })
-}
-
-export const storeMediaToFS = async (req: Request, res: Response) => {
-    if (req.file === undefined) {
-        res.sendStatus(400)
-        return
-    }
-
-    const { filename }: Express.Multer.File = req.file
-
-    res.json(filename)
-    return
 }
 
 export const returnUser = async (req: Request, res: Response) => {
@@ -315,7 +309,7 @@ export const handleNewParticipants = async (req: Request, res: Response) => {
         const result = await updateRoomParticipants(roomId, participants)
         if (!result) throw new Error('error while adding participants to room')
         io.to(participants).emit('roomCreated')
-        io.in(roomId).emit('roomParticipantsChanged', roomId, 'membersJoined', participants)
+        io.to(roomId).emit('roomParticipantsChanged', roomId, 'membersJoined', participants)
         res.sendStatus(200)
     } catch (err) {
         console.log(err)
@@ -383,6 +377,7 @@ export const handleAvatarChange = async (req: Request, res: Response) => {
         else if (username) await updateUser(username, { avatarPath: url })
         else throw new Error('No username/ roomId provided while uploading avatar')
 
+        io.to(roomId).emit('roomDetailsUpdated', roomId)
         res.send(url)
     } catch (err) {
         res.sendStatus(400)
@@ -415,13 +410,33 @@ export const doesValidUserSessionExist = async (req: Request, res: Response) => 
     return
 }
 
-export const isServerOnline = async (req: Request, res: Response) => {
-    res.sendStatus(200)
+// updates made to private config options. updates to local preference that should should not emit to other users.
+export const updateSharedUserRoomConfig = async (req: Request, res: Response) => {
+    const { roomId, ...newConfig } = req.body as Partial<UserRoom>
+    const { username } = req.session
+
+    if (!username || !roomId) {
+        res.sendStatus(401)
+        return
+    }
+
+    const changeSuccessful = await updateUserRoom(roomId, username, newConfig)
+    if (changeSuccessful) {
+        res.sendStatus(200)
+        io.in(roomId).emit('roomDetailsUpdated', roomId)
+    } else res.sendStatus(500)
 }
 
-export const test = async (req: Request, res: Response) => {
-    console.log('test point hit')
-    io.emit('test', 'socket working!')
-    res.sendStatus(200)
-    return
+// updates made to public config options. updates to preference that are shared with many people. These should emit to other users.
+export const updatePersonalUserRoomConfig = async (req: Request, res: Response) => {
+    const { roomId, ...newConfig } = req.body as Partial<UserRoom>
+    const { username } = req.session
+
+    if (!username || !roomId) {
+        res.sendStatus(401)
+        return
+    }
+    const changeSuccessful = await updateUserRoom(roomId, username, newConfig)
+    if (changeSuccessful) res.sendStatus(200)
+    else res.sendStatus(500)
 }
