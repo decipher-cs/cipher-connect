@@ -106,14 +106,14 @@ Install my-project with yarn
 - [ ] Break text into multiple lines when a single word has too many characters and overflows.
 - [ ] Host your own fonts.
 - [x] Fix .env variables to be platform agnostic.
-- [ ] Setup protected API routes.
+- [x] Setup protected API routes.
 - [ ] Make website responsive by setting position "abolute" to room info and room list sidebar.
 - [ ] Notify user if no internet connection is availabe. 
 - [ ] Throw error if logging in while the server is unreachable. (check if server is unreachable first)
 - [ ] Provide option to hide password while typing.
-- [ ] Redirect client to login page on logout using res.redirect('logout')
+- [x] Redirect client to login page on logout using res.redirect('logout')
 - [ ] Warn before running `crypto.randomUUID()` in an unsecure context (http scheme) and alert user or throw error.
-- [ ] Use useInfiniteQuery for fetching messages.
+- [x] Use useInfiniteQuery for fetching messages.
 - [ ] Have a default room that every new user has. Make it a room with the developer and a greeting message.
 - [ ] Add option for ephemeral login which is deleted after some time. Or an option for tyring the app.
 - [ ] Microphone icon in fevicon should only appear while recording.
