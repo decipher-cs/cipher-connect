@@ -15,7 +15,7 @@ export interface ServerToClientEvents {
 
     noArg: () => void
     // withAck: (d: string, callback: (e: number) => void) => void
-    message: (message: Message, callback: (status: 'ok') => void) => void
+    message: (message: Message, callback?: (status: 'ok') => void) => void
 
     newRoomCreated: (roomId: Room['roomId']) => void
 
