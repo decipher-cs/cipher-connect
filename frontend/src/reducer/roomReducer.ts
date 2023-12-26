@@ -17,7 +17,7 @@ export enum RoomActionType {
     removeAllRooms = 'removeAllRooms',
     initilizeRooms = 'initilizeRooms',
 
-    changeRoomSettings = 'changeRoomSettings',
+    updateRoomDetails = 'updateRoomDetails',
     // alterRoomProperties = 'alterRoomProperties',
     // changeNotificationStatus = 'changeNotificationStatus',
     // changeRoomConfig = 'changeRoomConfig',
@@ -72,9 +72,9 @@ export type RoomActions =
           type: RoomActionType.removeAllRooms
       }
     | {
-          type: RoomActionType.changeRoomSettings
+          type: RoomActionType.updateRoomDetails
           roomId: Room['roomId']
-          newRoomProperties: Partial<UserRoom> | Partial<Pick<Room, 'roomDisplayName' | 'roomAvatar'>>
+          newRoomProperties: Partial<RoomsState['joinedRooms'][0]>
       }
 /* | {
           type: RoomActionType.alterRoomProperties
@@ -99,8 +99,7 @@ export type RoomActions =
 export const roomReducer: React.Reducer<RoomsState, RoomActions> = (state, action) => {
     const { type } = action
     const { joinedRooms, selectedRoomIndex } = state
-    const { removeAllRooms, addUsers, changeRoomSettings, initilizeRooms, removeUsers, editUserDetails } =
-        RoomActionType
+    const { removeAllRooms, addUsers, updateRoomDetails, initilizeRooms, removeUsers, editUserDetails } = RoomActionType
 
     switch (type) {
         case initilizeRooms: {
@@ -108,7 +107,7 @@ export const roomReducer: React.Reducer<RoomsState, RoomActions> = (state, actio
             return { ...state, selectedRoomIndex: null, joinedRooms: [...rooms] } satisfies RoomsState
         }
 
-        case changeRoomSettings: {
+        case updateRoomDetails: {
             const { newRoomProperties, roomId } = action
             joinedRooms.forEach((room, i) => {
                 if (room.roomId === roomId) joinedRooms[i] = { ...room, ...newRoomProperties } satisfies RoomDetails
@@ -147,18 +146,9 @@ export const roomReducer: React.Reducer<RoomsState, RoomActions> = (state, actio
             return state satisfies RoomsState
         }
         case RoomActionType.addParticipantsToRoom: {
-            console.log('reducing')
             joinedRooms.forEach((room, i) => {
                 if (room.roomId === action.roomId) {
                     joinedRooms[i].participants = [...room.participants, ...action.participants]
-                }
-            })
-            joinedRooms.forEach((room, i) => {
-                console.log(action.roomId)
-                if (room.roomId === action.roomId) {
-                    // room.participants = [...room.participants, ...action.participants]
-                    joinedRooms[i].participants = ['weare']
-                    console.log(joinedRooms[i].participants)
                 }
             })
             return { ...state, joinedRooms } satisfies RoomsState

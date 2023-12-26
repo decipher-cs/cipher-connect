@@ -4,6 +4,7 @@ import { Room, UserInDb, ServerMessage as Message } from './prisma.client'
 type User = Omit<UserInDb, 'passwordHash' | 'userId'>
 
 export interface ServerToClientEvents {
+    roomDetailsUpdated: (roomId: Room['roomId']) => void
     roomParticipantsChanged: (
         roomId: Room['roomId'],
         whatChanged: 'membersJoined' | 'membersLeft',
