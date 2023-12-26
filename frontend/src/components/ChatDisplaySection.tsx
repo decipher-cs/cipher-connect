@@ -159,9 +159,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                 data={messages}
                 overscan={20}
                 atTopStateChange={() => hasNextPage && !isFetchingNextPage && fetchNextPage()}
-                // components={{ Item: MessageVirtualizedContainer }}
                 itemContent={(i, message) => {
-                    // const message = messages[i]
                     if (message.roomId !== currRoom.roomId) return
 
                     return (
@@ -187,7 +185,3 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         </>
     )
 }
-
-// const MessageVirtualizedContainer: Components['Item'] = forwardRef(({ children, ...props }) => {
-//     return <div {...props}>{children}</div>
-// })

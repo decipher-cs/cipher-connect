@@ -15,24 +15,21 @@ import {
     ListItemText,
     Checkbox,
 } from '@mui/material'
-import { useContext, useEffect, useState } from 'react'
+import { useEffect} from 'react'
 import {
     BookmarkBorderRounded,
     BookmarkRounded,
     CancelRounded,
     InfoRounded,
     NotificationsRounded,
-    PinRounded,
     PushPinOutlined,
     PushPinRounded,
-    StarRounded,
     TryRounded,
 } from '@mui/icons-material'
 import { Routes } from '../types/routes'
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
 import { ConfirmationDialog } from './ConfirmationDialog'
 import { AddGroupParticipantsDialog } from './AddGroupParticipantsDialog'
-import { useSocket } from '../hooks/useSocket'
 import { useMutation } from '@tanstack/react-query'
 import { axiosServerInstance } from '../App'
 import { useImageEditor } from '../hooks/useImageEditor'
@@ -58,8 +55,6 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
     const {
         authStatus: { username },
     } = useAuth()
-
-    const socket = useSocket()
 
     const { imageEditroDialogProps, sourceImage, setSourceImage, handleOpen, editedImageData } = useImageEditor()
 
@@ -112,12 +107,6 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
         if (response.status !== 200) {
             console.log('error while updating group avatar.')
         }
-
-        // roomDispatcher({
-        //     type: RoomActionType.alterRoomProperties,
-        //     roomId,
-        //     newRoomProperties: { roomAvatar: newPath },
-        // })
     }
 
     useEffect(() => {
@@ -249,7 +238,6 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
                     axiosServerInstance
                         .delete(Routes.delete.userRoom + '/' + username + '/' + room.roomId)
                         .then(res => res.data)
-                    // socket.emit('userLeftRoom', room.roomId)
                 }}
             />
             <ConfirmationDialog
@@ -257,7 +245,6 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
                 toggleConfirmationDialog={toggleDeleteGroupDialog}
                 onAccept={() => {
                     axiosServerInstance.delete(Routes.delete.room).then(res => res.data)
-                    // socket.emit('roomDeleted', room.roomId)
                 }}
             />
         </Box>
