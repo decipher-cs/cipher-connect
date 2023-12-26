@@ -39,8 +39,7 @@ import { useImageEditor } from '../hooks/useImageEditor'
 import { ImageEditorDialog } from './ImageEditorDialog'
 import { useDialog } from '../hooks/useDialog'
 import { useAuth } from '../hooks/useAuth'
-import { UserRoom } from '../types/prisma.client'
-import { formToJSON } from 'axios'
+import { Room, UserRoom } from '../types/prisma.client'
 
 interface RoomInfoProps {
     room: RoomsState['joinedRooms'][0]
@@ -48,10 +47,12 @@ interface RoomInfoProps {
     roomDispatcher: (value: RoomActions) => void
 }
 
-type UserRoomMutableOptions = Pick<
-    RoomsState['joinedRooms'][0],
-    'isNotificationMuted' | 'isHidden' | 'isPinned' | 'isMarkedFavourite' | 'isBlocked' | 'roomAvatar'
+type UserRoomPersonalConfig = Partial<
+    Pick<UserRoom, 'isNotificationMuted' | 'isHidden' | 'isPinned' | 'isMarkedFavourite'>
 >
+type UserRoomSharedConfig = Partial<Pick<UserRoom, 'isBlocked' | 'lastReadMessage' | 'isAdmin' | 'joinedAt'>>
+
+type RoomSharedConfig = Partial<Pick<Room, 'roomAvatar' | 'roomDisplayName'>>
 
 export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ...props }: RoomInfoProps) => {
     const {
@@ -68,13 +69,17 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
 
     const { mutateAsync: updateUserRoom } = useMutation({
         mutationKey: ['UserRoomMutableOptions', room.roomId],
-        mutationFn: async (newConfig: Partial<UserRoomMutableOptions>) => {
-            const res = await axiosServerInstance.put(Routes.put.userRoom, { roomId: room.roomId, ...newConfig })
+        mutationFn: async (newConfig: UserRoomPersonalConfig) => {
+            const res = await axiosServerInstance.put(Routes.put.personalUserRoomConfig, {
+                roomId: room.roomId,
+                ...newConfig,
+            })
+            // const res = await axiosServerInstance.put(Routes.put.userRoom, { roomId: room.roomId, ...newConfig })
             return res
         },
         onMutate: newConfig => {
             roomDispatcher({
-                type: RoomActionType.changeRoomSettings,
+                type: RoomActionType.updateRoomDetails,
                 roomId: room.roomId,
                 newRoomProperties: newConfig,
             })
@@ -89,41 +94,9 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
         },
     })
 
-    const { mutateAsync: deleteRoom } = useMutation({
-        mutationKey: ['deleteRoom'],
-        mutationFn: () => axiosServerInstance.delete(Routes.delete.room).then(res => res.data),
-        onSuccess: () => {
-            // invalidate query  some query and cause a refetch
-        },
-    })
-
-    // const { mutateAsync: changeNotificationSetting, data: changedRoomConfig } = useMutation({
-    //     mutationFn: (newConfig: Partial<RoomConfigMutableEntries>) =>
-    //         axiosServerInstance
-    //             .put<Partial<RoomConfig>>(Routes.put.roomConfig, {
-    //                 username,
-    //                 roomId: room.roomId,
-    //                 ...newConfig,
-    //             } satisfies Partial<RoomConfig>)
-    //             .then(res => res.data),
-    //     onMutate: changedConfig => {
-    //         if (changedConfig.isNotificationMuted !== undefined) {
-    //             roomDispatcher({
-    //                 type: RoomActionType.changeRoomConfig,
-    //                 roomId: room.roomId,
-    //                 newConfig: { isNotificationMuted: changedConfig.isNotificationMuted },
-    //             })
-    //         }
-    //     },
-    //     onSuccess: changedConfig => {
-    //         if (changedConfig.isNotificationMuted !== undefined)
-    //             roomDispatcher({
-    //                 type: RoomActionType.changeRoomConfig,
-    //                 roomId: room.roomId,
-    //                 newConfig: { isNotificationMuted: changedConfig.isNotificationMuted },
-    //             })
-    //     },
-    // })
+    const updateSharedUserRoomConfig = async (updatedConfig: UserRoomSharedConfig) => {
+        axiosServerInstance.put(Routes.put.sharedUserRoomConfig, updatedConfig)
+    }
 
     const handleImageUpload = async (newAvatar: File) => {
         if (!newAvatar) return
@@ -136,7 +109,9 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
         fd.append('roomId', roomId)
 
         const response = await axiosServerInstance.post<string>(Routes.post.avatar, fd)
-        const newPath = response.data
+        if (response.status !== 200) {
+            console.log('error while updating group avatar.')
+        }
 
         // roomDispatcher({
         //     type: RoomActionType.alterRoomProperties,
@@ -261,7 +236,7 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
 
             {room.roomType === 'group' ? (
                 <ButtonGroup size='small' variant='text' fullWidth>
-                    <Button onClick={toggleDeleteGroupDialog} disabled={room.isAdmin === false}>
+                    <Button onClick={toggleDeleteGroupDialog} disabled={!room.isAdmin}>
                         Delete Group
                     </Button>
                     <Button onClick={toggleLeaveGroupDialog}>Leave Group</Button>
@@ -271,14 +246,18 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
                 openDialog={openLeaveGroupDialog}
                 toggleConfirmationDialog={toggleLeaveGroupDialog}
                 onAccept={() => {
-                    socket.emit('userLeftRoom', room.roomId)
+                    axiosServerInstance
+                        .delete(Routes.delete.userRoom + '/' + username + '/' + room.roomId)
+                        .then(res => res.data)
+                    // socket.emit('userLeftRoom', room.roomId)
                 }}
             />
             <ConfirmationDialog
                 openDialog={openDeleteGroupDialog}
                 toggleConfirmationDialog={toggleDeleteGroupDialog}
                 onAccept={() => {
-                    socket.emit('roomDeleted', room.roomId)
+                    axiosServerInstance.delete(Routes.delete.room).then(res => res.data)
+                    // socket.emit('roomDeleted', room.roomId)
                 }}
             />
         </Box>
