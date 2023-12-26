@@ -118,14 +118,13 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     }, [currRoom.roomId])
 
     useEffect(() => {
-        socket.on('message', (messageFromServer, callback) => {
+        socket.on('message', messageFromServer => {
             if (messageFromServer.roomId === currRoom.roomId) {
                 messageDispatcher({
                     type: MessageListActionType.add,
                     newMessage: { ...messageFromServer, deliveryStatus: 'delivered' },
                 })
             }
-            callback('ok')
         })
 
         return () => {
@@ -158,7 +157,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
             <Virtuoso
                 data={messages}
                 overscan={20}
-                atTopStateChange={() => hasNextPage && !isFetchingNextPage && fetchNextPage()}
+                atTopStateChange={() => (hasNextPage && !isFetchingNextPage ? fetchNextPage() : null)}
                 itemContent={(i, message) => {
                     if (message.roomId !== currRoom.roomId) return
 
