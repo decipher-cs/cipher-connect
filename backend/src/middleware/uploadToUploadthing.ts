@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from 'express'
-import multer from 'multer'
-import { UploadFileResponse } from 'uploadthing/client'
 import { UTApi } from 'uploadthing/server'
+import * as dotenv from 'dotenv'
+
+dotenv.config()
 
 const utapi = new UTApi()
 
