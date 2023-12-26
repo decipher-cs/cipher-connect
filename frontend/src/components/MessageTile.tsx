@@ -121,7 +121,7 @@ export const MessageTile = (props: MessageTileProps) => {
                 {senderUsername !== username && roomType === RoomType.group ? (
                     <>
                         <Avatar src={user?.avatarPath ?? ''} sx={{ gridRow: '1 / 3', width: 45, height: 45 }} />
-                        <Typography>{user.username}</Typography>
+                        <Typography>{user?.username}</Typography>
                     </>
                 ) : null}
 

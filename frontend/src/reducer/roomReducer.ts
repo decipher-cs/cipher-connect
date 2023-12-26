@@ -4,7 +4,7 @@ import { User, RoomDetails } from '../types/prisma.client'
 export type RoomsState = {
     selectedRoomIndex: null | number
     joinedRooms: RoomDetails[]
-    usersInfo: { [username: User['username']]: User }
+    usersInfo: { [username: User['username']]: User | undefined }
 }
 
 export enum RoomActionType {
