@@ -6,6 +6,8 @@ type MessageArray = Message[]
 export enum MessageListActionType {
     initializeMessages = 'initializeMessages',
     add = 'add',
+    append = 'append',
+    prepend = 'prepend',
     remove = 'remove',
     edit = 'edit',
     changeDeliveryStatus = 'changeDeliveryStatus',
@@ -18,6 +20,14 @@ export type MessageListAction =
     | {
           type: MessageListActionType.add
           newMessage: Message | Message[]
+      }
+    | {
+          type: MessageListActionType.append
+          newMessage: Message[]
+      }
+    | {
+          type: MessageListActionType.prepend
+          newMessage: Message[]
       }
     | {
           type: MessageListActionType.remove
@@ -45,6 +55,12 @@ export const messageListReducer: React.Reducer<MessageArray, MessageListAction> 
         case MessageListActionType.add:
             if (Array.isArray(action.newMessage)) return [...messageList, ...action.newMessage]
             else return [...messageList, action.newMessage]
+
+        case MessageListActionType.append:
+            return [...messageList, ...action.newMessage]
+
+        case MessageListActionType.prepend:
+            return [...action.newMessage, ...messageList]
 
         case MessageListActionType.remove:
             return messageList.filter(({ key }) => key !== action.messageKey)
