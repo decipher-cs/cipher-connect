@@ -39,8 +39,8 @@ export const initSocketIO = (io: Server<ClientToServerEvents, ServerToClientEven
 
         socket.on('message', async (message, cb) => {
             try {
-                socket.broadcast.to(message.roomId).emit('message', message, res => res === 'ok')
-                socket.broadcast.to(message.roomId).emit('notification', message.roomId)
+                socket.broadcast.to(message.roomId).emit('message', message)
+                // socket.broadcast.to(message.roomId).emit('notification', message.roomId)
                 addMessageToDB(message)
                 // updateMessageReadStatus(message.roomId, true)
                 cb('ok')
