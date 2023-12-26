@@ -9,10 +9,8 @@ import { PrismaClient } from '@prisma/client'
 import expressSession from 'express-session'
 import { PrismaSessionStore } from '@quixo3/prisma-session-store'
 import { isServerOnline } from './controllers.js'
-import { ClientToServerEvents, InterServerEvents, ServerToClientEvents } from '../../@types/socket.js'
+import { ClientToServerEvents, InterServerEvents, ServerToClientEvents } from './types.js'
 import { Routes as routes } from '../../@types/ExpressRoutes.js'
-import path from 'path'
-import { fileURLToPath } from 'url'
 
 dotenv.config()
 
