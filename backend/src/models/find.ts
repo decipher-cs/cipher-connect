@@ -117,7 +117,7 @@ export const getRoomPariticpantsUsernames = async (roomId: string): Promise<User
 export const getMessagesFromRoom = async (
     roomId: string,
     cursor?: string,
-    takeSize?: number
+    take?: number
 ): Promise<Message[] | null> => {
     try {
         const messages = await prisma.message.findMany({
@@ -126,8 +126,8 @@ export const getMessagesFromRoom = async (
                 createdAt: 'desc',
             },
             cursor: cursor ? { key: cursor } : undefined,
-            take: takeSize,
-            skip: 1,
+            take,
+            skip: cursor ? 1 : 0,
         })
 
         return messages
