@@ -15,7 +15,7 @@ import {
     ListItemText,
     Checkbox,
 } from '@mui/material'
-import { useEffect} from 'react'
+import { useEffect } from 'react'
 import {
     BookmarkBorderRounded,
     BookmarkRounded,
@@ -199,6 +199,7 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
                     sx={{ ml: 'auto' }}
                     checkedIcon={<BookmarkRounded />}
                     icon={<BookmarkBorderRounded />}
+                    checked={room.isMarkedFavourite}
                     onChange={(e, checked) => {
                         updateUserRoom({ isMarkedFavourite: checked })
                     }}
