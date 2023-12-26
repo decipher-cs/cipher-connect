@@ -184,8 +184,14 @@ export const roomReducer: React.Reducer<RoomsState, RoomActions> = (state, actio
         case editUserDetails: {
             const { newDetails, username } = action
             const { usersInfo } = state
-            usersInfo[username] = { ...usersInfo[username], ...newDetails }
-            return state satisfies RoomsState
+
+            let user = usersInfo[username]
+
+            if (user !== undefined) {
+                user = { ...user, ...newDetails }
+            }
+
+            return { ...state, usersInfo: { ...usersInfo, [username]: user } } satisfies RoomsState
         }
 
         /* // case RoomActionType.changeNotificationStatus:
