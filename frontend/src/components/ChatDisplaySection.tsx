@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, Container } from '@mui/material'
+import { Box, Button, ButtonGroup, CircularProgress, Container } from '@mui/material'
 import { createRef, forwardRef, useContext, useEffect, useLayoutEffect, useReducer, useRef } from 'react'
 import React, { useState } from 'react'
 import { MessageContentType, RoomWithParticipants, ServerMessage, User } from '../types/prisma.client'
@@ -17,7 +17,8 @@ import { PulseLoader } from 'react-spinners'
 import { AudioPlayer } from './AudioPlayer'
 import Mark from 'mark.js'
 import { useAuth } from '../hooks/useAuth'
-import { Components, Virtuoso } from 'react-virtuoso'
+import { Components, Virtuoso, VirtuosoHandle } from 'react-virtuoso'
+import { ArrowDownwardRounded, ArrowUpwardRounded } from '@mui/icons-material'
 
 export interface ChatDisplaySectionProps {
     currRoom: RoomsState['joinedRooms'][0]
@@ -31,8 +32,6 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     const {
         authStatus: { username },
     } = useAuth()
-
-    const scrollToBottomRef = useRef<HTMLDivElement>(null)
 
     const messageContainer = useRef<HTMLDivElement>(null)
 
@@ -60,28 +59,23 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                     return result
                 }),
 
-        getNextPageParam: (lastPage, _) => lastPage.at(-1)?.key,
+        getNextPageParam: (lastPage, allPages) => {
+            return lastPage.at(0)?.key
+        },
     })
 
     useEffect(() => {
-        if (!serverMessages) return
+        if (!serverMessages?.pages?.at(-1)) return
+
+        const messages = serverMessages.pages.slice().at(-1) ?? []
+
         messageDispatcher({
-            type: MessageListActionType.initializeMessages,
-            newMessages: serverMessages.pages.flat().reverse(),
+            type: MessageListActionType.prepend,
+            newMessage: messages.reverse(),
         })
     }, [serverMessages?.pages, serverMessages?.pageParams])
 
     const [usersCurrentlyTyping, setUsersCurrentlyTyping] = useState<User['username'][] | null>(null)
-
-    const scrollChatToBottom = () => {
-        if (scrollToBottomRef.current === null) return
-        scrollToBottomRef.current.scrollIntoView(true)
-    }
-
-    useEffect(() => {
-        scrollChatToBottom()
-        // }, [])
-    }, [messages])
 
     useEffect(() => {
         socket.on('typingStatusChanged', (status, roomId, username) => {
@@ -144,6 +138,14 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         }
     }, [currRoom.roomId])
 
+    const virtuosoRef = useRef<VirtuosoHandle>(null)
+
+    useEffect(() => {
+        if (!virtuosoRef.current) return
+
+        virtuosoRef.current.autoscrollToBottom()
+    }, [])
+
     return (
         <>
             <RoomBanner
@@ -155,11 +157,13 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
 
             {/* {hasNextPage && isFetchingNextPage ? <CircularProgress sx={{ justifySelf: 'center' }} /> : null} */}
             <Virtuoso
+                ref={virtuosoRef}
                 data={messages}
                 overscan={20}
                 atTopStateChange={() => (hasNextPage && !isFetchingNextPage ? fetchNextPage() : null)}
                 itemContent={(i, message) => {
-                    if (message.roomId !== currRoom.roomId) return
+                    if (message.roomId !== currRoom.roomId)
+                        throw new Error('Message from one from leaked into other room.')
 
                     return (
                         <MessageTile
@@ -167,8 +171,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                             message={message}
                             roomType={currRoom.roomType}
                             users={users}
-                            // If newest message in the list, put ref on it to auto-scroll to bottom
-                            autoScrollToBottomRef={i === messages.length - 1 ? scrollToBottomRef : null}
+                            autoScrollToBottomRef={null}
                         />
                     )
                 }}
@@ -181,6 +184,25 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
             ) : null}
 
             <ChatInputBar messageListDispatcher={messageDispatcher} currRoom={currRoom} />
+            <ButtonGroup fullWidth variant='text'>
+                <Button
+                    onClick={() => {
+                        // TODO: convert scroll behaviour to 'smooth'
+                        if (virtuosoRef.current) virtuosoRef.current.scrollToIndex(0)
+                    }}
+                    startIcon={<ArrowUpwardRounded />}
+                >
+                    scroll to top
+                </Button>
+                <Button
+                    onClick={() => {
+                        if (virtuosoRef.current) virtuosoRef.current.scrollToIndex(messages.length - 1)
+                    }}
+                    endIcon={<ArrowDownwardRounded />}
+                >
+                    scroll to bottom
+                </Button>
+            </ButtonGroup>
         </>
     )
 }
