@@ -17,7 +17,7 @@ export type MessageListAction =
       }
     | {
           type: MessageListActionType.add
-          newMessage: Message | Message[] // TODO: accespt URL objects and files
+          newMessage: Message | Message[]
       }
     | {
           type: MessageListActionType.remove
@@ -36,43 +36,38 @@ export type MessageListAction =
 export const messageListReducer: React.Reducer<MessageArray, MessageListAction> = (state, action) => {
     const { type } = action
 
-    let messageList: MessageArray = structuredClone(state)
+    const messageList = state
 
     switch (type) {
         case MessageListActionType.initializeMessages:
-            messageList = action.newMessages
-            break
+            return [...action.newMessages]
 
         case MessageListActionType.add:
-            if (Array.isArray(action.newMessage)) messageList.push(...action.newMessage)
-            else messageList.push(action.newMessage)
-
-            break
+            if (Array.isArray(action.newMessage)) return [...messageList, ...action.newMessage]
+            else return [...messageList, action.newMessage]
 
         case MessageListActionType.remove:
-            messageList = messageList.filter(({ key }) => key !== action.messageKey)
-            break
+            return messageList.filter(({ key }) => key !== action.messageKey)
 
         case MessageListActionType.edit:
-            messageList.forEach(message => {
+            messageList.forEach((message, i) => {
                 if (message.key === action.updatedMessage.key) {
-                    message.content = action.updatedMessage.content
-                    message.editedAt = action.updatedMessage.editedAt
+                    messageList[i].content = action.updatedMessage.content
+                    messageList[i].editedAt = action.updatedMessage.editedAt
                 }
             })
-            break
+            return messageList
 
         case MessageListActionType.changeDeliveryStatus:
-            messageList.forEach(message => {
+            messageList.forEach((message, i) => {
                 if (message.key === action.messageId) {
-                    message.deliveryStatus = action.changeStatusTo
+                    messageList[i].deliveryStatus = action.changeStatusTo
                 }
             })
-            break
+            return messageList
 
         default:
             throw new Error('Unknown Error')
             break
     }
-    return messageList
 }
