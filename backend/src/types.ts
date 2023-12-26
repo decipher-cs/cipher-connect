@@ -9,6 +9,7 @@ export * from '../../@types/Utility.js'
 type User = Omit<UserInDb, 'passwordHash' | 'userId'>
 
 export interface ServerToClientEvents {
+    roomDetailsUpdated: (roomId: Room['roomId']) => void
     roomParticipantsChanged: (
         roomId: Room['roomId'],
         whatChanged: 'membersJoined' | 'membersLeft',
