@@ -1,4 +1,4 @@
-import { ProfileFormValues } from '../components/ProfileSettingsDialog'
+import { ProfileFormValues } from '../components/ProfileSettings'
 import { RoomType, UserStatus, UserWithoutID } from '../types/prisma.client'
 import { z } from 'zod'
 import validator from 'validator'
