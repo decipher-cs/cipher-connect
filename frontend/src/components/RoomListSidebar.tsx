@@ -105,6 +105,16 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
     })
 
     useEffect(() => {
+        socket.on('roomDetailsUpdated', roomId => {
+            // roomDispatcher({type: RoomActionType.addRoom, rooms: })
+            refetch()
+        })
+
+        return () => {
+            socket.removeListener('roomCreated')
+        }
+    }, [])
+    useEffect(() => {
         socket.on('roomCreated', () => {
             // roomDispatcher({type: RoomActionType.addRoom, rooms: })
             refetch()
