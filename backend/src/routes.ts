@@ -23,6 +23,8 @@ import {
     doesValidUserSessionExist,
     isServerOnline,
     handleUserRoomOptionsChange,
+    updatePersonalUserRoomConfig,
+    updateSharedUserRoomConfig,
 } from './controllers.js'
 import { media } from './server.js'
 import { isUserAuthenticated } from './middleware/auth.js'
@@ -67,6 +69,10 @@ export const initRoutes = (app: Router) => {
     app.put(routes.put.user, isUserAuthenticated, media, uploadMediaToUploadthing, handleUserProfileUpdation)
 
     app.put(routes.put.userRoom, isUserAuthenticated, handleUserRoomOptionsChange)
+
+    app.put(routes.put.personalUserRoomConfig, isUserAuthenticated, updatePersonalUserRoomConfig)
+
+    app.put(routes.put.sharedUserRoomConfig, isUserAuthenticated, updateSharedUserRoomConfig)
 
     app.delete(routes.delete.userRoom + '/:username/:roomId', isUserAuthenticated, handleUserLeavesRoom)
 
