@@ -27,6 +27,9 @@ export const Routes = {
         messageReadStatus: '/message-read-status',
         user: '/user',
         userRoom: '/user-room',
+        personalUserRoomConfig: '/personal-user-room-config',
+        sharedUserRoomConfig: '/shared-user-room-config',
+        room: '/room',
     },
     delete: {
         userRoom: '/user-room',
