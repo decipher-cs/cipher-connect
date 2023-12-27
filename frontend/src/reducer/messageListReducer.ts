@@ -77,7 +77,7 @@ export const messageListReducer: React.Reducer<MessageArray, MessageListAction> 
         case MessageListActionType.changeDeliveryStatus:
             messageList.forEach((message, i) => {
                 if (message.key === action.messageId) {
-                    messageList[i].deliveryStatus = action.changeStatusTo
+                    messageList[i] = { ...messageList[i], deliveryStatus: action.changeStatusTo }
                 }
             })
             return messageList
