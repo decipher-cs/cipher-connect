@@ -32,7 +32,7 @@ export const RoomBanner = ({
     toggleRoomInfoSidebar: () => void
     users: RoomsState['usersInfo']
     room: RoomsState['joinedRooms'][0]
-    searchContainerRef: RefObject<HTMLElement>
+    searchContainerRef: React.RefObject<HTMLElement>
 }) => {
     const {
         authStatus: { username, isLoggedIn },
@@ -66,6 +66,8 @@ export const RoomBanner = ({
     useEffect(() => {
         if (!searchContainerRef || !searchContainerRef.current) return
 
+        if (!(searchContainerRef.current instanceof HTMLElement)) return
+
         const mark = new Mark(searchContainerRef.current)
 
         highlightedElements.current = []
@@ -79,7 +81,7 @@ export const RoomBanner = ({
                 setCurrHighlightIndex(marksTotal - 1)
             },
         })
-    }, [searchTerm, searchContainerRef.current])
+    }, [searchTerm, searchContainerRef?.current])
 
     useEffect(() => {
         if (!searchContainerRef || !searchContainerRef.current || highlightedElements.current.length === 0) return

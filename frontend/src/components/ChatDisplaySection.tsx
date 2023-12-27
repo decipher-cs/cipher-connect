@@ -1,4 +1,4 @@
-import { Box, Button, ButtonGroup, CircularProgress, Container } from '@mui/material'
+import { Box, Button, ButtonGroup, CircularProgress, Container, List, ListItem } from '@mui/material'
 import { createRef, forwardRef, useContext, useEffect, useLayoutEffect, useReducer, useRef } from 'react'
 import React, { useState } from 'react'
 import { MessageContentType, RoomWithParticipants, ServerMessage, User } from '../types/prisma.client'
@@ -32,8 +32,6 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     const {
         authStatus: { username },
     } = useAuth()
-
-    const messageContainer = useRef<HTMLDivElement>(null)
 
     const [messages, messageDispatcher] = useReducer(messageListReducer, [])
 
@@ -138,13 +136,9 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         }
     }, [currRoom.roomId])
 
+    const messageContainer = useRef<HTMLElement>(null)
+
     const virtuosoRef = useRef<VirtuosoHandle>(null)
-
-    useEffect(() => {
-        if (!virtuosoRef.current) return
-
-        virtuosoRef.current.autoscrollToBottom()
-    }, [])
 
     return (
         <>
@@ -156,26 +150,28 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
             />
 
             {/* {hasNextPage && isFetchingNextPage ? <CircularProgress sx={{ justifySelf: 'center' }} /> : null} */}
-            <Virtuoso
-                ref={virtuosoRef}
-                data={messages}
-                overscan={20}
-                atTopStateChange={() => (hasNextPage && !isFetchingNextPage ? fetchNextPage() : null)}
-                itemContent={(i, message) => {
-                    if (message.roomId !== currRoom.roomId)
-                        throw new Error('Message from one from leaked into other room.')
+            <Box ref={messageContainer}>
+                <Virtuoso
+                    ref={virtuosoRef}
+                    data={messages}
+                    overscan={40}
+                    atTopStateChange={() => (hasNextPage && !isFetchingNextPage ? fetchNextPage() : null)}
+                    itemContent={(i, message) => {
+                        if (message.roomId !== currRoom.roomId)
+                            throw new Error('Message from one from leaked into other room.')
 
-                    return (
-                        <MessageTile
-                            key={message.key}
-                            message={message}
-                            roomType={currRoom.roomType}
-                            users={users}
-                            autoScrollToBottomRef={null}
-                        />
-                    )
-                }}
-            />
+                        return (
+                            <MessageTile
+                                key={message.key}
+                                message={message}
+                                roomType={currRoom.roomType}
+                                users={users}
+                                autoScrollToBottomRef={null}
+                            />
+                        )
+                    }}
+                />
+            </Box>
 
             {usersCurrentlyTyping !== null && usersCurrentlyTyping.length > 0 ? (
                 <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2 }}>
