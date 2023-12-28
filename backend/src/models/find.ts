@@ -130,7 +130,7 @@ export const getMessagesFromRoom = async (
             skip: cursor ? 1 : 0,
         })
 
-        return messages
+        return messages.reverse()
     } catch (error) {
         return null
     }
