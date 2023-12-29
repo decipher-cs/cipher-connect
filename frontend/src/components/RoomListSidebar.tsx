@@ -127,13 +127,10 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
 
     useEffect(() => {
         socket.on('roomParticipantsChanged', (roomId, changeType, updatedMemberIds) => {
-            console.log('changed in', roomId)
             if (!rooms.joinedRooms.find(p => p.roomId === roomId)) {
-                console.log('refetching because participants chagned')
                 refetch()
             }
             if (changeType === 'membersJoined') {
-                console.log('dispatching!!')
                 roomDispatcher({ type: RoomActionType.addParticipantsToRoom, roomId, participants: updatedMemberIds })
             }
             if (changeType === 'membersLeft') {
@@ -192,7 +189,7 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
                 {selectedTab.toUpperCase()}
             </Typography>
             <Tooltip title='Create new room' placement='right'>
-                <IconButton onClick={handleOpen} sx={{ justifySelf: 'flex-end', gridArea: '1 / 1 / 1 / 1' }}>
+                <IconButton onClick={handleOpen} sx={{ justifySelf: 'flex-end', mr: 1.5, gridArea: '1 / 1 / 1 / 1' }}>
                     <AddToPhotosRounded />
                 </IconButton>
             </Tooltip>
@@ -225,30 +222,32 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
                 </List>
             ) : (
                 <>
-                    <List sx={{ overflowY: 'auto' }}>
-                        <ListSubheader>
-                            <PushPinRounded fontSize='inherit' sx={{ mr: 1 }} />
-                            pinned rooms
-                        </ListSubheader>
-                        {rooms.joinedRooms.map((room, i) => {
-                            if (room.isPinned)
-                                return (
-                                    <RoomListItem
-                                        key={room.roomId}
-                                        thisRoomIndex={i}
-                                        selectedRoomIndex={rooms.selectedRoomIndex}
-                                        usersInfo={rooms.usersInfo}
-                                        room={room}
-                                        roomDispatcher={roomDispatcher}
-                                        mutateMessageReadStatus={mutateMessageReadStatus}
-                                    />
-                                )
-                        })}
-                    </List>
+                    {selectedTab !== 'settings' ? (
+                        <List sx={{ overflowY: 'auto', mb: 3 }}>
+                            <ListSubheader sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <PushPinRounded fontSize='inherit' />
+                                <span>pinned rooms</span>
+                            </ListSubheader>
+                            {rooms.joinedRooms.map((room, i) => {
+                                if (room.isPinned)
+                                    return (
+                                        <RoomListItem
+                                            key={room.roomId}
+                                            thisRoomIndex={i}
+                                            selectedRoomIndex={rooms.selectedRoomIndex}
+                                            usersInfo={rooms.usersInfo}
+                                            room={room}
+                                            roomDispatcher={roomDispatcher}
+                                            mutateMessageReadStatus={mutateMessageReadStatus}
+                                        />
+                                    )
+                            })}
+                        </List>
+                    ) : null}
 
                     {selectedTab === 'messages' && (
                         <List sx={{ overflowY: 'auto' }}>
-                            <ListSubheader>
+                            <ListSubheader sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <ChatBubbleRounded fontSize='inherit' sx={{ mr: 1 }} />
                                 All Rooms
                             </ListSubheader>
@@ -271,7 +270,7 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
 
                     {selectedTab === 'favourates' && (
                         <List sx={{ overflowY: 'auto' }}>
-                            <ListSubheader>
+                            <ListSubheader sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <TryRounded fontSize='inherit' sx={{ mr: 1 }} />
                                 Bookmarked Rooms
                             </ListSubheader>
