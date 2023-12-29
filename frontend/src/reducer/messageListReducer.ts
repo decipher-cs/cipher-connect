@@ -10,6 +10,7 @@ export enum MessageListActionType {
     prepend = 'prepend',
     remove = 'remove',
     edit = 'edit',
+    clearMessageList = 'clearMessageList',
     changeDeliveryStatus = 'changeDeliveryStatus',
 }
 export type MessageListAction =
@@ -41,6 +42,9 @@ export type MessageListAction =
           type: MessageListActionType.changeDeliveryStatus
           messageId: Message['key']
           changeStatusTo: Message['deliveryStatus']
+      }
+    | {
+          type: MessageListActionType.clearMessageList
       }
 
 export const messageListReducer: React.Reducer<MessageArray, MessageListAction> = (state, action) => {
@@ -82,8 +86,10 @@ export const messageListReducer: React.Reducer<MessageArray, MessageListAction> 
             })
             return messageList
 
+        case MessageListActionType.clearMessageList:
+            return []
+
         default:
             throw new Error('Unknown Error')
-            break
     }
 }
