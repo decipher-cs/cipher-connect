@@ -13,6 +13,7 @@ export const Routes = {
         isUsernameValid: '/is-username-valid',
         logout: '/logout',
         sessionStatus: '/session-status',
+        messageCount: '/message-count',
     },
     post: {
         login: '/login',
