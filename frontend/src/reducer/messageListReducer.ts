@@ -70,21 +70,21 @@ export const messageListReducer: React.Reducer<MessageArray, MessageListAction> 
             return messageList.filter(({ key }) => key !== action.messageKey)
 
         case MessageListActionType.edit:
-            messageList.forEach((message, i) => {
+            return messageList.map((message, i) => {
                 if (message.key === action.updatedMessage.key) {
-                    messageList[i].content = action.updatedMessage.content
-                    messageList[i].editedAt = action.updatedMessage.editedAt
-                }
+                    const msg = { ...message }
+                    msg.content = action.updatedMessage.content
+                    msg.editedAt = action.updatedMessage.editedAt
+                    return msg
+                } else return message
             })
-            return messageList
 
         case MessageListActionType.changeDeliveryStatus:
-            messageList.forEach((message, i) => {
+            return messageList.map((message, i) => {
                 if (message.key === action.messageId) {
-                    messageList[i] = { ...messageList[i], deliveryStatus: action.changeStatusTo }
-                }
+                    return { ...messageList[i], deliveryStatus: action.changeStatusTo }
+                } else return message
             })
-            return messageList
 
         case MessageListActionType.clearMessageList:
             return []
