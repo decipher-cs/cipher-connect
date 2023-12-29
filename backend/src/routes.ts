@@ -25,6 +25,7 @@ import {
     handleUserRoomOptionsChange,
     updatePersonalUserRoomConfig,
     updateSharedUserRoomConfig,
+    getRoomMessageCount,
 } from './controllers.js'
 import { media } from './server.js'
 import { isUserAuthenticated } from './middleware/auth.js'
@@ -45,6 +46,8 @@ export const initRoutes = (app: Router) => {
     app.get(routes.get.user + '/:username', isUserAuthenticated, returnUser)
 
     app.get(routes.get.messages + '/:roomId', isUserAuthenticated, fetchMessages)
+
+    app.get(routes.get.messageCount + '/:roomId', isUserAuthenticated, getRoomMessageCount)
 
     app.get(routes.get.roomParticipants, isUserAuthenticated, fetchRoomPariticpants)
 

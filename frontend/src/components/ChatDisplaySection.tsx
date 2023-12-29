@@ -1,5 +1,5 @@
 import { Box, Button, ButtonGroup, CircularProgress, Container, List, ListItem } from '@mui/material'
-import { createRef, forwardRef, useContext, useEffect, useLayoutEffect, useReducer, useRef } from 'react'
+import { createRef, forwardRef, useCallback, useContext, useEffect, useLayoutEffect, useReducer, useRef } from 'react'
 import React, { useState } from 'react'
 import { MessageContentType, RoomWithParticipants, ServerMessage, User } from '../types/prisma.client'
 import { MessageTile } from './MessageTile'
@@ -37,6 +37,28 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
 
     const socket = useSocket()
 
+    const messageContainer = useRef<HTMLElement>(null)
+
+    const virtuosoRef = useRef<VirtuosoHandle>(null)
+
+    const { data: messageCount, status: messageCountFetchStatus } = useQuery({
+        queryKey: ['messageSize'],
+        queryFn: () =>
+            axiosServerInstance.get<number>(Routes.get.messageCount + '/' + currRoom.roomId).then(res => {
+                if (typeof Number(res.data) === 'number') {
+                    return Number(res.data)
+                } else throw new Error('incorrect type recieved from server while fetching message count')
+            }),
+    })
+
+    const [firstItemIndex, setFirstItemIndex] = useState(100000)
+
+    useEffect(() => {
+        if (messageCount && messageCountFetchStatus === 'success') setFirstItemIndex(messageCount)
+    }, [messageCount])
+
+    const messageFetchCount = 10
+
     const {
         data: serverMessages,
         status,
@@ -45,21 +67,22 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         isFetchingNextPage,
         hasNextPage,
     } = useInfiniteQuery({
+        enabled: !!messageCount,
         queryKey: ['messages', currRoom.roomId],
         queryFn: ({ pageParam }) =>
             axiosServerInstance
                 .get<ServerMessage[]>(
                     Routes.get.messages +
-                        `/${currRoom.roomId}?messageQuantity=10&${pageParam ? 'cursor=' + pageParam : ''}`
+                        `/${currRoom.roomId}?messageQuantity=${messageFetchCount}&${
+                            pageParam ? 'cursor=' + pageParam : ''
+                        }`
                 )
                 .then(res => {
                     const result: Message[] = res.data.map(msg => ({ ...msg, deliveryStatus: 'delivered' }))
                     return result
                 }),
 
-        getNextPageParam: (lastPage, allPages) => {
-            return lastPage.at(0)?.key
-        },
+        getNextPageParam: (lastPage, _) => lastPage.at(0)?.key,
     })
 
     useEffect(() => {
@@ -69,7 +92,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
 
         messageDispatcher({
             type: MessageListActionType.prepend,
-            newMessage: messages.reverse(),
+            newMessage: messages,
         })
     }, [serverMessages?.pages, serverMessages?.pageParams])
 
@@ -113,8 +136,8 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         socket.on('message', messageFromServer => {
             if (messageFromServer.roomId === currRoom.roomId) {
                 messageDispatcher({
-                    type: MessageListActionType.add,
-                    newMessage: { ...messageFromServer, deliveryStatus: 'delivered' },
+                    type: MessageListActionType.append,
+                    newMessage: [{ ...messageFromServer, deliveryStatus: 'delivered' }],
                 })
             }
         })
@@ -136,10 +159,6 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         }
     }, [currRoom.roomId])
 
-    const messageContainer = useRef<HTMLElement>(null)
-
-    const virtuosoRef = useRef<VirtuosoHandle>(null)
-
     return (
         <>
             <RoomBanner
@@ -151,26 +170,36 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
 
             {/* {hasNextPage && isFetchingNextPage ? <CircularProgress sx={{ justifySelf: 'center' }} /> : null} */}
             <Box ref={messageContainer}>
-                <Virtuoso
-                    ref={virtuosoRef}
-                    data={messages}
-                    overscan={40}
-                    atTopStateChange={() => (hasNextPage && !isFetchingNextPage ? fetchNextPage() : null)}
-                    itemContent={(i, message) => {
-                        if (message.roomId !== currRoom.roomId)
-                            throw new Error('Message from one from leaked into other room.')
+                {messages.length >= 1 ? (
+                    <Virtuoso
+                        ref={virtuosoRef}
+                        data={messages?.filter(msg => msg.roomId === currRoom.roomId)}
+                        followOutput={'smooth'}
+                        overscan={10}
+                        firstItemIndex={firstItemIndex}
+                        startReached={() => {
+                            if (!hasNextPage) return
+                            fetchNextPage()
+                            setFirstItemIndex(p => (p - messageFetchCount < 0 ? 0 : p - messageFetchCount))
+                        }}
+                        initialTopMostItemIndex={{ behavior: 'smooth', index: messages.length - 1 }}
+                        itemContent={(i, message) => {
+                            // TODO: figure out why this is happening. Could reveal some underlying bug
+                            if (message.roomId !== currRoom.roomId)
+                                throw new Error('Message from one from leaked into other room.')
 
-                        return (
-                            <MessageTile
-                                key={message.key}
-                                message={message}
-                                roomType={currRoom.roomType}
-                                users={users}
-                                autoScrollToBottomRef={null}
-                            />
-                        )
-                    }}
-                />
+                            return (
+                                <MessageTile
+                                    key={message.key}
+                                    message={message}
+                                    roomType={currRoom.roomType}
+                                    users={users}
+                                    autoScrollToBottomRef={null}
+                                />
+                            )
+                        }}
+                    />
+                ) : null}
             </Box>
 
             {usersCurrentlyTyping !== null && usersCurrentlyTyping.length > 0 ? (
