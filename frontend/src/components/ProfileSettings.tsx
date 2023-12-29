@@ -180,7 +180,7 @@ export const ProfileSettings = ({ ...props }: ProfileSettingsDialogProps) => {
                     </ToggleButtonGroup>
                 </StyledListItem>
 
-                <ButtonGroup variant='outlined' disabled={isSubmitting} fullWidth sx={{ mt: 'auto' }}>
+                <ButtonGroup variant='text' disabled={isSubmitting} fullWidth sx={{ mt: 'auto' }}>
                     <Button onClick={() => reset(defaultValues)}>reset</Button>
                     <ButtonWithLoader
                         showLoader={isSubmitting || isValidating}

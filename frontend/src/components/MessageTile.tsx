@@ -107,7 +107,7 @@ export const MessageTile = (props: MessageTileProps) => {
                     px: 1.5,
                     ml: alignment === 'left' ? '0px' : 'auto',
                     position: 'relative',
-                    py: 1,
+                    py: 3,
                     maxWidth: '90%',
                     width: 'fit-content',
                     display: 'grid',
@@ -115,7 +115,7 @@ export const MessageTile = (props: MessageTileProps) => {
                     gridTemplateColumns: 'auto auto auto',
                     columnGap: 0,
                     rowGap: 1,
-                    gap: 1.5,
+                    gap: 1.8,
                 }}
             >
                 {senderUsername !== username && roomType === RoomType.group ? (

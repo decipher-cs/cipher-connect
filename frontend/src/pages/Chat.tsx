@@ -77,13 +77,13 @@ export const Chat = () => {
 
                 <Box
                     sx={{
-                        flexShrink: 0,
+                        flexShrink: 1,
                         flexGrow: 0,
-                        width: '25%',
-                        minWidth: 'max-content',
+                        minWidth: '28%',
 
                         display: 'grid',
                         alignContent: 'flex-start',
+                        pt: 1.5,
                         backgroundColor: theme => theme.palette.background.light,
                     }}
                 >

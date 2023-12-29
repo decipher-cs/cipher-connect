@@ -3,10 +3,10 @@ import { Box, Button, ButtonGroup, Container, Link, Typography } from '@mui/mate
 import { useNavigate } from 'react-router-dom'
 import { Balancer } from 'react-wrap-balancer'
 
-export const About = (props: {}) => {
+export const About = () => {
     const navigate = useNavigate()
     return (
-        <Container
+        <Box
             sx={{
                 background: theme => theme.design.background,
                 backgroundSize: theme => (theme.palette.mode === 'dark' ? theme.design.backgroundSize : null),
@@ -44,6 +44,6 @@ export const About = (props: {}) => {
                     Source
                 </Button>
             </ButtonGroup>
-        </Container>
+        </Box>
     )
 }

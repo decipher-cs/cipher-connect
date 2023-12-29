@@ -51,21 +51,23 @@ export const Sidebar = ({ selectedTab, handleTabChange }: SidebarProps) => {
     const avatarURL = userDetails.avatarPath
 
     return (
-        <Box sx={{ display: 'grid', justifyItems: 'center', width: '7%', flexShrink: 0, flexGrow: 0 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'grid', justifyItems: 'center', flexShrink: 0, flexGrow: 0 }}>
+            <Box sx={{ display: 'grid', alignContent: 'flex-start' }}>
                 <Tooltip placement='right' title='Profile'>
-                    <>
-                        <IconButton sx={{ justifySelf: 'center' }} onClick={() => handleTabChange('settings')}>
-                            <Avatar src={avatarURL ?? ''} />
-                        </IconButton>
-                        <Typography variant='caption' textOverflow='ellipsis'>
-                            {username}
-                        </Typography>
-                    </>
+                    <IconButton
+                        sx={{ justifySelf: 'center', mt: 1, mb: 1 }}
+                        onClick={() => handleTabChange('settings')}
+                    >
+                        <Avatar src={avatarURL ?? ''} />
+                    </IconButton>
                 </Tooltip>
+                <Typography variant='caption' textOverflow='ellipsis'>
+                    {username}
+                </Typography>
             </Box>
 
             <Tabs
+                sx={{ alignSelf: 'center' }}
                 orientation='vertical'
                 value={selectedTab}
                 onChange={(_, val) => {
