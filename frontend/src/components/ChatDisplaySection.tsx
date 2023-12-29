@@ -9,7 +9,7 @@ import { Message } from '../types/prisma.client'
 import { MessageListAction, MessageListActionType, messageListReducer } from '../reducer/messageListReducer'
 import { Routes } from '../types/routes'
 import { TypingStatus } from '../types/socket'
-import { RoomsState } from '../reducer/roomReducer'
+import { roomReducer, RoomsState } from '../reducer/roomReducer'
 import { useSocket } from '../hooks/useSocket'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { axiosServerInstance } from '../App'
@@ -42,7 +42,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     const virtuosoRef = useRef<VirtuosoHandle>(null)
 
     const { data: messageCount, status: messageCountFetchStatus } = useQuery({
-        queryKey: ['messageSize'],
+        queryKey: ['messageSize', currRoom.roomId],
         queryFn: () =>
             axiosServerInstance.get<number>(Routes.get.messageCount + '/' + currRoom.roomId).then(res => {
                 if (typeof Number(res.data) === 'number') {
@@ -52,6 +52,14 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     })
 
     const [firstItemIndex, setFirstItemIndex] = useState(100000)
+
+    useEffect(() => {
+        return () => {
+            messageDispatcher({
+                type: MessageListActionType.clearMessageList,
+            })
+        }
+    }, [])
 
     useEffect(() => {
         if (messageCount && messageCountFetchStatus === 'success') setFirstItemIndex(messageCount)
@@ -174,7 +182,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                     <Virtuoso
                         ref={virtuosoRef}
                         data={messages?.filter(msg => msg.roomId === currRoom.roomId)}
-                        followOutput={'smooth'}
+                        followOutput={'auto'}
                         overscan={10}
                         firstItemIndex={firstItemIndex}
                         startReached={() => {
@@ -182,7 +190,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                             fetchNextPage()
                             setFirstItemIndex(p => (p - messageFetchCount < 0 ? 0 : p - messageFetchCount))
                         }}
-                        initialTopMostItemIndex={{ behavior: 'smooth', index: messages.length - 1 }}
+                        initialTopMostItemIndex={{ behavior: 'auto', index: messages.length - 1 }}
                         itemContent={(i, message) => {
                             // TODO: figure out why this is happening. Could reveal some underlying bug
                             if (message.roomId !== currRoom.roomId)
