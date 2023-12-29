@@ -251,3 +251,13 @@ export const getSingleRoomDetails = async (
         return null
     }
 }
+
+export const getMessageCount = async (roomId: Room['roomId']): Promise<number | null> => {
+    try {
+        const messsageCount = await prisma.message.count({ where: { roomId } })
+        return messsageCount
+    } catch (err) {
+        console.log('Error while fetching user rooms', err)
+        return null
+    }
+}

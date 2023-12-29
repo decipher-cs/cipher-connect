@@ -9,6 +9,7 @@ import {
     getUser,
     getUserHash,
     getUsers,
+    getMessageCount,
 } from './models/find.js'
 import { createGroup, createNewUser, createPrivateRoom } from './models/create.js'
 import { deleteRoom, deleteUserRoom } from './models/delete.js'
@@ -439,4 +440,15 @@ export const updatePersonalUserRoomConfig = async (req: Request, res: Response) 
     const changeSuccessful = await updateUserRoom(roomId, username, newConfig)
     if (changeSuccessful) res.sendStatus(200)
     else res.sendStatus(500)
+}
+
+export const getRoomMessageCount = async (req: Request, res: Response) => {
+    const { roomId } = req.params
+    if (!roomId) {
+        res.sendStatus(400)
+        return
+    }
+
+    const size = await getMessageCount(roomId)
+    res.send(String(size))
 }
