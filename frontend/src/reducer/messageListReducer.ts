@@ -36,7 +36,7 @@ export type MessageListAction =
       }
     | {
           type: MessageListActionType.edit
-          updatedMessage: Pick<Message, 'editedAt' | 'content' | 'key'>
+          updatedMessage: Pick<Message, 'editedAt' | 'content' | 'key' | 'deliveryStatus'>
       }
     | {
           type: MessageListActionType.changeDeliveryStatus
@@ -70,11 +70,10 @@ export const messageListReducer: React.Reducer<MessageArray, MessageListAction> 
             return messageList.filter(({ key }) => key !== action.messageKey)
 
         case MessageListActionType.edit:
+            const { updatedMessage } = action
             return messageList.map((message, i) => {
                 if (message.key === action.updatedMessage.key) {
-                    const msg = { ...message }
-                    msg.content = action.updatedMessage.content
-                    msg.editedAt = action.updatedMessage.editedAt
+                    const msg = { ...message, ...updatedMessage }
                     return msg
                 } else return message
             })
