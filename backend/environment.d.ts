@@ -14,7 +14,7 @@ declare global {
     }
     declare namespace Express {
         export interface Request {
-            mediaUploadData?: Omit<UploadFileResponse<null>, 'serverData'>
+            mediaUploadData?: Omit<UploadFileResponse<null>, 'serverData'> | null
         }
     }
 }
