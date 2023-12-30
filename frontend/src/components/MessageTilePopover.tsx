@@ -11,8 +11,7 @@ export const MessageTilePopover = ({
     anchor,
     messageId,
     roomId,
-    textEditModeEnabled,
-    toggleEditMode,
+    enableEditMode,
     contentType,
     senderUsername,
 }: {
@@ -21,8 +20,8 @@ export const MessageTilePopover = ({
     anchor: Element | null
     messageId: Message['roomId']
     roomId: Room['roomId']
-    textEditModeEnabled: boolean
-    toggleEditMode: () => void
+    // textEditModeEnabled: boolean
+    enableEditMode: () => void
     contentType: Message['contentType']
     senderUsername: User['username']
 }) => {
@@ -58,8 +57,13 @@ export const MessageTilePopover = ({
                 ) : null}
 
                 {contentType === MessageContentType.text && senderUsername === username ? (
-                    <IconButton onClick={toggleEditMode}>
-                        {textEditModeEnabled ? <EditOffRounded /> : <EditRounded />}
+                    <IconButton
+                        onClick={() => {
+                            enableEditMode()
+                            handleClose()
+                        }}
+                    >
+                        <EditRounded />
                     </IconButton>
                 ) : null}
                 {contentType !== MessageContentType.text ? (

@@ -17,6 +17,7 @@ import {
     InputAdornment,
     Paper,
     Skeleton,
+    TextField,
     Tooltip,
     Typography,
 } from '@mui/material'
@@ -37,15 +38,19 @@ import { RoomsState } from '../reducer/roomReducer'
 import { AudioPlayer } from './AudioPlayer'
 import { MessageTilePopover } from './MessageTilePopover'
 import { StyledTextField } from './StyledTextField'
+import { axiosServerInstance } from '../App'
+import { Routes } from '../types/routes'
+import { MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
 
 export type MessageTileProps = {
     message: Message
     roomType: RoomType
     users: RoomsState['usersInfo']
+    messageDispatcher: React.Dispatch<MessageListAction>
 }
 
 export const MessageTile = (props: MessageTileProps) => {
-    const { roomType, users, message } = props
+    const { roomType, users, message, messageDispatcher } = props
 
     const user = users[message.senderUsername]
 
@@ -61,10 +66,8 @@ export const MessageTile = (props: MessageTileProps) => {
     } = message
 
     const {
-        authStatus: { username, isLoggedIn },
+        authStatus: { username },
     } = useAuth()
-
-    const [editableInputValue, setEditableInputValue] = useState(content)
 
     const alignment: 'left' | 'right' = senderUsername === username ? 'right' : 'left'
 
@@ -74,16 +77,9 @@ export const MessageTile = (props: MessageTileProps) => {
 
     const isPopoverOpen = Boolean(popoverAnchor)
 
-    const [textEditModeEnabled, setTextEditMode] = useState(false)
-
-    const socket = useSocket()
-
-    const handleTextEditConfirm = () => {
-        socket.emit('textMessageUpdated', messageKey, editableInputValue.trim(), roomId)
-        setTextEditMode(false)
-    }
-
     const closePopover = () => setPopoverAnchor(null)
+
+    const [textEditModeEnabled, setTextEditMode] = useState(false)
 
     if (!content) return null
 
@@ -105,7 +101,7 @@ export const MessageTile = (props: MessageTileProps) => {
                     gap: 1.8,
                 }}
             >
-                {senderUsername !== username && roomType === RoomType.group ? (
+                {roomType === RoomType.group && senderUsername !== username ? (
                     <>
                         <Avatar src={user?.avatarPath ?? ''} sx={{ gridRow: '1 / 3', width: 45, height: 45 }} />
                         <Typography>{user?.username}</Typography>
@@ -122,7 +118,7 @@ export const MessageTile = (props: MessageTileProps) => {
                     color='grey'
                 >
                     {messageDeliveryTimeAndDate(createdAt)}
-                    {editedAt && '(edited)'}
+                    {editedAt && ' (edited) '}
                 </Typography>
 
                 <Box
@@ -163,41 +159,12 @@ export const MessageTile = (props: MessageTileProps) => {
                     ) : null}
 
                     {contentType === MessageContentType.text ? (
-                        <Paper
-                            sx={{
-                                px: 4,
-                                py: 3,
-                                backgroundImage:
-                                    username === senderUsername
-                                        ? 'linear-gradient(45deg,#108ca6,#2c98ca,#45a3ec)'
-                                        : '#000',
-                                borderRadius: alignment === 'left' ? '0px 45px 45px 45px' : '45px 0px 45px 45px',
-                                color: theme =>
-                                    username === senderUsername
-                                        ? theme.palette.getContrastText('#108ca6')
-                                        : theme.palette.text.primary,
-                            }}
-                        >
-                            {textEditModeEnabled ? (
-                                <StyledTextField
-                                    value={editableInputValue}
-                                    multiline
-                                    onChange={e => setEditableInputValue(e.target.value)}
-                                    onKeyDown={e => (e.key === 'enter' ? handleTextEditConfirm : null)}
-                                    InputProps={{
-                                        endAdornment: (
-                                            <InputAdornment position='end'>
-                                                <IconButton onClick={handleTextEditConfirm}>
-                                                    <ArrowForwardRounded />
-                                                </IconButton>
-                                            </InputAdornment>
-                                        ),
-                                    }}
-                                />
-                            ) : (
-                                <Typography sx={{ overflowWrap: 'break-word' }}>{content}</Typography>
-                            )}
-                        </Paper>
+                        <TextDisplay
+                            message={message}
+                            textEditModeEnabled={textEditModeEnabled}
+                            messageDispatcher={messageDispatcher}
+                            setTextEditMode={setTextEditMode}
+                        />
                     ) : (
                         <MediaDisplay content={content} contentType={contentType} />
                     )}
@@ -210,8 +177,7 @@ export const MessageTile = (props: MessageTileProps) => {
                 anchor={popoverAnchor}
                 messageId={messageKey}
                 roomId={roomId}
-                textEditModeEnabled={textEditModeEnabled}
-                toggleEditMode={() => setTextEditMode(p => !p)}
+                enableEditMode={() => setTextEditMode(true)}
                 contentType={contentType}
                 senderUsername={senderUsername}
             />
@@ -219,21 +185,97 @@ export const MessageTile = (props: MessageTileProps) => {
     )
 }
 
-// { content, contentType, key: messageKey, roomId }
-// const TextDisplay = ({ message }: { message: Message }) => {
-//     const {
-//         roomId,
-//         contentType,
-//         content,
-//         key: messageKey,
-//         senderUsername,
-//         createdAt,
-//         editedAt,
-//         deliveryStatus,
-//     } = message
-//
-//     return ()
-// }
+type TextDisplayProps = {
+    message: Message
+    textEditModeEnabled: boolean
+    setTextEditMode: React.Dispatch<React.SetStateAction<boolean>>
+    messageDispatcher: React.Dispatch<MessageListAction>
+}
+const TextDisplay = (props: TextDisplayProps) => {
+    const { message, textEditModeEnabled, setTextEditMode, messageDispatcher } = props
+    const { content, senderUsername, key } = message
+
+    const [editableInputValue, setEditableInputValue] = useState(content)
+
+    const {
+        authStatus: { username },
+    } = useAuth()
+
+    const alignment: 'left' | 'right' = senderUsername === username ? 'right' : 'left'
+
+    const handleTextEditConfirm = () => {
+        setTextEditMode(false)
+        messageDispatcher({
+            type: MessageListActionType.edit,
+            updatedMessage: {
+                ...message,
+                content: editableInputValue,
+                editedAt: new Date(),
+                deliveryStatus: 'delivering',
+            },
+        })
+        axiosServerInstance
+            .put(Routes.put.textMessage, {
+                messageId: key,
+                content: editableInputValue,
+            })
+            .then(res => {
+                messageDispatcher({
+                    type: MessageListActionType.changeDeliveryStatus,
+                    messageId: key,
+                    changeStatusTo: 'delivered',
+                })
+            })
+            .catch(err => {
+                messageDispatcher({
+                    type: MessageListActionType.changeDeliveryStatus,
+                    messageId: key,
+                    changeStatusTo: 'failed',
+                })
+            })
+            .finally(() => {})
+    }
+
+    return (
+        <>
+            {textEditModeEnabled ? (
+                <StyledTextField
+                    value={editableInputValue}
+                    multiline
+                    sx={{ width: '800px' }}
+                    maxRows={10}
+                    onChange={e => setEditableInputValue(e.target.value)}
+                    onKeyDown={e => (e.key === 'enter' ? handleTextEditConfirm : null)}
+                    InputProps={{
+                        endAdornment: (
+                            <InputAdornment position='end'>
+                                <IconButton onClick={handleTextEditConfirm}>
+                                    <ArrowForwardRounded />
+                                </IconButton>
+                            </InputAdornment>
+                        ),
+                    }}
+                />
+            ) : (
+                <Paper
+                    sx={{
+                        px: 4,
+                        py: 3,
+                        backgroundImage:
+                            username === senderUsername ? 'linear-gradient(45deg,#108ca6,#2c98ca,#45a3ec)' : '#000',
+                        borderRadius: alignment === 'left' ? '0px 45px 45px 45px' : '45px 0px 45px 45px',
+                        color: theme =>
+                            username === senderUsername
+                                ? theme.palette.getContrastText('#108ca6')
+                                : theme.palette.text.primary,
+                    }}
+                >
+                    <Typography sx={{ overflowWrap: 'break-word' }}>{content}</Typography>
+                </Paper>
+            )}
+        </>
+    )
+}
 
 const MediaDisplay = ({ content, contentType }: Pick<Message, 'contentType' | 'content'>) => {
     // TODO: append file extension and MIME on explicit download. Put a download button.
