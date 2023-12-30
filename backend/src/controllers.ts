@@ -17,6 +17,7 @@ import {
     updateMessageReadStatus,
     updateRoom,
     updateRoomParticipants,
+    updateTextMessageContent,
     updateUser,
     updateUserRoom,
 } from './models/update.js'
@@ -451,4 +452,17 @@ export const getRoomMessageCount = async (req: Request, res: Response) => {
 
     const size = await getMessageCount(roomId)
     res.send(String(size))
+}
+
+export const handleTextMessageEdit = async (req: Request, res: Response) => {
+    const { messageId, content } = req.body
+    if (!messageId) {
+        res.sendStatus(400)
+        return
+    }
+
+    const updateSuccessful = await updateTextMessageContent(messageId, content)
+
+    if (updateSuccessful) res.sendStatus(201)
+    else res.sendStatus(500)
 }

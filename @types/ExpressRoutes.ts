@@ -31,6 +31,7 @@ export const Routes = {
         personalUserRoomConfig: '/personal-user-room-config',
         sharedUserRoomConfig: '/shared-user-room-config',
         room: '/room',
+        textMessage: '/text-message',
     },
     delete: {
         userRoom: '/user-room',

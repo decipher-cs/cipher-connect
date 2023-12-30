@@ -26,6 +26,7 @@ import {
     updatePersonalUserRoomConfig,
     updateSharedUserRoomConfig,
     getRoomMessageCount,
+    handleTextMessageEdit,
 } from './controllers.js'
 import { media } from './server.js'
 import { isUserAuthenticated } from './middleware/auth.js'
@@ -76,6 +77,8 @@ export const initRoutes = (app: Router) => {
     app.put(routes.put.personalUserRoomConfig, isUserAuthenticated, updatePersonalUserRoomConfig)
 
     app.put(routes.put.sharedUserRoomConfig, isUserAuthenticated, updateSharedUserRoomConfig)
+
+    app.put(routes.put.textMessage, isUserAuthenticated, handleTextMessageEdit)
 
     app.delete(routes.delete.userRoom + '/:username/:roomId', isUserAuthenticated, handleUserLeavesRoom)
 
