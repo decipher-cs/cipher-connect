@@ -15,6 +15,7 @@ import {
     AddToPhotosRounded,
     BrokenImageRounded,
     ChatBubbleRounded,
+    ClearRounded,
     PushPinRounded,
     SearchRounded,
     TryRounded,
@@ -214,9 +215,16 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
                     }}
                     InputProps={{
                         endAdornment: (
-                            <InputAdornment position='end'>
-                                <SearchRounded color='disabled' />
-                            </InputAdornment>
+                            <>
+                                <InputAdornment position='end'>
+                                    <IconButton disabled={searchQuery.length < 1} onClick={() => setSearchQuery('')}>
+                                        <ClearRounded />
+                                    </IconButton>
+                                </InputAdornment>
+                                <InputAdornment position='end'>
+                                    <SearchRounded color='disabled' />
+                                </InputAdornment>
+                            </>
                         ),
                     }}
                 />
