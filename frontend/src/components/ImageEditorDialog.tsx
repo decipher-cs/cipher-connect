@@ -1,6 +1,17 @@
-import { useState } from 'react'
+import { PropsWithChildren, useState } from 'react'
 import AvatarEditor, { AvatarEditorProps } from 'react-avatar-editor'
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Slider, Stack, Typography } from '@mui/material'
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Slider,
+    Stack,
+    Typography,
+} from '@mui/material'
+import { CropRotateRounded, ZoomInRounded } from '@mui/icons-material'
 
 interface ImageEditroDialogProps {
     handleClose: () => void
@@ -32,9 +43,15 @@ export const ImageEditorDialog = ({
         <Dialog fullScreen open={dialogOpen}>
             <DialogTitle>Edit Avatar</DialogTitle>
 
-            <DialogContent dividers>
-                <Stack spacing={2} direction='row' sx={{ mb: 1 }} alignItems='center'>
-                    <Stack spacing={2} direction='column' sx={{ m: 1, flexGrow: 1 }}>
+            <DialogContent dividers sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
+                <Stack
+                    spacing={2}
+                    direction='column'
+                    sx={{ flexBasis: '40%', placeSelf: 'center' }}
+                    alignItems='stretch'
+                >
+                    <StackedSlider>
+                        <ZoomInRounded />
                         <Typography>Zoom</Typography>
 
                         <Slider
@@ -51,6 +68,9 @@ export const ImageEditorDialog = ({
                                 { value: 3, label: 3 },
                             ]}
                         />
+                    </StackedSlider>
+                    <StackedSlider>
+                        <CropRotateRounded />
                         <Typography>Rotate</Typography>
 
                         <Slider
@@ -66,9 +86,9 @@ export const ImageEditorDialog = ({
                                 { value: 360, label: 360 },
                             ]}
                         />
-                    </Stack>
-                    <AvatarEditor {...config} image={sourceImage} ref={editorRef} />
+                    </StackedSlider>
                 </Stack>
+                <AvatarEditor {...config} image={sourceImage} ref={editorRef} height={300} width={300} border={20} />
             </DialogContent>
 
             <DialogActions>
@@ -85,5 +105,13 @@ export const ImageEditorDialog = ({
                 </Button>
             </DialogActions>
         </Dialog>
+    )
+}
+
+const StackedSlider = ({ children }: PropsWithChildren) => {
+    return (
+        <Stack spacing={4} direction='row' sx={{ mb: 1 }} alignItems='center'>
+            {children}
+        </Stack>
     )
 }
