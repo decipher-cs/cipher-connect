@@ -61,7 +61,7 @@ export const Sidebar = ({ selectedTab, handleTabChange }: SidebarProps) => {
                         <Avatar src={avatarURL ?? ''} />
                     </IconButton>
                 </Tooltip>
-                <Typography variant='caption' textOverflow='ellipsis'>
+                <Typography variant='caption' textOverflow='ellipsis' textAlign='center'>
                     {username}
                 </Typography>
             </Box>
