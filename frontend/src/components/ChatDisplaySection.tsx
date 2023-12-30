@@ -70,6 +70,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     const {
         data: serverMessages,
         status,
+        fetchStatus: messageFetchStatus,
         error,
         fetchNextPage,
         isFetchingNextPage,
@@ -176,7 +177,10 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                 users={users}
             />
 
-            {/* {hasNextPage && isFetchingNextPage ? <CircularProgress sx={{ justifySelf: 'center' }} /> : null} */}
+            {status === 'loading' || (hasNextPage && isFetchingNextPage) ? (
+                <CircularProgress sx={{ justifySelf: 'center', position: 'absolute', zIndex: 99, top: '10%' }} />
+            ) : null}
+
             <Box ref={messageContainer}>
                 {messages.length >= 1 ? (
                     <Virtuoso
