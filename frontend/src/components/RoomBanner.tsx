@@ -124,22 +124,24 @@ export const RoomBanner = ({
                 height: 70,
             }}
         >
-            <IconButton href={imgSrc ?? ''} target='_blank' onClick={props.toggleRoomInfoSidebar}>
+            <IconButton onClick={props.toggleRoomInfoSidebar}>
                 <Avatar src={imgSrc ?? ''} />
             </IconButton>
 
             <Typography mx={2}>{displayName}</Typography>
 
-            <ButtonGroup sx={{ justifySelf: 'flex-end', alignItems: 'center' }}>
-                <Collapse in={searchFieldVisible} orientation='horizontal'>
+            <ButtonGroup
+                sx={{
+                    justifySelf: 'flex-end',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                }}
+            >
+                <Collapse in={searchFieldVisible} orientation='horizontal' autoFocus sx={{ mr: 2 }}>
                     <StyledTextField
                         autoFocus
                         placeholder='Enter to search'
-                        sx={{
-                            minWidth: '200px',
-                            maxWidth: '450px',
-                            mr: 2,
-                        }}
+                        sx={{ width: '350px' /*TODO: use relative width without breaking animation*/ }}
                         onChange={e => setSearchTerm(e.target.value)}
                         onKeyDown={e => (e.key.toLowerCase() === 'enter' ? incrementCurrIndex() : null)}
                         value={searchTerm}
@@ -162,8 +164,14 @@ export const RoomBanner = ({
                                             </IconButton>
                                         </InputAdornment>
                                         <InputAdornment position='end'>
-                                            <IconButton onClick={() => setSearchTerm('')} edge='start'>
-                                                <ClearRounded />
+                                            <IconButton
+                                                onClick={() => {
+                                                    if (searchTerm.length <= 0) setSearchFieldVisible(false)
+                                                    setSearchTerm('')
+                                                }}
+                                                edge='start'
+                                            >
+                                                <ClearRounded fontSize='small' />
                                             </IconButton>
                                         </InputAdornment>
                                     </ButtonGroup>
