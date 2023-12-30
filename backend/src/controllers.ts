@@ -451,7 +451,7 @@ export const getRoomMessageCount = async (req: Request, res: Response) => {
     }
 
     const size = await getMessageCount(roomId)
-    res.send(String(size))
+    if (size !== null) res.send(String(size))
 }
 
 export const handleTextMessageEdit = async (req: Request, res: Response) => {

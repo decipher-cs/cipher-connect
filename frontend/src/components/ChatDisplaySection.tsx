@@ -71,12 +71,11 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         data: serverMessages,
         status,
         fetchStatus: messageFetchStatus,
-        error,
         fetchNextPage,
         isFetchingNextPage,
         hasNextPage,
     } = useInfiniteQuery({
-        enabled: !!messageCount,
+        enabled: messageCount !== undefined,
         queryKey: ['messages', currRoom.roomId],
         queryFn: ({ pageParam }) =>
             axiosServerInstance
