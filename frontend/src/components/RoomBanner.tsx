@@ -6,6 +6,7 @@ import {
     ClearRounded,
 } from '@mui/icons-material'
 import {
+    alpha,
     Avatar,
     Box,
     ButtonGroup,
@@ -109,15 +110,18 @@ export const RoomBanner = ({
                 // From https://css.glass //
                 zIndex: 10,
                 background: ({ palette }) =>
-                    palette.mode === 'dark' ? 'rgba(100, 100, 100, 0.50)' : 'rgba(255, 255, 255, 0.50)',
+                    palette.mode === 'dark'
+                        ? alpha(palette?.background?.light ?? '#000', 0.85)
+                        : 'rgba(255, 255, 255, 0.55)',
                 backdropFilter: 'blur(10px)',
                 webkitBackdropFilter: 'blur(20px)',
-                // boxShadow: 'rgba(100, 100, 100, 0.50)  0px 0px 5px 0px',
+                boxShadow: 'rgba(0, 0, 0, 0.50)  0px 0px 0px 0px',
 
                 display: 'grid',
                 gridTemplateColumns: 'repeat(2, auto) 1fr',
                 alignItems: 'center',
                 alignContent: 'center',
+                height: 70,
             }}
         >
             <IconButton href={imgSrc ?? ''} target='_blank' onClick={props.toggleRoomInfoSidebar}>

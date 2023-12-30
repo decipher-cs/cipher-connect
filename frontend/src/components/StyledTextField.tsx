@@ -5,4 +5,7 @@ export const StyledTextField = styled(TextField)(({ theme, variant }) => ({
         borderRadius: variant === 'standard' ? '0px' : '20px',
         backgroundColor: variant === 'standard' ? 'transparent' : theme.palette.background.light,
     },
+    '& .MuiOutlinedInput-root': {
+        height: '45px',
+    },
 }))
