@@ -85,17 +85,6 @@ export const MessageTile = (props: MessageTileProps) => {
 
     const closePopover = () => setPopoverAnchor(null)
 
-    const messageDeliveryTimeAndDate = () => {
-        const creationDate = new Date(createdAt)
-
-        const midnight = new Date()
-        midnight.setHours(0, 0, 0, 0)
-
-        if (creationDate < midnight)
-            return creationDate.toLocaleString('en', { dateStyle: 'medium', timeStyle: 'short', hour12: false })
-        return creationDate.toLocaleString('en', { timeStyle: 'short', hour12: false })
-    }
-
     if (!content) return null
 
     return (
@@ -132,7 +121,7 @@ export const MessageTile = (props: MessageTileProps) => {
                     }}
                     color='grey'
                 >
-                    {messageDeliveryTimeAndDate()}
+                    {messageDeliveryTimeAndDate(createdAt)}
                     {editedAt && '(edited)'}
                 </Typography>
 
@@ -353,4 +342,15 @@ const MediaDisplay = ({ content, contentType }: Pick<Message, 'contentType' | 'c
         default:
             return null
     }
+}
+
+const messageDeliveryTimeAndDate = (createdAt: Date) => {
+    const creationDate = new Date(createdAt)
+
+    const midnight = new Date()
+    midnight.setHours(0, 0, 0, 0)
+
+    if (creationDate < midnight)
+        return creationDate.toLocaleString('en', { dateStyle: 'medium', timeStyle: 'short', hour12: false })
+    return creationDate.toLocaleString('en', { timeStyle: 'short', hour12: false })
 }
