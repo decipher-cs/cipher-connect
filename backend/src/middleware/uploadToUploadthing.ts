@@ -18,12 +18,11 @@ export const uploadMediaToUploadthing = async (req: Request, res: Response, next
 
         const { data, error } = await utapi.uploadFiles(imageBlob, { metadata: { mimetype, name: originalname } })
 
-        if (error || !data) throw new Error('Error uploading file')
+        if (error) throw new Error('Error uploading file')
 
         req.mediaUploadData = data
-
-        next()
     } catch (error) {
-        console.log(error)
+        req.mediaUploadData = undefined
     }
+    next()
 }
