@@ -10,7 +10,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material'
-import { useContext, useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import {
     AddToPhotosRounded,
     BrokenImageRounded,
@@ -32,6 +32,10 @@ import { useAuth } from '../hooks/useAuth'
 import { StyledTextField } from './StyledTextField'
 import { ProfileSettings } from './ProfileSettings'
 import { AxiosError, isAxiosError } from 'axios'
+import Fuse from 'fuse.js'
+import { useFuzzySearch } from '../hooks/useFuzzySearch'
+
+const searchObjectKeys = ['roomDisplayName']
 
 interface RoomListSidebar {
     roomDispatcher: React.Dispatch<RoomActions>
@@ -89,6 +93,10 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
 
         return () => {}
     }, [fetchedRooms])
+
+    const [searchQuery, setSearchQuery] = useState('')
+
+    const { matchedQuery: queryMetchedRooms } = useFuzzySearch(searchQuery, rooms.joinedRooms, searchObjectKeys)
 
     useEffect(() => {
         if (roomFetchStatus === 'success' && fetchedRooms)
@@ -200,6 +208,10 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
                 <StyledTextField
                     sx={{ m: 2, '& .MuiInputBase-root': { background: theme => theme.palette.background.default } }}
                     placeholder='search for a room'
+                    value={searchQuery}
+                    onChange={e => {
+                        setSearchQuery(e.target.value)
+                    }}
                     InputProps={{
                         endAdornment: (
                             <InputAdornment position='end'>
@@ -251,19 +263,18 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
                                 <ChatBubbleRounded fontSize='inherit' sx={{ mr: 1 }} />
                                 All Rooms
                             </ListSubheader>
-                            {rooms.joinedRooms.map((room, i) => {
-                                if (!room.isPinned)
-                                    return (
-                                        <RoomListItem
-                                            key={room.roomId}
-                                            thisRoomIndex={i}
-                                            selectedRoomIndex={rooms.selectedRoomIndex}
-                                            room={room}
-                                            usersInfo={rooms.usersInfo}
-                                            roomDispatcher={roomDispatcher}
-                                            mutateMessageReadStatus={mutateMessageReadStatus}
-                                        />
-                                    )
+                            {queryMetchedRooms.map((room, i) => {
+                                return (
+                                    <RoomListItem
+                                        key={room.roomId}
+                                        thisRoomIndex={i}
+                                        selectedRoomIndex={rooms.selectedRoomIndex}
+                                        room={room}
+                                        usersInfo={rooms.usersInfo}
+                                        roomDispatcher={roomDispatcher}
+                                        mutateMessageReadStatus={mutateMessageReadStatus}
+                                    />
+                                )
                             })}
                         </List>
                     )}
