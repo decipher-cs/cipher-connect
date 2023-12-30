@@ -48,7 +48,7 @@ export const Sidebar = ({ selectedTab, handleTabChange }: SidebarProps) => {
 
     if (!isLoggedIn || !userDetails) return <Navigate to='/login' />
 
-    const avatarURL = userDetails.avatarPath
+    const avatarURL = userDetails?.avatarPath
 
     return (
         <Box sx={{ display: 'grid', justifyItems: 'center', flexShrink: 0, flexGrow: 0 }}>

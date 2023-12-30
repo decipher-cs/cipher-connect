@@ -343,11 +343,11 @@ export const handleUserProfileUpdation = async (req: Request, res: Response) => 
 
         const uploadData = req.mediaUploadData
 
-        await updateUser(username, { displayName, status, avatarPath: uploadData?.url })
+        const isSuccessful = await updateUser(username, { displayName, status, avatarPath: uploadData?.url })
 
-        res.sendStatus(200)
+        if (isSuccessful) res.sendStatus(201)
+        else res.sendStatus(500)
     } catch (err) {
-        console.log('errr', err)
         res.sendStatus(400)
     }
 }

@@ -30,6 +30,7 @@ import { userProfileUpdationFormValidation } from '../schemaValidators/yupFormVa
 import { axiosServerInstance, queryClient } from '../App'
 import { ButtonWithLoader } from './ButtonWithLoader'
 import { useAuth } from '../hooks/useAuth'
+import { formToJSON } from 'axios'
 
 interface ProfileSettingsDialogProps {
     // userProfile: UserWithoutID
@@ -43,38 +44,23 @@ export type ProfileFormValues = {
 
 export const ProfileSettings = ({ ...props }: ProfileSettingsDialogProps) => {
     const {
-        authStatus: { username, isLoggedIn },
+        authStatus: { username, userDetails },
     } = useAuth()
 
-    const socket = useSocket()
-
-    const { mutateAsync: mutateProfile } = useMutation({
-        mutationKey: ['userProfile'],
-        //TODO:use axios.formToJSON instead of formData
-        mutationFn: (formData: FormData) => axiosServerInstance.put(Routes.put.user, formData).then(res => res.data),
-        onSuccess: data => {
-            queryClient.refetchQueries({ queryKey: ['userProfile'] })
-            // TODO: alert other users
-            // socket.emit('userProfileUpdated', data)
-        },
-    })
-
     const handleProfileSubmit: SubmitHandler<ProfileFormValues> = async ({ displayName, avatar, status }) => {
-        return
-        // const fd = new FormData()
-        // if (avatar) fd.append('upload', avatar)
-        // if (displayName && displayName !== userProfile.displayName) fd.append('displayName', displayName)
-        // if (status && status !== userProfile.status) fd.append('status', status)
+        if (!username) throw new Error('username is undefined while user is logged in. Impossible scenario.')
 
-        // let formLength = 0
-        // fd.forEach(_ => formLength++)
+        const fd = new FormData()
+        if (avatar) fd.append('upload', avatar)
+        if (displayName && displayName !== userDetails?.displayName?.trim()) fd.append('displayName', displayName)
+        if (status && status !== userDetails?.status) fd.append('status', status)
+        fd.append('username', username)
 
-        // if (!username) throw new Error('username is undefined while user is logged in. Impossible scenario.')
+        const form = formToJSON(fd)
 
-        // if (formLength > 0) {
-        // fd.append('username', username)
-        // await mutateProfile(fd)
-        // }
+        if (Object.keys(form).length > 1) {
+            axiosServerInstance.put(Routes.put.user, fd).then(res => res.data)
+        }
     }
 
     const {
@@ -104,7 +90,6 @@ export const ProfileSettings = ({ ...props }: ProfileSettingsDialogProps) => {
     }, [editedImageData?.file])
 
     useEffect(() => {
-        // resets form data when form is closed
         return () => {
             reset(defaultValues)
         }
@@ -114,7 +99,7 @@ export const ProfileSettings = ({ ...props }: ProfileSettingsDialogProps) => {
         <>
             {sourceImage ? <ImageEditorDialog {...imageEditroDialogProps} sourceImage={sourceImage} /> : null}
 
-            <List component='form' onSubmit={() => handleSubmit(handleProfileSubmit)}>
+            <List component='form' onSubmit={handleSubmit(handleProfileSubmit)}>
                 <StyledListItem>
                     <ListItemText primaryTypographyProps={{ fontWeight: 'bold', variant: 'subtitle1' }}>
                         Avatar :
