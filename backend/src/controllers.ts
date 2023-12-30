@@ -456,13 +456,16 @@ export const getRoomMessageCount = async (req: Request, res: Response) => {
 
 export const handleTextMessageEdit = async (req: Request, res: Response) => {
     const { messageId, content } = req.body
+
     if (!messageId) {
         res.sendStatus(400)
         return
     }
 
-    const updateSuccessful = await updateTextMessageContent(messageId, content)
+    const updatedAt = await updateTextMessageContent(messageId, content)
 
-    if (updateSuccessful) res.sendStatus(201)
-    else res.sendStatus(500)
+    if (updatedAt !== null) {
+        res.sendStatus(201)
+        // io.in().emit
+    } else res.sendStatus(500)
 }
