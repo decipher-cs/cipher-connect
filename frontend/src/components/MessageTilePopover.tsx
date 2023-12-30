@@ -1,9 +1,10 @@
-import { DeleteRounded, DownloadRounded, EditOffRounded, EditRounded } from '@mui/icons-material'
+import { DeleteRounded, DownloadRounded, EditOffRounded, EditRounded, ForwardRounded } from '@mui/icons-material'
 import { ButtonGroup, Popover, IconButton } from '@mui/material'
-import { useContext } from 'react'
+import { axiosServerInstance } from '../App'
 import { useAuth } from '../hooks/useAuth'
-import { useSocket } from '../hooks/useSocket'
+import { MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
 import { Room, Message, MessageContentType, User } from '../types/prisma.client'
+import { Routes } from '../types/routes'
 
 export const MessageTilePopover = ({
     open,
@@ -14,24 +15,27 @@ export const MessageTilePopover = ({
     enableEditMode,
     contentType,
     senderUsername,
+    messageDispatcher,
 }: {
+    messageDispatcher: React.Dispatch<MessageListAction>
     open: boolean
     handleClose: () => void
     anchor: Element | null
     messageId: Message['roomId']
     roomId: Room['roomId']
-    // textEditModeEnabled: boolean
     enableEditMode: () => void
     contentType: Message['contentType']
     senderUsername: User['username']
 }) => {
-    const socket = useSocket()
-
     const {
-        authStatus: { username, isLoggedIn },
+        authStatus: { username },
     } = useAuth()
 
-    const handleMessageDelete = () => socket.emit('messageDeleted', messageId, roomId)
+    const handleMessageDelete = async () => {
+        const res = await axiosServerInstance.delete(Routes.delete.message + '/' + messageId)
+        if (res.status === 201) messageDispatcher({ type: MessageListActionType.remove, messageKey: messageId })
+        handleClose()
+    }
 
     const handleMessageForward = () => {}
 
@@ -72,9 +76,9 @@ export const MessageTilePopover = ({
                     </IconButton>
                 ) : null}
 
-                {/* <IconButton> */}
-                {/*     <ForwardRounded /> */}
-                {/* </IconButton> */}
+                <IconButton>
+                    <ForwardRounded />
+                </IconButton>
             </ButtonGroup>
         </Popover>
     )

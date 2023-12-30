@@ -173,6 +173,7 @@ export const MessageTile = (props: MessageTileProps) => {
 
             <MessageTilePopover
                 open={isPopoverOpen}
+                messageDispatcher={messageDispatcher}
                 handleClose={closePopover}
                 anchor={popoverAnchor}
                 messageId={messageKey}
