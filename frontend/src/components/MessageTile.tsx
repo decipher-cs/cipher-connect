@@ -39,15 +39,13 @@ import { MessageTilePopover } from './MessageTilePopover'
 import { StyledTextField } from './StyledTextField'
 
 export type MessageTileProps = {
-    autoScrollToBottomRef: React.RefObject<HTMLDivElement> | null
     message: Message
-    // senderUser: User
     roomType: RoomType
     users: RoomsState['usersInfo']
 }
 
 export const MessageTile = (props: MessageTileProps) => {
-    const { autoScrollToBottomRef, roomType, users, message } = props
+    const { roomType, users, message } = props
 
     const user = users[message.senderUsername]
 

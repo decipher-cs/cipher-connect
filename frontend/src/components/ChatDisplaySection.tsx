@@ -186,7 +186,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                     <Virtuoso
                         ref={virtuosoRef}
                         data={messages?.filter(msg => msg.roomId === currRoom.roomId)}
-                        followOutput={'auto'}
+                        followOutput={'smooth'}
                         overscan={10}
                         firstItemIndex={firstItemIndex}
                         startReached={() => {
@@ -206,7 +206,6 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                                     message={message}
                                     roomType={currRoom.roomType}
                                     users={users}
-                                    autoScrollToBottomRef={null}
                                 />
                             )
                         }}
