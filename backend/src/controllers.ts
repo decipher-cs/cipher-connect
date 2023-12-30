@@ -12,7 +12,7 @@ import {
     getMessageCount,
 } from './models/find.js'
 import { createGroup, createNewUser, createPrivateRoom } from './models/create.js'
-import { deleteRoom, deleteUserRoom } from './models/delete.js'
+import { deleteMessage, deleteRoom, deleteUserRoom } from './models/delete.js'
 import {
     updateMessageReadStatus,
     updateRoom,
@@ -465,6 +465,22 @@ export const handleTextMessageEdit = async (req: Request, res: Response) => {
     const updatedAt = await updateTextMessageContent(messageId, content)
 
     if (updatedAt !== null) {
+        res.sendStatus(201)
+        // io.in().emit
+    } else res.sendStatus(500)
+}
+
+export const handleMessageDelete = async (req: Request, res: Response) => {
+    const { messageId } = req.params
+
+    if (!messageId) {
+        res.sendStatus(400)
+        return
+    }
+
+    const deleteSuccessful = await deleteMessage(messageId)
+
+    if (deleteSuccessful) {
         res.sendStatus(201)
         // io.in().emit
     } else res.sendStatus(500)

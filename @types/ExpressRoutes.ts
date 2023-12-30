@@ -36,5 +36,6 @@ export const Routes = {
     delete: {
         userRoom: '/user-room',
         room: '/room',
+        message: '/message',
     },
 } as const
