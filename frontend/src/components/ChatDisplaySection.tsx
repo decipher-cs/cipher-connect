@@ -205,6 +205,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                                     message={message}
                                     roomType={currRoom.roomType}
                                     users={users}
+                                    messageDispatcher={messageDispatcher}
                                 />
                             )
                         }}
