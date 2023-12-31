@@ -29,7 +29,7 @@ export const updateUserRoom = async (
             | 'isNotificationMuted'
             | 'isAdmin'
             | 'isPinned'
-            | 'lastReadMessage'
+            | 'lastReadMessageId'
             | 'isMarkedFavourite'
             | 'joinedAt'
         >
@@ -78,7 +78,7 @@ export const updateRoomParticipants = async (roomId: Room['roomId'], participant
 
 export const updateMessageReadStatus = async (
     roomId: Room['roomId'],
-    lastReadMessage: UserRoom['lastReadMessage'],
+    lastReadMessageId: UserRoom['lastReadMessageId'],
     usernames?: User['username'][]
 ) => {
     await prisma.userRoom.updateMany({
@@ -86,8 +86,26 @@ export const updateMessageReadStatus = async (
             roomId,
             username: usernames ? { in: usernames } : undefined,
         },
-        data: { lastReadMessage },
+        data: { lastReadMessageId },
     })
+}
+
+export const updateUserLastReadMessage = async (
+    roomId: Room['roomId'],
+    username: User['username'],
+    lastReadMessageId: NonNullable<UserRoom['lastReadMessageId']>
+): Promise<Boolean | null> => {
+    try {
+        const userRoom = await prisma.userRoom.update({
+            where: { username_roomId: { roomId, username } },
+            data: {
+                lastReadMessageId,
+            },
+        })
+        return Boolean(userRoom)
+    } catch (error) {
+        return null
+    }
 }
 
 export const updateTextMessageContent = async (

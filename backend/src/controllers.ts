@@ -19,6 +19,7 @@ import {
     updateRoomParticipants,
     updateTextMessageContent,
     updateUser,
+    updateUserLastReadMessage,
     updateUserRoom,
 } from './models/update.js'
 import { error } from 'console'
@@ -481,6 +482,23 @@ export const handleMessageDelete = async (req: Request, res: Response) => {
     const deleteSuccessful = await deleteMessage(messageId)
 
     if (deleteSuccessful) {
+        res.sendStatus(201)
+        // io.in().emit
+    } else res.sendStatus(500)
+}
+
+export const handleUserLastReadMessage = async (req: Request, res: Response) => {
+    const { lastReadMessageId, roomId } = req.body
+    const username = req.session.username
+
+    if (!username || !roomId || !lastReadMessageId) {
+        res.sendStatus(400)
+        return
+    }
+
+    const updateSuccessful = await updateUserLastReadMessage(roomId, username, lastReadMessageId)
+
+    if (updateSuccessful) {
         res.sendStatus(201)
         // io.in().emit
     } else res.sendStatus(500)
