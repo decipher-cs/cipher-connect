@@ -117,6 +117,7 @@ Install my-project with yarn
 - [ ] Have a default room that every new user has. Make it a room with the developer and a greeting message.
 - [ ] Add option for ephemeral login which is deleted after some time. Or an option for tyring the app.
 - [ ] Microphone icon in fevicon should only appear while recording.
+- [ ] On smaller screens, combine tabs on sidebar and with room panel.
 
 ## License
 
