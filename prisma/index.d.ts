@@ -47,7 +47,7 @@ export type UserRoom = {
   joinedAt: Date
   isAdmin: boolean
   isBlocked: boolean
-  lastReadMessage: string | null
+  lastReadMessageId: string | null
   isHidden: boolean
   isNotificationMuted: boolean
   isMarkedFavourite: boolean
@@ -3140,7 +3140,7 @@ export namespace Prisma {
     joinedAt: Date | null
     isAdmin: boolean | null
     isBlocked: boolean | null
-    lastReadMessage: string | null
+    lastReadMessageId: string | null
     isHidden: boolean | null
     isNotificationMuted: boolean | null
     isMarkedFavourite: boolean | null
@@ -3153,7 +3153,7 @@ export namespace Prisma {
     joinedAt: Date | null
     isAdmin: boolean | null
     isBlocked: boolean | null
-    lastReadMessage: string | null
+    lastReadMessageId: string | null
     isHidden: boolean | null
     isNotificationMuted: boolean | null
     isMarkedFavourite: boolean | null
@@ -3166,7 +3166,7 @@ export namespace Prisma {
     joinedAt: number
     isAdmin: number
     isBlocked: number
-    lastReadMessage: number
+    lastReadMessageId: number
     isHidden: number
     isNotificationMuted: number
     isMarkedFavourite: number
@@ -3181,7 +3181,7 @@ export namespace Prisma {
     joinedAt?: true
     isAdmin?: true
     isBlocked?: true
-    lastReadMessage?: true
+    lastReadMessageId?: true
     isHidden?: true
     isNotificationMuted?: true
     isMarkedFavourite?: true
@@ -3194,7 +3194,7 @@ export namespace Prisma {
     joinedAt?: true
     isAdmin?: true
     isBlocked?: true
-    lastReadMessage?: true
+    lastReadMessageId?: true
     isHidden?: true
     isNotificationMuted?: true
     isMarkedFavourite?: true
@@ -3207,7 +3207,7 @@ export namespace Prisma {
     joinedAt?: true
     isAdmin?: true
     isBlocked?: true
-    lastReadMessage?: true
+    lastReadMessageId?: true
     isHidden?: true
     isNotificationMuted?: true
     isMarkedFavourite?: true
@@ -3294,7 +3294,7 @@ export namespace Prisma {
     joinedAt: Date
     isAdmin: boolean
     isBlocked: boolean
-    lastReadMessage: string | null
+    lastReadMessageId: string | null
     isHidden: boolean
     isNotificationMuted: boolean
     isMarkedFavourite: boolean
@@ -3324,7 +3324,7 @@ export namespace Prisma {
     joinedAt?: boolean
     isAdmin?: boolean
     isBlocked?: boolean
-    lastReadMessage?: boolean
+    lastReadMessageId?: boolean
     isHidden?: boolean
     isNotificationMuted?: boolean
     isMarkedFavourite?: boolean
@@ -6948,7 +6948,7 @@ export namespace Prisma {
     joinedAt: 'joinedAt',
     isAdmin: 'isAdmin',
     isBlocked: 'isBlocked',
-    lastReadMessage: 'lastReadMessage',
+    lastReadMessageId: 'lastReadMessageId',
     isHidden: 'isHidden',
     isNotificationMuted: 'isNotificationMuted',
     isMarkedFavourite: 'isMarkedFavourite',
@@ -7096,7 +7096,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFilter | Date | string
     isAdmin?: BoolFilter | boolean
     isBlocked?: BoolFilter | boolean
-    lastReadMessage?: StringNullableFilter | string | null
+    lastReadMessageId?: StringNullableFilter | string | null
     isHidden?: BoolFilter | boolean
     isNotificationMuted?: BoolFilter | boolean
     isMarkedFavourite?: BoolFilter | boolean
@@ -7111,7 +7111,7 @@ export namespace Prisma {
     joinedAt?: SortOrder
     isAdmin?: SortOrder
     isBlocked?: SortOrder
-    lastReadMessage?: SortOrder
+    lastReadMessageId?: SortOrder
     isHidden?: SortOrder
     isNotificationMuted?: SortOrder
     isMarkedFavourite?: SortOrder
@@ -7130,7 +7130,7 @@ export namespace Prisma {
     joinedAt?: SortOrder
     isAdmin?: SortOrder
     isBlocked?: SortOrder
-    lastReadMessage?: SortOrder
+    lastReadMessageId?: SortOrder
     isHidden?: SortOrder
     isNotificationMuted?: SortOrder
     isMarkedFavourite?: SortOrder
@@ -7149,7 +7149,7 @@ export namespace Prisma {
     joinedAt?: DateTimeWithAggregatesFilter | Date | string
     isAdmin?: BoolWithAggregatesFilter | boolean
     isBlocked?: BoolWithAggregatesFilter | boolean
-    lastReadMessage?: StringNullableWithAggregatesFilter | string | null
+    lastReadMessageId?: StringNullableWithAggregatesFilter | string | null
     isHidden?: BoolWithAggregatesFilter | boolean
     isNotificationMuted?: BoolWithAggregatesFilter | boolean
     isMarkedFavourite?: BoolWithAggregatesFilter | boolean
@@ -7463,7 +7463,7 @@ export namespace Prisma {
     joinedAt?: Date | string
     isAdmin?: boolean
     isBlocked?: boolean
-    lastReadMessage?: string | null
+    lastReadMessageId?: string | null
     isHidden?: boolean
     isNotificationMuted?: boolean
     isMarkedFavourite?: boolean
@@ -7478,7 +7478,7 @@ export namespace Prisma {
     joinedAt?: Date | string
     isAdmin?: boolean
     isBlocked?: boolean
-    lastReadMessage?: string | null
+    lastReadMessageId?: string | null
     isHidden?: boolean
     isNotificationMuted?: boolean
     isMarkedFavourite?: boolean
@@ -7489,7 +7489,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     isBlocked?: BoolFieldUpdateOperationsInput | boolean
-    lastReadMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReadMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     isHidden?: BoolFieldUpdateOperationsInput | boolean
     isNotificationMuted?: BoolFieldUpdateOperationsInput | boolean
     isMarkedFavourite?: BoolFieldUpdateOperationsInput | boolean
@@ -7504,7 +7504,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     isBlocked?: BoolFieldUpdateOperationsInput | boolean
-    lastReadMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReadMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     isHidden?: BoolFieldUpdateOperationsInput | boolean
     isNotificationMuted?: BoolFieldUpdateOperationsInput | boolean
     isMarkedFavourite?: BoolFieldUpdateOperationsInput | boolean
@@ -7517,7 +7517,7 @@ export namespace Prisma {
     joinedAt?: Date | string
     isAdmin?: boolean
     isBlocked?: boolean
-    lastReadMessage?: string | null
+    lastReadMessageId?: string | null
     isHidden?: boolean
     isNotificationMuted?: boolean
     isMarkedFavourite?: boolean
@@ -7528,7 +7528,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     isBlocked?: BoolFieldUpdateOperationsInput | boolean
-    lastReadMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReadMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     isHidden?: BoolFieldUpdateOperationsInput | boolean
     isNotificationMuted?: BoolFieldUpdateOperationsInput | boolean
     isMarkedFavourite?: BoolFieldUpdateOperationsInput | boolean
@@ -7541,7 +7541,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     isBlocked?: BoolFieldUpdateOperationsInput | boolean
-    lastReadMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReadMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     isHidden?: BoolFieldUpdateOperationsInput | boolean
     isNotificationMuted?: BoolFieldUpdateOperationsInput | boolean
     isMarkedFavourite?: BoolFieldUpdateOperationsInput | boolean
@@ -7974,7 +7974,7 @@ export namespace Prisma {
     joinedAt?: SortOrder
     isAdmin?: SortOrder
     isBlocked?: SortOrder
-    lastReadMessage?: SortOrder
+    lastReadMessageId?: SortOrder
     isHidden?: SortOrder
     isNotificationMuted?: SortOrder
     isMarkedFavourite?: SortOrder
@@ -7987,7 +7987,7 @@ export namespace Prisma {
     joinedAt?: SortOrder
     isAdmin?: SortOrder
     isBlocked?: SortOrder
-    lastReadMessage?: SortOrder
+    lastReadMessageId?: SortOrder
     isHidden?: SortOrder
     isNotificationMuted?: SortOrder
     isMarkedFavourite?: SortOrder
@@ -8000,7 +8000,7 @@ export namespace Prisma {
     joinedAt?: SortOrder
     isAdmin?: SortOrder
     isBlocked?: SortOrder
-    lastReadMessage?: SortOrder
+    lastReadMessageId?: SortOrder
     isHidden?: SortOrder
     isNotificationMuted?: SortOrder
     isMarkedFavourite?: SortOrder
@@ -8814,7 +8814,7 @@ export namespace Prisma {
     joinedAt?: Date | string
     isAdmin?: boolean
     isBlocked?: boolean
-    lastReadMessage?: string | null
+    lastReadMessageId?: string | null
     isHidden?: boolean
     isNotificationMuted?: boolean
     isMarkedFavourite?: boolean
@@ -8827,7 +8827,7 @@ export namespace Prisma {
     joinedAt?: Date | string
     isAdmin?: boolean
     isBlocked?: boolean
-    lastReadMessage?: string | null
+    lastReadMessageId?: string | null
     isHidden?: boolean
     isNotificationMuted?: boolean
     isMarkedFavourite?: boolean
@@ -8949,7 +8949,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFilter | Date | string
     isAdmin?: BoolFilter | boolean
     isBlocked?: BoolFilter | boolean
-    lastReadMessage?: StringNullableFilter | string | null
+    lastReadMessageId?: StringNullableFilter | string | null
     isHidden?: BoolFilter | boolean
     isNotificationMuted?: BoolFilter | boolean
     isMarkedFavourite?: BoolFilter | boolean
@@ -9042,7 +9042,7 @@ export namespace Prisma {
     joinedAt?: Date | string
     isAdmin?: boolean
     isBlocked?: boolean
-    lastReadMessage?: string | null
+    lastReadMessageId?: string | null
     isHidden?: boolean
     isNotificationMuted?: boolean
     isMarkedFavourite?: boolean
@@ -9055,7 +9055,7 @@ export namespace Prisma {
     joinedAt?: Date | string
     isAdmin?: boolean
     isBlocked?: boolean
-    lastReadMessage?: string | null
+    lastReadMessageId?: string | null
     isHidden?: boolean
     isNotificationMuted?: boolean
     isMarkedFavourite?: boolean
@@ -9556,7 +9556,7 @@ export namespace Prisma {
     joinedAt?: Date | string
     isAdmin?: boolean
     isBlocked?: boolean
-    lastReadMessage?: string | null
+    lastReadMessageId?: string | null
     isHidden?: boolean
     isNotificationMuted?: boolean
     isMarkedFavourite?: boolean
@@ -9602,7 +9602,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     isBlocked?: BoolFieldUpdateOperationsInput | boolean
-    lastReadMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReadMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     isHidden?: BoolFieldUpdateOperationsInput | boolean
     isNotificationMuted?: BoolFieldUpdateOperationsInput | boolean
     isMarkedFavourite?: BoolFieldUpdateOperationsInput | boolean
@@ -9615,7 +9615,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     isBlocked?: BoolFieldUpdateOperationsInput | boolean
-    lastReadMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReadMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     isHidden?: BoolFieldUpdateOperationsInput | boolean
     isNotificationMuted?: BoolFieldUpdateOperationsInput | boolean
     isMarkedFavourite?: BoolFieldUpdateOperationsInput | boolean
@@ -9627,7 +9627,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     isBlocked?: BoolFieldUpdateOperationsInput | boolean
-    lastReadMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReadMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     isHidden?: BoolFieldUpdateOperationsInput | boolean
     isNotificationMuted?: BoolFieldUpdateOperationsInput | boolean
     isMarkedFavourite?: BoolFieldUpdateOperationsInput | boolean
@@ -9699,7 +9699,7 @@ export namespace Prisma {
     joinedAt?: Date | string
     isAdmin?: boolean
     isBlocked?: boolean
-    lastReadMessage?: string | null
+    lastReadMessageId?: string | null
     isHidden?: boolean
     isNotificationMuted?: boolean
     isMarkedFavourite?: boolean
@@ -9736,7 +9736,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     isBlocked?: BoolFieldUpdateOperationsInput | boolean
-    lastReadMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReadMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     isHidden?: BoolFieldUpdateOperationsInput | boolean
     isNotificationMuted?: BoolFieldUpdateOperationsInput | boolean
     isMarkedFavourite?: BoolFieldUpdateOperationsInput | boolean
@@ -9749,7 +9749,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     isBlocked?: BoolFieldUpdateOperationsInput | boolean
-    lastReadMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReadMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     isHidden?: BoolFieldUpdateOperationsInput | boolean
     isNotificationMuted?: BoolFieldUpdateOperationsInput | boolean
     isMarkedFavourite?: BoolFieldUpdateOperationsInput | boolean

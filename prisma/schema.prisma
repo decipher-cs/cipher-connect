@@ -61,10 +61,10 @@ model UserRoom {
   username String
   roomId   String
 
-  joinedAt        DateTime @default(now())
-  isAdmin         Boolean  @default(false)
-  isBlocked       Boolean  @default(false)
-  lastReadMessage String?
+  joinedAt          DateTime @default(now())
+  isAdmin           Boolean  @default(false)
+  isBlocked         Boolean  @default(false)
+  lastReadMessageId String?
 
   isHidden            Boolean @default(false)
   isNotificationMuted Boolean @default(false)

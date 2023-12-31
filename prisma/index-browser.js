@@ -137,7 +137,7 @@ exports.Prisma.UserRoomScalarFieldEnum = {
   joinedAt: 'joinedAt',
   isAdmin: 'isAdmin',
   isBlocked: 'isBlocked',
-  lastReadMessage: 'lastReadMessage',
+  lastReadMessageId: 'lastReadMessageId',
   isHidden: 'isHidden',
   isNotificationMuted: 'isNotificationMuted',
   isMarkedFavourite: 'isMarkedFavourite',
