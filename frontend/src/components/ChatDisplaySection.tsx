@@ -24,16 +24,16 @@ export interface ChatDisplaySectionProps {
     currRoom: RoomsState['joinedRooms'][0]
     toggleRoomInfoSidebar: () => void
     users: RoomsState['usersInfo']
+    messages: Message[]
+    messageDispatcher: React.Dispatch<MessageListAction>
 }
 
 export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
-    const { currRoom, users, toggleRoomInfoSidebar } = props
+    const { currRoom, users, toggleRoomInfoSidebar, messageDispatcher, messages } = props
 
     const {
         authStatus: { username },
     } = useAuth()
-
-    const [messages, messageDispatcher] = useReducer(messageListReducer, [])
 
     const socket = useSocket()
 
@@ -158,7 +158,10 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     useEffect(() => {
         socket.on('textMessageUpdated', (key, content, roomId, editedAt) => {
             if (roomId === currRoom.roomId) {
-                messageDispatcher({ type: MessageListActionType.edit, updatedMessage: { content, key, editedAt } })
+                messageDispatcher({
+                    type: MessageListActionType.edit,
+                    updatedMessage: { content, key, editedAt, deliveryStatus: 'delivered' },
+                })
             }
         })
 
@@ -188,6 +191,12 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                         followOutput={'smooth'}
                         overscan={10}
                         firstItemIndex={firstItemIndex}
+                        endReached={() => {
+                            axiosServerInstance.put(Routes.put.lastReadMessage, {
+                                lastReadMessageId: messages[messages.length - 1].key,
+                                roomId: currRoom.roomId,
+                            })
+                        }}
                         startReached={() => {
                             if (!hasNextPage) return
                             fetchNextPage()

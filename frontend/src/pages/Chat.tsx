@@ -12,6 +12,7 @@ import { Navigate } from 'react-router-dom'
 import { axiosServerInstance } from '../App'
 import { Routes } from '../types/routes'
 import { RoomDetails } from '../types/prisma.client'
+import { messageListReducer } from '../reducer/messageListReducer'
 
 export const Chat = () => {
     const socket = useSocket()
@@ -23,6 +24,8 @@ export const Chat = () => {
     const { dialogOpen: roomInfoSidebarOpen, handleToggle: toggleRoomInfoSidebar } = useDialog()
 
     const [rooms, roomDispatcher] = useReducer(roomReducer, { selectedRoomIndex: null, joinedRooms: [], usersInfo: {} })
+
+    const [messages, messageDispatcher] = useReducer(messageListReducer, [])
 
     // TODO: better typingn for tab strings
     const [selectedTab, setSelectedTab] = useState<'messages' | 'favourates' | 'settings'>('messages')
@@ -116,6 +119,8 @@ export const Chat = () => {
                                 currRoom={rooms.joinedRooms[rooms.selectedRoomIndex]}
                                 toggleRoomInfoSidebar={toggleRoomInfoSidebar}
                                 users={rooms.usersInfo}
+                                messages={messages}
+                                messageDispatcher={messageListReducer}
                             />
                         </Box>
                         <Collapse

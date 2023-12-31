@@ -180,15 +180,6 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
     //         socket.removeListener('notification')
     //     }
     // }, [rooms.selectedRoom])
-    //
-    // useEffect(() => {
-    //     socket.on('newRoomCreated', async roomId => {
-    //         syncRoomsWithServer()
-    //     })
-    //     return () => {
-    //         socket.removeListener('newRoomCreated')
-    //     }
-    // }, [])
 
     if (roomFetchStatus === 'error') return <BrokenImageRounded sx={{ justifySelf: 'center', mt: '100%' }} />
 
