@@ -1,4 +1,4 @@
-import { Message } from '@prisma/client'
+import { Message, UserMessage } from '@prisma/client'
 import { prisma } from '../server.js'
 import { User } from '../types.js'
 
@@ -74,4 +74,18 @@ export const createGroup = async (usernames: User['username'][], roomDisplayName
 
 export const addMessageToDB = async (message: Message) => {
     return await prisma.message.create({ data: message })
+}
+
+export const createUserMessage = async (
+    username: User['username'],
+    messageKey: Message['key'],
+    userMessageDefaults?: Partial<Omit<UserMessage, 'username' | 'messageKey'>>
+) => {
+    return await prisma.userMessage.create({
+        data: {
+            message: { connect: { senderUsername_key: { key: messageKey, senderUsername: username } } },
+            user: { connect: { username } },
+            ...userMessageDefaults,
+        },
+    })
 }

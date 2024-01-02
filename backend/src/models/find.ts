@@ -1,6 +1,6 @@
-import { Message, Room, UserRoom } from '@prisma/client'
+import { Message, Room, UserMessage, UserRoom } from '@prisma/client'
 import { prisma } from '../server.js'
-import { RoomDetails, User } from '../types.js'
+import { MessageWithOptions, RoomDetails, User } from '../types.js'
 
 export const getUser = async (username: string): Promise<User | null> => {
     try {
@@ -116,21 +116,49 @@ export const getRoomPariticpantsUsernames = async (roomId: string): Promise<User
 
 export const getMessagesFromRoom = async (
     roomId: string,
+    username: User['username'],
     cursor?: string,
     take?: number
 ): Promise<Message[] | null> => {
     try {
         const messages = await prisma.message.findMany({
             where: { roomId },
-            orderBy: {
-                createdAt: 'desc',
+            orderBy: { createdAt: 'desc' },
+            include: {
+                userMessage: {
+                    where: { AND: [{ username }] },
+                },
             },
+
             cursor: cursor ? { key: cursor } : undefined,
             take,
             skip: cursor ? 1 : 0,
         })
 
-        return messages.reverse()
+        const userMessages = await prisma.userMessage.findMany({
+            where: { AND: [{ username }], OR: messages.map(msg => ({ messageKey: msg.key })) },
+        })
+
+        return messages.map(message => {
+            let messageOptions = userMessages.find(userMsg => {
+                userMsg.messageKey === message.key
+            })
+
+            if (!messageOptions)
+                messageOptions = {
+                    messageKey: message.key,
+                    username: message.senderUsername,
+                    isHidden: false,
+                    isNotificationMuted: false,
+                    isMarkedFavourite: false,
+                    isPinned: false,
+                }
+
+            return {
+                ...message,
+                messageOptions,
+            } satisfies MessageWithOptions
+        }) satisfies MessageWithOptions[]
     } catch (error) {
         return null
     }

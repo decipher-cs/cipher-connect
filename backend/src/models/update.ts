@@ -1,4 +1,4 @@
-import { Message, Room, UserRoom } from '@prisma/client'
+import { Message, Room, UserMessage, UserRoom } from '@prisma/client'
 import { prisma } from '../server.js'
 import { User } from '../types.js'
 
@@ -124,4 +124,20 @@ export const updateTextMessageContent = async (
         if ('code' in err && err?.code === 'P2025') return null
         return null
     }
+}
+
+export const upsertUserMessage = async (
+    username: User['username'],
+    messageKey: Message['key'],
+    userMessage?: Partial<Omit<UserMessage, 'username' | 'messageKey'>>
+) => {
+    return await prisma.userMessage.upsert({
+        where: { username_messageKey: { username, messageKey } },
+        update: { ...userMessage },
+        create: {
+            message: { connect: { senderUsername_key: { key: messageKey, senderUsername: username } } },
+            user: { connect: { username } },
+            ...userMessage,
+        },
+    })
 }
