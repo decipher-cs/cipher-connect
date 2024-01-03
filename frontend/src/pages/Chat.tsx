@@ -12,7 +12,7 @@ import { Navigate } from 'react-router-dom'
 import { axiosServerInstance } from '../App'
 import { Routes } from '../types/routes'
 import { RoomDetails } from '../types/prisma.client'
-import { messageListReducer } from '../reducer/messageListReducer'
+import { MessageListActionType, messageListReducer } from '../reducer/messageListReducer'
 
 export const Chat = () => {
     const socket = useSocket()
@@ -25,12 +25,39 @@ export const Chat = () => {
 
     const [rooms, roomDispatcher] = useReducer(roomReducer, { selectedRoomIndex: null, joinedRooms: [], usersInfo: {} })
 
-    const [messages, messageDispatcher] = useReducer(messageListReducer, [])
+    const [everyRoomMessage, messageDispatcher] = useReducer(messageListReducer, {})
 
     // TODO: better typingn for tab strings
     const [selectedTab, setSelectedTab] = useState<'messages' | 'favourates' | 'settings'>('messages')
 
     const handleTabChange = (newTab: 'messages' | 'favourates' | 'settings') => setSelectedTab(newTab)
+
+    useEffect(() => {
+        socket.on('message', (message, cb) => {
+            messageDispatcher({
+                type: MessageListActionType.append,
+                roomId: message.roomId,
+                newMessage: [
+                    {
+                        ...message,
+                        deliveryStatus: 'delivered',
+                        messageOptions: {
+                            messageKey: message.key,
+                            username: message.senderUsername,
+                            isHidden: false,
+                            isNotificationMuted: false,
+                            isMarkedFavourite: false,
+                            isPinned: false,
+                        },
+                    },
+                ],
+            })
+        })
+
+        return () => {
+            socket.removeListener('message')
+        }
+    }, [])
 
     useEffect(() => {
         socket.on('userLeftRoom', (staleUsername, roomId) => {
@@ -64,6 +91,10 @@ export const Chat = () => {
         }
     }, [])
 
+    const selectedRoom = rooms.selectedRoomIndex !== null ? rooms.joinedRooms[rooms.selectedRoomIndex] : null
+
+    const message = selectedRoom ? everyRoomMessage[selectedRoom.roomId] : null
+
     if (!isLoggedIn || !username) return <Navigate to='/login' />
 
     return (
@@ -90,10 +121,16 @@ export const Chat = () => {
                         backgroundColor: theme => theme.palette.background.light,
                     }}
                 >
-                    <RoomListSidebar rooms={rooms} roomDispatcher={roomDispatcher} selectedTab={selectedTab} />
+                    <RoomListSidebar
+                        messages={everyRoomMessage}
+                        rooms={rooms}
+                        roomDispatcher={roomDispatcher}
+                        selectedTab={selectedTab}
+                        messageDispatcher={messageDispatcher}
+                    />
                 </Box>
 
-                {rooms.selectedRoomIndex === null || !rooms.joinedRooms[rooms.selectedRoomIndex] ? (
+                {!selectedRoom || !message ? (
                     <Box sx={{ display: 'grid', flex: 1, placeContent: 'center' }}>
                         <Typography variant='h6' align='center'>
                             Join A Room To See The Chat
@@ -116,11 +153,11 @@ export const Chat = () => {
                             }}
                         >
                             <ChatDisplaySection
-                                currRoom={rooms.joinedRooms[rooms.selectedRoomIndex]}
+                                currRoom={selectedRoom}
                                 toggleRoomInfoSidebar={toggleRoomInfoSidebar}
                                 users={rooms.usersInfo}
-                                messages={messages}
-                                messageDispatcher={messageListReducer}
+                                messages={message}
+                                messageDispatcher={messageDispatcher}
                             />
                         </Box>
                         <Collapse
@@ -130,7 +167,7 @@ export const Chat = () => {
                             component={Box}
                         >
                             <RoomInfo
-                                room={rooms.joinedRooms[rooms.selectedRoomIndex]}
+                                room={selectedRoom}
                                 handleToggleRoomInfoSidebar={toggleRoomInfoSidebar}
                                 roomDispatcher={roomDispatcher}
                             />

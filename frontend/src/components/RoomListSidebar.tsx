@@ -43,9 +43,17 @@ interface RoomListSidebar {
     roomDispatcher: React.Dispatch<RoomActions>
     rooms: RoomsState
     selectedTab: 'messages' | 'favourates' | 'settings'
+    messageDispatcher: React.Dispatch<MessageListAction>
+    messages: EveryRoomMessage
 }
 
-export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomListSidebar) => {
+export const RoomListSidebar = ({
+    messages,
+    messageDispatcher,
+    rooms,
+    roomDispatcher,
+    selectedTab,
+}: RoomListSidebar) => {
     const { handleClose, handleOpen, dialogOpen } = useDialog()
 
     const {
@@ -67,6 +75,27 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
             return response.data
         },
     })
+
+    useEffect(() => {
+        if (roomFetchStatus !== 'success') return
+        for (const room of fetchedRooms) {
+            axiosServerInstance
+                .get<MessageWithOptions[]>(Routes.get.messages + `/${room.roomId}?messageQuantity=${1}`)
+                .then(res => {
+                    messageDispatcher({
+                        type: MessageListActionType.initializeMessages,
+                        roomId: room.roomId,
+                        newMessages: res.data.map(msg => {
+                            return { ...msg, deliveryStatus: 'delivered' } satisfies Message
+                        }),
+                    })
+                    return res.data
+                })
+                .catch(err => {
+                    console.log('err', err)
+                })
+        }
+    }, [fetchedRooms])
 
     useEffect(() => {
         if (!fetchedRooms) return
@@ -241,6 +270,9 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
                                 <span>pinned rooms</span>
                             </ListSubheader>
                             {rooms.joinedRooms.map((room, i) => {
+                                const roomId = room.roomId
+                                const roomMessages = messages[roomId] ?? []
+                                const mostRecentMessage = roomMessages.at(-1)?.content ?? 'Example-Message'
                                 if (room.isPinned)
                                     return (
                                         <RoomListItem
@@ -251,6 +283,7 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
                                             room={room}
                                             roomDispatcher={roomDispatcher}
                                             mutateMessageReadStatus={mutateMessageReadStatus}
+                                            mostRecentMessage={mostRecentMessage}
                                         />
                                     )
                             })}
@@ -264,6 +297,10 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
                                 All Rooms
                             </ListSubheader>
                             {queryMetchedRooms.map((room, i) => {
+                                const roomId = room.roomId
+                                const roomMessages = messages[roomId] ?? []
+                                const mostRecentMessage = roomMessages.at(-1)?.content ?? 'Example-Message'
+
                                 return (
                                     <RoomListItem
                                         key={room.roomId}
@@ -273,6 +310,7 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
                                         usersInfo={rooms.usersInfo}
                                         roomDispatcher={roomDispatcher}
                                         mutateMessageReadStatus={mutateMessageReadStatus}
+                                        mostRecentMessage={mostRecentMessage}
                                     />
                                 )
                             })}
@@ -286,6 +324,10 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
                                 Bookmarked Rooms
                             </ListSubheader>
                             {rooms.joinedRooms.map((room, i) => {
+                                const roomId = room.roomId
+                                const roomMessages = messages[roomId] ?? []
+                                const mostRecentMessage = roomMessages.at(-1)?.content ?? 'Example-Message'
+
                                 if (room.isMarkedFavourite && !room.isPinned)
                                     return (
                                         <RoomListItem
@@ -296,6 +338,7 @@ export const RoomListSidebar = ({ rooms, roomDispatcher, selectedTab }: RoomList
                                             roomDispatcher={roomDispatcher}
                                             usersInfo={rooms.usersInfo}
                                             mutateMessageReadStatus={mutateMessageReadStatus}
+                                            mostRecentMessage={mostRecentMessage}
                                         />
                                     )
                             })}
