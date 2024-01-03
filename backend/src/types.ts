@@ -1,6 +1,8 @@
-import { Room, User as UserInDb, Message } from '@prisma/client'
+import { Room, User as UserInDb, Message, UserMessage } from '@prisma/client'
 
 // export * from '../../@types/socket.js'
+
+export type MessageWithOptions = Message & { messageOptions: UserMessage }
 
 export * from '../../@types/commonTypes.js'
 
