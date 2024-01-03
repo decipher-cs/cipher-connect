@@ -1,4 +1,4 @@
-import { Room, UserRoom } from '../types/prisma.client'
+import { MessageContentType, Room, UserRoom } from '../types/prisma.client'
 import { User, RoomDetails } from '../types/prisma.client'
 
 export type RoomsState = {
@@ -147,8 +147,9 @@ export const roomReducer: React.Reducer<RoomsState, RoomActions> = (state, actio
         }
         case RoomActionType.addParticipantsToRoom: {
             joinedRooms.forEach((room, i) => {
-                if (room.roomId === action.roomId) {
-                    joinedRooms[i].participants = [...room.participants, ...action.participants]
+                const obj = joinedRooms[i]
+                if (room.roomId === action.roomId && obj) {
+                    obj.participants = [...room.participants, ...action.participants]
                 }
             })
             return { ...state, joinedRooms } satisfies RoomsState
