@@ -90,20 +90,7 @@ export const messageListReducer: React.Reducer<EveryRoomMessage, MessageListActi
 
         case MessageListActionType.remove:
             return produce(messages, draft => {
-                draft[action.roomId]?.forEach((message, i) => {
-                    if (message.key === action.messageKey) {
-                        if (message.messageOptions) message.messageOptions.isHidden = true
-                        else
-                            message.messageOptions = {
-                                messageKey: message.key,
-                                username: message.senderUsername,
-                                isHidden: true,
-                                isNotificationMuted: false,
-                                isMarkedFavourite: false,
-                                isPinned: false,
-                            }
-                    }
-                })
+                draft[action.roomId] = draft[action.roomId]?.filter(message => message.key !== action.messageKey) ?? []
             })
 
         case MessageListActionType.editConfig:
