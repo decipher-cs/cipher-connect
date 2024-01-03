@@ -24,7 +24,6 @@ Table Room {
   message Message [not null]
   userRoom UserRoom [not null]
   user User [not null]
-  UserMessage UserMessage [not null]
 }
 
 Table UserRoom {
@@ -33,7 +32,7 @@ Table UserRoom {
   joinedAt DateTime [default: `now()`, not null]
   isAdmin Boolean [not null, default: false]
   isBlocked Boolean [not null, default: false]
-  lastReadMessage String
+  lastReadMessageId String
   isHidden Boolean [not null, default: false]
   isNotificationMuted Boolean [not null, default: false]
   isMarkedFavourite Boolean [not null, default: false]
@@ -56,20 +55,25 @@ Table Message {
   contentType MessageContentType [not null]
   sender User [not null]
   room Room [not null]
+  userMessage UserMessage [not null]
+
+  indexes {
+    (senderUsername, key) [unique]
+  }
 }
 
 Table UserMessage {
+  messageKey String [not null]
   username String [not null]
-  roomId String [not null]
   isHidden Boolean [not null, default: false]
   isNotificationMuted Boolean [not null, default: false]
   isMarkedFavourite Boolean [not null, default: false]
   isPinned Boolean [not null, default: false]
   user User [not null]
-  room Room [not null]
+  message Message [not null]
 
   indexes {
-    (username, roomId) [pk]
+    (username, messageKey) [pk]
   }
 }
 
@@ -109,4 +113,4 @@ Ref: Message.roomId > Room.roomId [delete: Cascade]
 
 Ref: UserMessage.username > User.username [delete: Cascade]
 
-Ref: UserMessage.roomId > Room.roomId [delete: Cascade]
+Ref: UserMessage.messageKey > Message.key

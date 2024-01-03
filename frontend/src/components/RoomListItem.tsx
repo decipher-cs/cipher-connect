@@ -76,7 +76,7 @@ export const RoomListItem = memo((props: RoomListItemProps) => {
             </ListItem>
 
             <Typography variant='caption' color={'grey'} textOverflow='clip' noWrap>
-                {props.mostRecentMessage}
+                {props.mostRecentMessage.slice(0, 10)}
             </Typography>
             {/* {props.room.hasUnreadMessages === true && props.room.isNotificationMuted === false ? ( */}
             {/*     <MarkUnreadChatAltIcon /> */}
