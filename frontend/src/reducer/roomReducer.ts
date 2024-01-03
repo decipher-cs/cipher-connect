@@ -1,3 +1,4 @@
+import { produce } from 'immer'
 import { MessageContentType, Room, UserRoom } from '../types/prisma.client'
 import { User, RoomDetails } from '../types/prisma.client'
 
@@ -146,13 +147,13 @@ export const roomReducer: React.Reducer<RoomsState, RoomActions> = (state, actio
             return state satisfies RoomsState
         }
         case RoomActionType.addParticipantsToRoom: {
-            joinedRooms.forEach((room, i) => {
-                const obj = joinedRooms[i]
-                if (room.roomId === action.roomId && obj) {
-                    obj.participants = [...room.participants, ...action.participants]
-                }
+            return produce(state, draft => {
+                draft.joinedRooms.forEach(room => {
+                    if (room.roomId === action.roomId) {
+                        room.participants.push(...action.participants)
+                    }
+                })
             })
-            return { ...state, joinedRooms } satisfies RoomsState
         }
 
         case RoomActionType.changeSelectedRoom: {
@@ -195,33 +196,7 @@ export const roomReducer: React.Reducer<RoomsState, RoomActions> = (state, actio
             return { ...state, usersInfo: { ...usersInfo, [username]: user } } satisfies RoomsState
         }
 
-        /* // case RoomActionType.changeNotificationStatus:
-        // if (selectedRoom !== null && selectedRoom.roomId === action.roomId) {
-        //     selectedRoom.hasUnreadMessages = action.unreadMessages
-        // }
-        // room.joinedRooms.forEach(room => {
-        // if (room.roomId === action.roomId) room.hasUnreadMessages = action.unreadMessages
-        // })
-        // break
-
-        case RoomActionType.alterRoomProperties:
-            if (!room.selectedRoom) break
-            room.joinedRooms[room.selectedRoom] = {
-                ...room.joinedRooms[room.selectedRoom],
-                ...action.newRoomProperties,
-            }
-            break
-
-        case RoomActionType.changeRoomConfig:
-            room.joinedRooms.forEach((roomDetail, i) => {
-                if (roomDetail.roomId === action.roomId && action.newConfig.isNotificationMuted !== undefined) {
-                    room.joinedRooms[i] = { ...roomDetail, isNotificationMuted: action.newConfig.isNotificationMuted }
-                }
-            })
-            break */
-
         default:
             throw new Error('Switch found a default case white reducing rooms. See roomReducer.')
     }
-    return state
 }
