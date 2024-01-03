@@ -127,8 +127,14 @@ export const messageListReducer: React.Reducer<EveryRoomMessage, MessageListActi
 
         case MessageListActionType.edit:
             return produce(messages, draft => {
-                draft[action.roomId]?.forEach(message => {
-                    if (message.key === action.updatedMessage.key) message = { ...message, ...action.updatedMessage }
+                draft[action.roomId]?.forEach((message, i) => {
+                    if (message.key === action.updatedMessage.key) {
+                        const { editedAt, content, deliveryStatus } = action.updatedMessage
+                        // message = { ...message, editedAt, content, deliveryStatus }
+                        message.content = content
+                        message.editedAt = editedAt
+                        message.deliveryStatus = deliveryStatus
+                    }
                 })
             })
 
