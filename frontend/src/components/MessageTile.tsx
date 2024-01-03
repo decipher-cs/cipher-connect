@@ -81,6 +81,8 @@ export const MessageTile = (props: MessageTileProps) => {
 
     const [textEditModeEnabled, setTextEditMode] = useState(false)
 
+    if (message.messageOptions?.isHidden) return null
+
     if (!content) return null
 
     return (
