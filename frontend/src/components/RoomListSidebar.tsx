@@ -264,85 +264,91 @@ export const RoomListSidebar = ({
             ) : (
                 <>
                     {selectedTab !== 'settings' ? (
-                        <List sx={{ overflowY: 'auto', mb: 3 }}>
+                        <>
                             <ListSubheader sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <PushPinRounded fontSize='inherit' />
                                 <span>pinned rooms</span>
                             </ListSubheader>
-                            {rooms.joinedRooms.map((room, i) => {
-                                const roomId = room.roomId
-                                const roomMessages = messages[roomId] ?? []
-                                const mostRecentMessage = roomMessages.at(-1)?.content ?? 'Example-Message'
-                                if (room.isPinned)
-                                    return (
-                                        <RoomListItem
-                                            key={room.roomId}
-                                            thisRoomIndex={i}
-                                            selectedRoomIndex={rooms.selectedRoomIndex}
-                                            usersInfo={rooms.usersInfo}
-                                            room={room}
-                                            roomDispatcher={roomDispatcher}
-                                            mutateMessageReadStatus={mutateMessageReadStatus}
-                                            mostRecentMessage={mostRecentMessage}
-                                        />
-                                    )
-                            })}
-                        </List>
+                            <List sx={{ overflowY: 'auto', mb: 3 }}>
+                                {rooms.joinedRooms.map((room, i) => {
+                                    const roomId = room.roomId
+                                    const roomMessages = messages[roomId] ?? []
+                                    const mostRecentMessage = roomMessages.at(-1)?.content ?? 'Example-Message'
+                                    if (room.isPinned)
+                                        return (
+                                            <RoomListItem
+                                                key={room.roomId}
+                                                thisRoomIndex={i}
+                                                selectedRoomIndex={rooms.selectedRoomIndex}
+                                                usersInfo={rooms.usersInfo}
+                                                room={room}
+                                                roomDispatcher={roomDispatcher}
+                                                mutateMessageReadStatus={mutateMessageReadStatus}
+                                                mostRecentMessage={mostRecentMessage}
+                                            />
+                                        )
+                                })}
+                            </List>
+                        </>
                     ) : null}
 
                     {selectedTab === 'messages' && (
-                        <List sx={{ overflowY: 'auto' }}>
+                        <>
                             <ListSubheader sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <ChatBubbleRounded fontSize='inherit' sx={{ mr: 1 }} />
                                 All Rooms
                             </ListSubheader>
-                            {queryMetchedRooms.map((room, i) => {
-                                const roomId = room.roomId
-                                const roomMessages = messages[roomId] ?? []
-                                const mostRecentMessage = roomMessages.at(-1)?.content ?? 'Example-Message'
+                            <List sx={{ overflowY: 'auto' }}>
+                                {queryMetchedRooms.map((room, i) => {
+                                    const roomId = room.roomId
+                                    const roomMessages = messages[roomId] ?? []
+                                    const mostRecentMessage = roomMessages.at(-1)?.content ?? 'Example-Message'
 
-                                return (
-                                    <RoomListItem
-                                        key={room.roomId}
-                                        thisRoomIndex={i}
-                                        selectedRoomIndex={rooms.selectedRoomIndex}
-                                        room={room}
-                                        usersInfo={rooms.usersInfo}
-                                        roomDispatcher={roomDispatcher}
-                                        mutateMessageReadStatus={mutateMessageReadStatus}
-                                        mostRecentMessage={mostRecentMessage}
-                                    />
-                                )
-                            })}
-                        </List>
-                    )}
-
-                    {selectedTab === 'favourates' && (
-                        <List sx={{ overflowY: 'auto' }}>
-                            <ListSubheader sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <TryRounded fontSize='inherit' sx={{ mr: 1 }} />
-                                Bookmarked Rooms
-                            </ListSubheader>
-                            {rooms.joinedRooms.map((room, i) => {
-                                const roomId = room.roomId
-                                const roomMessages = messages[roomId] ?? []
-                                const mostRecentMessage = roomMessages.at(-1)?.content ?? 'Example-Message'
-
-                                if (room.isMarkedFavourite && !room.isPinned)
                                     return (
                                         <RoomListItem
                                             key={room.roomId}
                                             thisRoomIndex={i}
                                             selectedRoomIndex={rooms.selectedRoomIndex}
                                             room={room}
-                                            roomDispatcher={roomDispatcher}
                                             usersInfo={rooms.usersInfo}
+                                            roomDispatcher={roomDispatcher}
                                             mutateMessageReadStatus={mutateMessageReadStatus}
                                             mostRecentMessage={mostRecentMessage}
                                         />
                                     )
-                            })}
-                        </List>
+                                })}
+                            </List>
+                        </>
+                    )}
+
+                    {selectedTab === 'favourates' && (
+                        <>
+                            <ListSubheader sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <TryRounded fontSize='inherit' sx={{ mr: 1 }} />
+                                Bookmarked Rooms
+                            </ListSubheader>
+                            <List sx={{ overflowY: 'auto' }}>
+                                {rooms.joinedRooms.map((room, i) => {
+                                    const roomId = room.roomId
+                                    const roomMessages = messages[roomId] ?? []
+                                    const mostRecentMessage = roomMessages.at(-1)?.content ?? 'Example-Message'
+
+                                    if (room.isMarkedFavourite && !room.isPinned)
+                                        return (
+                                            <RoomListItem
+                                                key={room.roomId}
+                                                thisRoomIndex={i}
+                                                selectedRoomIndex={rooms.selectedRoomIndex}
+                                                room={room}
+                                                roomDispatcher={roomDispatcher}
+                                                usersInfo={rooms.usersInfo}
+                                                mutateMessageReadStatus={mutateMessageReadStatus}
+                                                mostRecentMessage={mostRecentMessage}
+                                            />
+                                        )
+                                })}
+                            </List>
+                        </>
                     )}
                 </>
             )}
