@@ -37,7 +37,7 @@ import Fuse from 'fuse.js'
 import { useFuzzySearch } from '../hooks/useFuzzySearch'
 import { EveryRoomMessage, MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
 
-const searchObjectKeys = ['roomDisplayName']
+const searchObjectKeys = ['roomDisplayName', 'participants']
 
 interface RoomListSidebar {
     roomDispatcher: React.Dispatch<RoomActions>
