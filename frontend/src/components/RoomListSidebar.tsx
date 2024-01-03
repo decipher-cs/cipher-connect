@@ -166,13 +166,12 @@ export const RoomListSidebar = ({
 
     useEffect(() => {
         socket.on('roomParticipantsChanged', (roomId, changeType, updatedMemberIds) => {
-            if (!rooms.joinedRooms.find(p => p.roomId === roomId)) {
+            const room = rooms.joinedRooms.find(room => room.roomId === roomId)
+            if (!room) {
                 refetch()
-            }
-            if (changeType === 'membersJoined') {
+            } else if (changeType === 'membersJoined') {
                 roomDispatcher({ type: RoomActionType.addParticipantsToRoom, roomId, participants: updatedMemberIds })
-            }
-            if (changeType === 'membersLeft') {
+            } else if (changeType === 'membersLeft') {
                 roomDispatcher({
                     type: RoomActionType.removeParticipantsFromRoom,
                     roomId,
