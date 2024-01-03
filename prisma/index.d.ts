@@ -73,8 +73,8 @@ export type Message = {
  * 
  */
 export type UserMessage = {
+  messageKey: string
   username: string
-  roomId: string
   isHidden: boolean
   isNotificationMuted: boolean
   isMarkedFavourite: boolean
@@ -997,14 +997,12 @@ export namespace Prisma {
     message: number
     userRoom: number
     user: number
-    UserMessage: number
   }
 
   export type RoomCountOutputTypeSelect = {
     message?: boolean
     userRoom?: boolean
     user?: boolean
-    UserMessage?: boolean
   }
 
   export type RoomCountOutputTypeGetPayload<S extends boolean | null | undefined | RoomCountOutputTypeArgs> =
@@ -1033,6 +1031,49 @@ export namespace Prisma {
      * Select specific fields to fetch from the RoomCountOutputType
      */
     select?: RoomCountOutputTypeSelect | null
+  }
+
+
+
+  /**
+   * Count Type MessageCountOutputType
+   */
+
+
+  export type MessageCountOutputType = {
+    userMessage: number
+  }
+
+  export type MessageCountOutputTypeSelect = {
+    userMessage?: boolean
+  }
+
+  export type MessageCountOutputTypeGetPayload<S extends boolean | null | undefined | MessageCountOutputTypeArgs> =
+    S extends { select: any, include: any } ? 'Please either choose `select` or `include`' :
+    S extends true ? MessageCountOutputType :
+    S extends undefined ? never :
+    S extends { include: any } & (MessageCountOutputTypeArgs)
+    ? MessageCountOutputType 
+    : S extends { select: any } & (MessageCountOutputTypeArgs)
+      ? {
+    [P in TruthyKeys<S['select']>]:
+    P extends keyof MessageCountOutputType ? MessageCountOutputType[P] : never
+  } 
+      : MessageCountOutputType
+
+
+
+
+  // Custom InputTypes
+
+  /**
+   * MessageCountOutputType without action
+   */
+  export type MessageCountOutputTypeArgs = {
+    /**
+     * Select specific fields to fetch from the MessageCountOutputType
+     */
+    select?: MessageCountOutputTypeSelect | null
   }
 
 
@@ -2255,7 +2296,6 @@ export namespace Prisma {
     message?: boolean | Room$messageArgs
     userRoom?: boolean | Room$userRoomArgs
     user?: boolean | Room$userArgs
-    UserMessage?: boolean | Room$UserMessageArgs
     _count?: boolean | RoomCountOutputTypeArgs
   }
 
@@ -2264,7 +2304,6 @@ export namespace Prisma {
     message?: boolean | Room$messageArgs
     userRoom?: boolean | Room$userRoomArgs
     user?: boolean | Room$userArgs
-    UserMessage?: boolean | Room$UserMessageArgs
     _count?: boolean | RoomCountOutputTypeArgs
   }
 
@@ -2278,7 +2317,6 @@ export namespace Prisma {
         P extends 'message' ? Array < MessageGetPayload<S['include'][P]>>  :
         P extends 'userRoom' ? Array < UserRoomGetPayload<S['include'][P]>>  :
         P extends 'user' ? Array < UserGetPayload<S['include'][P]>>  :
-        P extends 'UserMessage' ? Array < UserMessageGetPayload<S['include'][P]>>  :
         P extends '_count' ? RoomCountOutputTypeGetPayload<S['include'][P]> :  never
   } 
     : S extends { select: any } & (RoomArgs | RoomFindManyArgs)
@@ -2287,7 +2325,6 @@ export namespace Prisma {
         P extends 'message' ? Array < MessageGetPayload<S['select'][P]>>  :
         P extends 'userRoom' ? Array < UserRoomGetPayload<S['select'][P]>>  :
         P extends 'user' ? Array < UserGetPayload<S['select'][P]>>  :
-        P extends 'UserMessage' ? Array < UserMessageGetPayload<S['select'][P]>>  :
         P extends '_count' ? RoomCountOutputTypeGetPayload<S['select'][P]> :  P extends keyof Room ? Room[P] : never
   } 
       : Room
@@ -2665,8 +2702,6 @@ export namespace Prisma {
     userRoom<T extends Room$userRoomArgs= {}>(args?: Subset<T, Room$userRoomArgs>): Prisma.PrismaPromise<Array<UserRoomGetPayload<T>>| Null>;
 
     user<T extends Room$userArgs= {}>(args?: Subset<T, Room$userArgs>): Prisma.PrismaPromise<Array<UserGetPayload<T>>| Null>;
-
-    UserMessage<T extends Room$UserMessageArgs= {}>(args?: Subset<T, Room$UserMessageArgs>): Prisma.PrismaPromise<Array<UserMessageGetPayload<T>>| Null>;
 
     private get _document();
     /**
@@ -3083,27 +3118,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: Enumerable<UserScalarFieldEnum>
-  }
-
-
-  /**
-   * Room.UserMessage
-   */
-  export type Room$UserMessageArgs = {
-    /**
-     * Select specific fields to fetch from the UserMessage
-     */
-    select?: UserMessageSelect | null
-    /**
-     * Choose, which related nodes to fetch as well.
-     */
-    include?: UserMessageInclude | null
-    where?: UserMessageWhereInput
-    orderBy?: Enumerable<UserMessageOrderByWithRelationInput>
-    cursor?: UserMessageWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: Enumerable<UserMessageScalarFieldEnum>
   }
 
 
@@ -4284,12 +4298,16 @@ export namespace Prisma {
     contentType?: boolean
     sender?: boolean | UserArgs
     room?: boolean | RoomArgs
+    userMessage?: boolean | Message$userMessageArgs
+    _count?: boolean | MessageCountOutputTypeArgs
   }
 
 
   export type MessageInclude = {
     sender?: boolean | UserArgs
     room?: boolean | RoomArgs
+    userMessage?: boolean | Message$userMessageArgs
+    _count?: boolean | MessageCountOutputTypeArgs
   }
 
   export type MessageGetPayload<S extends boolean | null | undefined | MessageArgs> =
@@ -4300,13 +4318,17 @@ export namespace Prisma {
     ? Message  & {
     [P in TruthyKeys<S['include']>]:
         P extends 'sender' ? UserGetPayload<S['include'][P]> :
-        P extends 'room' ? RoomGetPayload<S['include'][P]> :  never
+        P extends 'room' ? RoomGetPayload<S['include'][P]> :
+        P extends 'userMessage' ? Array < UserMessageGetPayload<S['include'][P]>>  :
+        P extends '_count' ? MessageCountOutputTypeGetPayload<S['include'][P]> :  never
   } 
     : S extends { select: any } & (MessageArgs | MessageFindManyArgs)
       ? {
     [P in TruthyKeys<S['select']>]:
         P extends 'sender' ? UserGetPayload<S['select'][P]> :
-        P extends 'room' ? RoomGetPayload<S['select'][P]> :  P extends keyof Message ? Message[P] : never
+        P extends 'room' ? RoomGetPayload<S['select'][P]> :
+        P extends 'userMessage' ? Array < UserMessageGetPayload<S['select'][P]>>  :
+        P extends '_count' ? MessageCountOutputTypeGetPayload<S['select'][P]> :  P extends keyof Message ? Message[P] : never
   } 
       : Message
 
@@ -4682,6 +4704,8 @@ export namespace Prisma {
 
     room<T extends RoomArgs= {}>(args?: Subset<T, RoomArgs>): Prisma__RoomClient<RoomGetPayload<T> | Null>;
 
+    userMessage<T extends Message$userMessageArgs= {}>(args?: Subset<T, Message$userMessageArgs>): Prisma.PrismaPromise<Array<UserMessageGetPayload<T>>| Null>;
+
     private get _document();
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -5038,6 +5062,27 @@ export namespace Prisma {
 
 
   /**
+   * Message.userMessage
+   */
+  export type Message$userMessageArgs = {
+    /**
+     * Select specific fields to fetch from the UserMessage
+     */
+    select?: UserMessageSelect | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: UserMessageInclude | null
+    where?: UserMessageWhereInput
+    orderBy?: Enumerable<UserMessageOrderByWithRelationInput>
+    cursor?: UserMessageWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: Enumerable<UserMessageScalarFieldEnum>
+  }
+
+
+  /**
    * Message without action
    */
   export type MessageArgs = {
@@ -5065,8 +5110,8 @@ export namespace Prisma {
   }
 
   export type UserMessageMinAggregateOutputType = {
+    messageKey: string | null
     username: string | null
-    roomId: string | null
     isHidden: boolean | null
     isNotificationMuted: boolean | null
     isMarkedFavourite: boolean | null
@@ -5074,8 +5119,8 @@ export namespace Prisma {
   }
 
   export type UserMessageMaxAggregateOutputType = {
+    messageKey: string | null
     username: string | null
-    roomId: string | null
     isHidden: boolean | null
     isNotificationMuted: boolean | null
     isMarkedFavourite: boolean | null
@@ -5083,8 +5128,8 @@ export namespace Prisma {
   }
 
   export type UserMessageCountAggregateOutputType = {
+    messageKey: number
     username: number
-    roomId: number
     isHidden: number
     isNotificationMuted: number
     isMarkedFavourite: number
@@ -5094,8 +5139,8 @@ export namespace Prisma {
 
 
   export type UserMessageMinAggregateInputType = {
+    messageKey?: true
     username?: true
-    roomId?: true
     isHidden?: true
     isNotificationMuted?: true
     isMarkedFavourite?: true
@@ -5103,8 +5148,8 @@ export namespace Prisma {
   }
 
   export type UserMessageMaxAggregateInputType = {
+    messageKey?: true
     username?: true
-    roomId?: true
     isHidden?: true
     isNotificationMuted?: true
     isMarkedFavourite?: true
@@ -5112,8 +5157,8 @@ export namespace Prisma {
   }
 
   export type UserMessageCountAggregateInputType = {
+    messageKey?: true
     username?: true
-    roomId?: true
     isHidden?: true
     isNotificationMuted?: true
     isMarkedFavourite?: true
@@ -5195,8 +5240,8 @@ export namespace Prisma {
 
 
   export type UserMessageGroupByOutputType = {
+    messageKey: string
     username: string
-    roomId: string
     isHidden: boolean
     isNotificationMuted: boolean
     isMarkedFavourite: boolean
@@ -5221,20 +5266,20 @@ export namespace Prisma {
 
 
   export type UserMessageSelect = {
+    messageKey?: boolean
     username?: boolean
-    roomId?: boolean
     isHidden?: boolean
     isNotificationMuted?: boolean
     isMarkedFavourite?: boolean
     isPinned?: boolean
     user?: boolean | UserArgs
-    room?: boolean | RoomArgs
+    message?: boolean | MessageArgs
   }
 
 
   export type UserMessageInclude = {
     user?: boolean | UserArgs
-    room?: boolean | RoomArgs
+    message?: boolean | MessageArgs
   }
 
   export type UserMessageGetPayload<S extends boolean | null | undefined | UserMessageArgs> =
@@ -5245,13 +5290,13 @@ export namespace Prisma {
     ? UserMessage  & {
     [P in TruthyKeys<S['include']>]:
         P extends 'user' ? UserGetPayload<S['include'][P]> :
-        P extends 'room' ? RoomGetPayload<S['include'][P]> :  never
+        P extends 'message' ? MessageGetPayload<S['include'][P]> :  never
   } 
     : S extends { select: any } & (UserMessageArgs | UserMessageFindManyArgs)
       ? {
     [P in TruthyKeys<S['select']>]:
         P extends 'user' ? UserGetPayload<S['select'][P]> :
-        P extends 'room' ? RoomGetPayload<S['select'][P]> :  P extends keyof UserMessage ? UserMessage[P] : never
+        P extends 'message' ? MessageGetPayload<S['select'][P]> :  P extends keyof UserMessage ? UserMessage[P] : never
   } 
       : UserMessage
 
@@ -5341,8 +5386,8 @@ export namespace Prisma {
      * // Get first 10 UserMessages
      * const userMessages = await prisma.userMessage.findMany({ take: 10 })
      * 
-     * // Only select the `username`
-     * const userMessageWithUsernameOnly = await prisma.userMessage.findMany({ select: { username: true } })
+     * // Only select the `messageKey`
+     * const userMessageWithMessageKeyOnly = await prisma.userMessage.findMany({ select: { messageKey: true } })
      * 
     **/
     findMany<T extends UserMessageFindManyArgs>(
@@ -5625,7 +5670,7 @@ export namespace Prisma {
 
     user<T extends UserArgs= {}>(args?: Subset<T, UserArgs>): Prisma__UserClient<UserGetPayload<T> | Null>;
 
-    room<T extends RoomArgs= {}>(args?: Subset<T, RoomArgs>): Prisma__RoomClient<RoomGetPayload<T> | Null>;
+    message<T extends MessageArgs= {}>(args?: Subset<T, MessageArgs>): Prisma__MessageClient<MessageGetPayload<T> | Null>;
 
     private get _document();
     /**
@@ -6931,8 +6976,8 @@ export namespace Prisma {
 
 
   export const UserMessageScalarFieldEnum: {
+    messageKey: 'messageKey',
     username: 'username',
-    roomId: 'roomId',
     isHidden: 'isHidden',
     isNotificationMuted: 'isNotificationMuted',
     isMarkedFavourite: 'isMarkedFavourite',
@@ -7049,7 +7094,6 @@ export namespace Prisma {
     message?: MessageListRelationFilter
     userRoom?: UserRoomListRelationFilter
     user?: UserListRelationFilter
-    UserMessage?: UserMessageListRelationFilter
   }
 
   export type RoomOrderByWithRelationInput = {
@@ -7060,7 +7104,6 @@ export namespace Prisma {
     message?: MessageOrderByRelationAggregateInput
     userRoom?: UserRoomOrderByRelationAggregateInput
     user?: UserOrderByRelationAggregateInput
-    UserMessage?: UserMessageOrderByRelationAggregateInput
   }
 
   export type RoomWhereUniqueInput = {
@@ -7169,6 +7212,7 @@ export namespace Prisma {
     contentType?: EnumMessageContentTypeFilter | MessageContentType
     sender?: XOR<UserRelationFilter, UserWhereInput>
     room?: XOR<RoomRelationFilter, RoomWhereInput>
+    userMessage?: UserMessageListRelationFilter
   }
 
   export type MessageOrderByWithRelationInput = {
@@ -7181,10 +7225,12 @@ export namespace Prisma {
     contentType?: SortOrder
     sender?: UserOrderByWithRelationInput
     room?: RoomOrderByWithRelationInput
+    userMessage?: UserMessageOrderByRelationAggregateInput
   }
 
   export type MessageWhereUniqueInput = {
     key?: string
+    senderUsername_key?: MessageSenderUsernameKeyCompoundUniqueInput
   }
 
   export type MessageOrderByWithAggregationInput = {
@@ -7217,34 +7263,34 @@ export namespace Prisma {
     AND?: Enumerable<UserMessageWhereInput>
     OR?: Enumerable<UserMessageWhereInput>
     NOT?: Enumerable<UserMessageWhereInput>
+    messageKey?: StringFilter | string
     username?: StringFilter | string
-    roomId?: StringFilter | string
     isHidden?: BoolFilter | boolean
     isNotificationMuted?: BoolFilter | boolean
     isMarkedFavourite?: BoolFilter | boolean
     isPinned?: BoolFilter | boolean
     user?: XOR<UserRelationFilter, UserWhereInput>
-    room?: XOR<RoomRelationFilter, RoomWhereInput>
+    message?: XOR<MessageRelationFilter, MessageWhereInput>
   }
 
   export type UserMessageOrderByWithRelationInput = {
+    messageKey?: SortOrder
     username?: SortOrder
-    roomId?: SortOrder
     isHidden?: SortOrder
     isNotificationMuted?: SortOrder
     isMarkedFavourite?: SortOrder
     isPinned?: SortOrder
     user?: UserOrderByWithRelationInput
-    room?: RoomOrderByWithRelationInput
+    message?: MessageOrderByWithRelationInput
   }
 
   export type UserMessageWhereUniqueInput = {
-    username_roomId?: UserMessageUsernameRoomIdCompoundUniqueInput
+    username_messageKey?: UserMessageUsernameMessageKeyCompoundUniqueInput
   }
 
   export type UserMessageOrderByWithAggregationInput = {
+    messageKey?: SortOrder
     username?: SortOrder
-    roomId?: SortOrder
     isHidden?: SortOrder
     isNotificationMuted?: SortOrder
     isMarkedFavourite?: SortOrder
@@ -7258,8 +7304,8 @@ export namespace Prisma {
     AND?: Enumerable<UserMessageScalarWhereWithAggregatesInput>
     OR?: Enumerable<UserMessageScalarWhereWithAggregatesInput>
     NOT?: Enumerable<UserMessageScalarWhereWithAggregatesInput>
+    messageKey?: StringWithAggregatesFilter | string
     username?: StringWithAggregatesFilter | string
-    roomId?: StringWithAggregatesFilter | string
     isHidden?: BoolWithAggregatesFilter | boolean
     isNotificationMuted?: BoolWithAggregatesFilter | boolean
     isMarkedFavourite?: BoolWithAggregatesFilter | boolean
@@ -7402,7 +7448,6 @@ export namespace Prisma {
     message?: MessageCreateNestedManyWithoutRoomInput
     userRoom?: UserRoomCreateNestedManyWithoutRoomInput
     user?: UserCreateNestedManyWithoutRoomsInput
-    UserMessage?: UserMessageCreateNestedManyWithoutRoomInput
   }
 
   export type RoomUncheckedCreateInput = {
@@ -7413,7 +7458,6 @@ export namespace Prisma {
     message?: MessageUncheckedCreateNestedManyWithoutRoomInput
     userRoom?: UserRoomUncheckedCreateNestedManyWithoutRoomInput
     user?: UserUncheckedCreateNestedManyWithoutRoomsInput
-    UserMessage?: UserMessageUncheckedCreateNestedManyWithoutRoomInput
   }
 
   export type RoomUpdateInput = {
@@ -7424,7 +7468,6 @@ export namespace Prisma {
     message?: MessageUpdateManyWithoutRoomNestedInput
     userRoom?: UserRoomUpdateManyWithoutRoomNestedInput
     user?: UserUpdateManyWithoutRoomsNestedInput
-    UserMessage?: UserMessageUpdateManyWithoutRoomNestedInput
   }
 
   export type RoomUncheckedUpdateInput = {
@@ -7435,7 +7478,6 @@ export namespace Prisma {
     message?: MessageUncheckedUpdateManyWithoutRoomNestedInput
     userRoom?: UserRoomUncheckedUpdateManyWithoutRoomNestedInput
     user?: UserUncheckedUpdateManyWithoutRoomsNestedInput
-    UserMessage?: UserMessageUncheckedUpdateManyWithoutRoomNestedInput
   }
 
   export type RoomCreateManyInput = {
@@ -7556,6 +7598,7 @@ export namespace Prisma {
     contentType: MessageContentType
     sender: UserCreateNestedOneWithoutMessageInput
     room: RoomCreateNestedOneWithoutMessageInput
+    userMessage?: UserMessageCreateNestedManyWithoutMessageInput
   }
 
   export type MessageUncheckedCreateInput = {
@@ -7566,6 +7609,7 @@ export namespace Prisma {
     createdAt?: Date | string
     editedAt?: Date | string | null
     contentType: MessageContentType
+    userMessage?: UserMessageUncheckedCreateNestedManyWithoutMessageInput
   }
 
   export type MessageUpdateInput = {
@@ -7576,6 +7620,7 @@ export namespace Prisma {
     contentType?: EnumMessageContentTypeFieldUpdateOperationsInput | MessageContentType
     sender?: UserUpdateOneRequiredWithoutMessageNestedInput
     room?: RoomUpdateOneRequiredWithoutMessageNestedInput
+    userMessage?: UserMessageUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateInput = {
@@ -7586,6 +7631,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contentType?: EnumMessageContentTypeFieldUpdateOperationsInput | MessageContentType
+    userMessage?: UserMessageUncheckedUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageCreateManyInput = {
@@ -7622,12 +7668,12 @@ export namespace Prisma {
     isMarkedFavourite?: boolean
     isPinned?: boolean
     user: UserCreateNestedOneWithoutUserMessageInput
-    room: RoomCreateNestedOneWithoutUserMessageInput
+    message: MessageCreateNestedOneWithoutUserMessageInput
   }
 
   export type UserMessageUncheckedCreateInput = {
+    messageKey: string
     username: string
-    roomId: string
     isHidden?: boolean
     isNotificationMuted?: boolean
     isMarkedFavourite?: boolean
@@ -7640,12 +7686,12 @@ export namespace Prisma {
     isMarkedFavourite?: BoolFieldUpdateOperationsInput | boolean
     isPinned?: BoolFieldUpdateOperationsInput | boolean
     user?: UserUpdateOneRequiredWithoutUserMessageNestedInput
-    room?: RoomUpdateOneRequiredWithoutUserMessageNestedInput
+    message?: MessageUpdateOneRequiredWithoutUserMessageNestedInput
   }
 
   export type UserMessageUncheckedUpdateInput = {
+    messageKey?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
-    roomId?: StringFieldUpdateOperationsInput | string
     isHidden?: BoolFieldUpdateOperationsInput | boolean
     isNotificationMuted?: BoolFieldUpdateOperationsInput | boolean
     isMarkedFavourite?: BoolFieldUpdateOperationsInput | boolean
@@ -7653,8 +7699,8 @@ export namespace Prisma {
   }
 
   export type UserMessageCreateManyInput = {
+    messageKey: string
     username: string
-    roomId: string
     isHidden?: boolean
     isNotificationMuted?: boolean
     isMarkedFavourite?: boolean
@@ -7669,8 +7715,8 @@ export namespace Prisma {
   }
 
   export type UserMessageUncheckedUpdateManyInput = {
+    messageKey?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
-    roomId?: StringFieldUpdateOperationsInput | string
     isHidden?: BoolFieldUpdateOperationsInput | boolean
     isNotificationMuted?: BoolFieldUpdateOperationsInput | boolean
     isMarkedFavourite?: BoolFieldUpdateOperationsInput | boolean
@@ -8033,6 +8079,11 @@ export namespace Prisma {
     not?: NestedEnumMessageContentTypeFilter | MessageContentType
   }
 
+  export type MessageSenderUsernameKeyCompoundUniqueInput = {
+    senderUsername: string
+    key: string
+  }
+
   export type MessageCountOrderByAggregateInput = {
     key?: SortOrder
     senderUsername?: SortOrder
@@ -8087,14 +8138,19 @@ export namespace Prisma {
     _max?: NestedEnumMessageContentTypeFilter
   }
 
-  export type UserMessageUsernameRoomIdCompoundUniqueInput = {
+  export type MessageRelationFilter = {
+    is?: MessageWhereInput
+    isNot?: MessageWhereInput
+  }
+
+  export type UserMessageUsernameMessageKeyCompoundUniqueInput = {
     username: string
-    roomId: string
+    messageKey: string
   }
 
   export type UserMessageCountOrderByAggregateInput = {
+    messageKey?: SortOrder
     username?: SortOrder
-    roomId?: SortOrder
     isHidden?: SortOrder
     isNotificationMuted?: SortOrder
     isMarkedFavourite?: SortOrder
@@ -8102,8 +8158,8 @@ export namespace Prisma {
   }
 
   export type UserMessageMaxOrderByAggregateInput = {
+    messageKey?: SortOrder
     username?: SortOrder
-    roomId?: SortOrder
     isHidden?: SortOrder
     isNotificationMuted?: SortOrder
     isMarkedFavourite?: SortOrder
@@ -8111,8 +8167,8 @@ export namespace Prisma {
   }
 
   export type UserMessageMinOrderByAggregateInput = {
+    messageKey?: SortOrder
     username?: SortOrder
-    roomId?: SortOrder
     isHidden?: SortOrder
     isNotificationMuted?: SortOrder
     isMarkedFavourite?: SortOrder
@@ -8340,13 +8396,6 @@ export namespace Prisma {
     connect?: Enumerable<UserWhereUniqueInput>
   }
 
-  export type UserMessageCreateNestedManyWithoutRoomInput = {
-    create?: XOR<Enumerable<UserMessageCreateWithoutRoomInput>, Enumerable<UserMessageUncheckedCreateWithoutRoomInput>>
-    connectOrCreate?: Enumerable<UserMessageCreateOrConnectWithoutRoomInput>
-    createMany?: UserMessageCreateManyRoomInputEnvelope
-    connect?: Enumerable<UserMessageWhereUniqueInput>
-  }
-
   export type MessageUncheckedCreateNestedManyWithoutRoomInput = {
     create?: XOR<Enumerable<MessageCreateWithoutRoomInput>, Enumerable<MessageUncheckedCreateWithoutRoomInput>>
     connectOrCreate?: Enumerable<MessageCreateOrConnectWithoutRoomInput>
@@ -8365,13 +8414,6 @@ export namespace Prisma {
     create?: XOR<Enumerable<UserCreateWithoutRoomsInput>, Enumerable<UserUncheckedCreateWithoutRoomsInput>>
     connectOrCreate?: Enumerable<UserCreateOrConnectWithoutRoomsInput>
     connect?: Enumerable<UserWhereUniqueInput>
-  }
-
-  export type UserMessageUncheckedCreateNestedManyWithoutRoomInput = {
-    create?: XOR<Enumerable<UserMessageCreateWithoutRoomInput>, Enumerable<UserMessageUncheckedCreateWithoutRoomInput>>
-    connectOrCreate?: Enumerable<UserMessageCreateOrConnectWithoutRoomInput>
-    createMany?: UserMessageCreateManyRoomInputEnvelope
-    connect?: Enumerable<UserMessageWhereUniqueInput>
   }
 
   export type EnumRoomTypeFieldUpdateOperationsInput = {
@@ -8419,20 +8461,6 @@ export namespace Prisma {
     deleteMany?: Enumerable<UserScalarWhereInput>
   }
 
-  export type UserMessageUpdateManyWithoutRoomNestedInput = {
-    create?: XOR<Enumerable<UserMessageCreateWithoutRoomInput>, Enumerable<UserMessageUncheckedCreateWithoutRoomInput>>
-    connectOrCreate?: Enumerable<UserMessageCreateOrConnectWithoutRoomInput>
-    upsert?: Enumerable<UserMessageUpsertWithWhereUniqueWithoutRoomInput>
-    createMany?: UserMessageCreateManyRoomInputEnvelope
-    set?: Enumerable<UserMessageWhereUniqueInput>
-    disconnect?: Enumerable<UserMessageWhereUniqueInput>
-    delete?: Enumerable<UserMessageWhereUniqueInput>
-    connect?: Enumerable<UserMessageWhereUniqueInput>
-    update?: Enumerable<UserMessageUpdateWithWhereUniqueWithoutRoomInput>
-    updateMany?: Enumerable<UserMessageUpdateManyWithWhereWithoutRoomInput>
-    deleteMany?: Enumerable<UserMessageScalarWhereInput>
-  }
-
   export type MessageUncheckedUpdateManyWithoutRoomNestedInput = {
     create?: XOR<Enumerable<MessageCreateWithoutRoomInput>, Enumerable<MessageUncheckedCreateWithoutRoomInput>>
     connectOrCreate?: Enumerable<MessageCreateOrConnectWithoutRoomInput>
@@ -8472,20 +8500,6 @@ export namespace Prisma {
     update?: Enumerable<UserUpdateWithWhereUniqueWithoutRoomsInput>
     updateMany?: Enumerable<UserUpdateManyWithWhereWithoutRoomsInput>
     deleteMany?: Enumerable<UserScalarWhereInput>
-  }
-
-  export type UserMessageUncheckedUpdateManyWithoutRoomNestedInput = {
-    create?: XOR<Enumerable<UserMessageCreateWithoutRoomInput>, Enumerable<UserMessageUncheckedCreateWithoutRoomInput>>
-    connectOrCreate?: Enumerable<UserMessageCreateOrConnectWithoutRoomInput>
-    upsert?: Enumerable<UserMessageUpsertWithWhereUniqueWithoutRoomInput>
-    createMany?: UserMessageCreateManyRoomInputEnvelope
-    set?: Enumerable<UserMessageWhereUniqueInput>
-    disconnect?: Enumerable<UserMessageWhereUniqueInput>
-    delete?: Enumerable<UserMessageWhereUniqueInput>
-    connect?: Enumerable<UserMessageWhereUniqueInput>
-    update?: Enumerable<UserMessageUpdateWithWhereUniqueWithoutRoomInput>
-    updateMany?: Enumerable<UserMessageUpdateManyWithWhereWithoutRoomInput>
-    deleteMany?: Enumerable<UserMessageScalarWhereInput>
   }
 
   export type UserCreateNestedOneWithoutUserRoomInput = {
@@ -8532,6 +8546,20 @@ export namespace Prisma {
     connect?: RoomWhereUniqueInput
   }
 
+  export type UserMessageCreateNestedManyWithoutMessageInput = {
+    create?: XOR<Enumerable<UserMessageCreateWithoutMessageInput>, Enumerable<UserMessageUncheckedCreateWithoutMessageInput>>
+    connectOrCreate?: Enumerable<UserMessageCreateOrConnectWithoutMessageInput>
+    createMany?: UserMessageCreateManyMessageInputEnvelope
+    connect?: Enumerable<UserMessageWhereUniqueInput>
+  }
+
+  export type UserMessageUncheckedCreateNestedManyWithoutMessageInput = {
+    create?: XOR<Enumerable<UserMessageCreateWithoutMessageInput>, Enumerable<UserMessageUncheckedCreateWithoutMessageInput>>
+    connectOrCreate?: Enumerable<UserMessageCreateOrConnectWithoutMessageInput>
+    createMany?: UserMessageCreateManyMessageInputEnvelope
+    connect?: Enumerable<UserMessageWhereUniqueInput>
+  }
+
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null
   }
@@ -8556,16 +8584,44 @@ export namespace Prisma {
     update?: XOR<RoomUpdateWithoutMessageInput, RoomUncheckedUpdateWithoutMessageInput>
   }
 
+  export type UserMessageUpdateManyWithoutMessageNestedInput = {
+    create?: XOR<Enumerable<UserMessageCreateWithoutMessageInput>, Enumerable<UserMessageUncheckedCreateWithoutMessageInput>>
+    connectOrCreate?: Enumerable<UserMessageCreateOrConnectWithoutMessageInput>
+    upsert?: Enumerable<UserMessageUpsertWithWhereUniqueWithoutMessageInput>
+    createMany?: UserMessageCreateManyMessageInputEnvelope
+    set?: Enumerable<UserMessageWhereUniqueInput>
+    disconnect?: Enumerable<UserMessageWhereUniqueInput>
+    delete?: Enumerable<UserMessageWhereUniqueInput>
+    connect?: Enumerable<UserMessageWhereUniqueInput>
+    update?: Enumerable<UserMessageUpdateWithWhereUniqueWithoutMessageInput>
+    updateMany?: Enumerable<UserMessageUpdateManyWithWhereWithoutMessageInput>
+    deleteMany?: Enumerable<UserMessageScalarWhereInput>
+  }
+
+  export type UserMessageUncheckedUpdateManyWithoutMessageNestedInput = {
+    create?: XOR<Enumerable<UserMessageCreateWithoutMessageInput>, Enumerable<UserMessageUncheckedCreateWithoutMessageInput>>
+    connectOrCreate?: Enumerable<UserMessageCreateOrConnectWithoutMessageInput>
+    upsert?: Enumerable<UserMessageUpsertWithWhereUniqueWithoutMessageInput>
+    createMany?: UserMessageCreateManyMessageInputEnvelope
+    set?: Enumerable<UserMessageWhereUniqueInput>
+    disconnect?: Enumerable<UserMessageWhereUniqueInput>
+    delete?: Enumerable<UserMessageWhereUniqueInput>
+    connect?: Enumerable<UserMessageWhereUniqueInput>
+    update?: Enumerable<UserMessageUpdateWithWhereUniqueWithoutMessageInput>
+    updateMany?: Enumerable<UserMessageUpdateManyWithWhereWithoutMessageInput>
+    deleteMany?: Enumerable<UserMessageScalarWhereInput>
+  }
+
   export type UserCreateNestedOneWithoutUserMessageInput = {
     create?: XOR<UserCreateWithoutUserMessageInput, UserUncheckedCreateWithoutUserMessageInput>
     connectOrCreate?: UserCreateOrConnectWithoutUserMessageInput
     connect?: UserWhereUniqueInput
   }
 
-  export type RoomCreateNestedOneWithoutUserMessageInput = {
-    create?: XOR<RoomCreateWithoutUserMessageInput, RoomUncheckedCreateWithoutUserMessageInput>
-    connectOrCreate?: RoomCreateOrConnectWithoutUserMessageInput
-    connect?: RoomWhereUniqueInput
+  export type MessageCreateNestedOneWithoutUserMessageInput = {
+    create?: XOR<MessageCreateWithoutUserMessageInput, MessageUncheckedCreateWithoutUserMessageInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutUserMessageInput
+    connect?: MessageWhereUniqueInput
   }
 
   export type UserUpdateOneRequiredWithoutUserMessageNestedInput = {
@@ -8576,12 +8632,12 @@ export namespace Prisma {
     update?: XOR<UserUpdateWithoutUserMessageInput, UserUncheckedUpdateWithoutUserMessageInput>
   }
 
-  export type RoomUpdateOneRequiredWithoutUserMessageNestedInput = {
-    create?: XOR<RoomCreateWithoutUserMessageInput, RoomUncheckedCreateWithoutUserMessageInput>
-    connectOrCreate?: RoomCreateOrConnectWithoutUserMessageInput
-    upsert?: RoomUpsertWithoutUserMessageInput
-    connect?: RoomWhereUniqueInput
-    update?: XOR<RoomUpdateWithoutUserMessageInput, RoomUncheckedUpdateWithoutUserMessageInput>
+  export type MessageUpdateOneRequiredWithoutUserMessageNestedInput = {
+    create?: XOR<MessageCreateWithoutUserMessageInput, MessageUncheckedCreateWithoutUserMessageInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutUserMessageInput
+    upsert?: MessageUpsertWithoutUserMessageInput
+    connect?: MessageWhereUniqueInput
+    update?: XOR<MessageUpdateWithoutUserMessageInput, MessageUncheckedUpdateWithoutUserMessageInput>
   }
 
   export type NestedStringFilter = {
@@ -8789,6 +8845,7 @@ export namespace Prisma {
     editedAt?: Date | string | null
     contentType: MessageContentType
     room: RoomCreateNestedOneWithoutMessageInput
+    userMessage?: UserMessageCreateNestedManyWithoutMessageInput
   }
 
   export type MessageUncheckedCreateWithoutSenderInput = {
@@ -8798,6 +8855,7 @@ export namespace Prisma {
     createdAt?: Date | string
     editedAt?: Date | string | null
     contentType: MessageContentType
+    userMessage?: UserMessageUncheckedCreateNestedManyWithoutMessageInput
   }
 
   export type MessageCreateOrConnectWithoutSenderInput = {
@@ -8851,7 +8909,6 @@ export namespace Prisma {
     roomAvatar?: string | null
     message?: MessageCreateNestedManyWithoutRoomInput
     userRoom?: UserRoomCreateNestedManyWithoutRoomInput
-    UserMessage?: UserMessageCreateNestedManyWithoutRoomInput
   }
 
   export type RoomUncheckedCreateWithoutUserInput = {
@@ -8861,7 +8918,6 @@ export namespace Prisma {
     roomAvatar?: string | null
     message?: MessageUncheckedCreateNestedManyWithoutRoomInput
     userRoom?: UserRoomUncheckedCreateNestedManyWithoutRoomInput
-    UserMessage?: UserMessageUncheckedCreateNestedManyWithoutRoomInput
   }
 
   export type RoomCreateOrConnectWithoutUserInput = {
@@ -8874,11 +8930,11 @@ export namespace Prisma {
     isNotificationMuted?: boolean
     isMarkedFavourite?: boolean
     isPinned?: boolean
-    room: RoomCreateNestedOneWithoutUserMessageInput
+    message: MessageCreateNestedOneWithoutUserMessageInput
   }
 
   export type UserMessageUncheckedCreateWithoutUserInput = {
-    roomId: string
+    messageKey: string
     isHidden?: boolean
     isNotificationMuted?: boolean
     isMarkedFavourite?: boolean
@@ -9002,8 +9058,8 @@ export namespace Prisma {
     AND?: Enumerable<UserMessageScalarWhereInput>
     OR?: Enumerable<UserMessageScalarWhereInput>
     NOT?: Enumerable<UserMessageScalarWhereInput>
+    messageKey?: StringFilter | string
     username?: StringFilter | string
-    roomId?: StringFilter | string
     isHidden?: BoolFilter | boolean
     isNotificationMuted?: BoolFilter | boolean
     isMarkedFavourite?: BoolFilter | boolean
@@ -9017,6 +9073,7 @@ export namespace Prisma {
     editedAt?: Date | string | null
     contentType: MessageContentType
     sender: UserCreateNestedOneWithoutMessageInput
+    userMessage?: UserMessageCreateNestedManyWithoutMessageInput
   }
 
   export type MessageUncheckedCreateWithoutRoomInput = {
@@ -9026,6 +9083,7 @@ export namespace Prisma {
     createdAt?: Date | string
     editedAt?: Date | string | null
     contentType: MessageContentType
+    userMessage?: UserMessageUncheckedCreateNestedManyWithoutMessageInput
   }
 
   export type MessageCreateOrConnectWithoutRoomInput = {
@@ -9103,32 +9161,6 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutRoomsInput, UserUncheckedCreateWithoutRoomsInput>
   }
 
-  export type UserMessageCreateWithoutRoomInput = {
-    isHidden?: boolean
-    isNotificationMuted?: boolean
-    isMarkedFavourite?: boolean
-    isPinned?: boolean
-    user: UserCreateNestedOneWithoutUserMessageInput
-  }
-
-  export type UserMessageUncheckedCreateWithoutRoomInput = {
-    username: string
-    isHidden?: boolean
-    isNotificationMuted?: boolean
-    isMarkedFavourite?: boolean
-    isPinned?: boolean
-  }
-
-  export type UserMessageCreateOrConnectWithoutRoomInput = {
-    where: UserMessageWhereUniqueInput
-    create: XOR<UserMessageCreateWithoutRoomInput, UserMessageUncheckedCreateWithoutRoomInput>
-  }
-
-  export type UserMessageCreateManyRoomInputEnvelope = {
-    data: Enumerable<UserMessageCreateManyRoomInput>
-    skipDuplicates?: boolean
-  }
-
   export type MessageUpsertWithWhereUniqueWithoutRoomInput = {
     where: MessageWhereUniqueInput
     update: XOR<MessageUpdateWithoutRoomInput, MessageUncheckedUpdateWithoutRoomInput>
@@ -9190,22 +9222,6 @@ export namespace Prisma {
     status?: EnumUserStatusFilter | UserStatus
   }
 
-  export type UserMessageUpsertWithWhereUniqueWithoutRoomInput = {
-    where: UserMessageWhereUniqueInput
-    update: XOR<UserMessageUpdateWithoutRoomInput, UserMessageUncheckedUpdateWithoutRoomInput>
-    create: XOR<UserMessageCreateWithoutRoomInput, UserMessageUncheckedCreateWithoutRoomInput>
-  }
-
-  export type UserMessageUpdateWithWhereUniqueWithoutRoomInput = {
-    where: UserMessageWhereUniqueInput
-    data: XOR<UserMessageUpdateWithoutRoomInput, UserMessageUncheckedUpdateWithoutRoomInput>
-  }
-
-  export type UserMessageUpdateManyWithWhereWithoutRoomInput = {
-    where: UserMessageScalarWhereInput
-    data: XOR<UserMessageUpdateManyMutationInput, UserMessageUncheckedUpdateManyWithoutUserMessageInput>
-  }
-
   export type UserCreateWithoutUserRoomInput = {
     userId?: string
     username: string
@@ -9244,7 +9260,6 @@ export namespace Prisma {
     roomAvatar?: string | null
     message?: MessageCreateNestedManyWithoutRoomInput
     user?: UserCreateNestedManyWithoutRoomsInput
-    UserMessage?: UserMessageCreateNestedManyWithoutRoomInput
   }
 
   export type RoomUncheckedCreateWithoutUserRoomInput = {
@@ -9254,7 +9269,6 @@ export namespace Prisma {
     roomAvatar?: string | null
     message?: MessageUncheckedCreateNestedManyWithoutRoomInput
     user?: UserUncheckedCreateNestedManyWithoutRoomsInput
-    UserMessage?: UserMessageUncheckedCreateNestedManyWithoutRoomInput
   }
 
   export type RoomCreateOrConnectWithoutUserRoomInput = {
@@ -9305,7 +9319,6 @@ export namespace Prisma {
     roomAvatar?: NullableStringFieldUpdateOperationsInput | string | null
     message?: MessageUpdateManyWithoutRoomNestedInput
     user?: UserUpdateManyWithoutRoomsNestedInput
-    UserMessage?: UserMessageUpdateManyWithoutRoomNestedInput
   }
 
   export type RoomUncheckedUpdateWithoutUserRoomInput = {
@@ -9315,7 +9328,6 @@ export namespace Prisma {
     roomAvatar?: NullableStringFieldUpdateOperationsInput | string | null
     message?: MessageUncheckedUpdateManyWithoutRoomNestedInput
     user?: UserUncheckedUpdateManyWithoutRoomsNestedInput
-    UserMessage?: UserMessageUncheckedUpdateManyWithoutRoomNestedInput
   }
 
   export type UserCreateWithoutMessageInput = {
@@ -9356,7 +9368,6 @@ export namespace Prisma {
     roomAvatar?: string | null
     userRoom?: UserRoomCreateNestedManyWithoutRoomInput
     user?: UserCreateNestedManyWithoutRoomsInput
-    UserMessage?: UserMessageCreateNestedManyWithoutRoomInput
   }
 
   export type RoomUncheckedCreateWithoutMessageInput = {
@@ -9366,12 +9377,37 @@ export namespace Prisma {
     roomAvatar?: string | null
     userRoom?: UserRoomUncheckedCreateNestedManyWithoutRoomInput
     user?: UserUncheckedCreateNestedManyWithoutRoomsInput
-    UserMessage?: UserMessageUncheckedCreateNestedManyWithoutRoomInput
   }
 
   export type RoomCreateOrConnectWithoutMessageInput = {
     where: RoomWhereUniqueInput
     create: XOR<RoomCreateWithoutMessageInput, RoomUncheckedCreateWithoutMessageInput>
+  }
+
+  export type UserMessageCreateWithoutMessageInput = {
+    isHidden?: boolean
+    isNotificationMuted?: boolean
+    isMarkedFavourite?: boolean
+    isPinned?: boolean
+    user: UserCreateNestedOneWithoutUserMessageInput
+  }
+
+  export type UserMessageUncheckedCreateWithoutMessageInput = {
+    username: string
+    isHidden?: boolean
+    isNotificationMuted?: boolean
+    isMarkedFavourite?: boolean
+    isPinned?: boolean
+  }
+
+  export type UserMessageCreateOrConnectWithoutMessageInput = {
+    where: UserMessageWhereUniqueInput
+    create: XOR<UserMessageCreateWithoutMessageInput, UserMessageUncheckedCreateWithoutMessageInput>
+  }
+
+  export type UserMessageCreateManyMessageInputEnvelope = {
+    data: Enumerable<UserMessageCreateManyMessageInput>
+    skipDuplicates?: boolean
   }
 
   export type UserUpsertWithoutMessageInput = {
@@ -9417,7 +9453,6 @@ export namespace Prisma {
     roomAvatar?: NullableStringFieldUpdateOperationsInput | string | null
     userRoom?: UserRoomUpdateManyWithoutRoomNestedInput
     user?: UserUpdateManyWithoutRoomsNestedInput
-    UserMessage?: UserMessageUpdateManyWithoutRoomNestedInput
   }
 
   export type RoomUncheckedUpdateWithoutMessageInput = {
@@ -9427,7 +9462,22 @@ export namespace Prisma {
     roomAvatar?: NullableStringFieldUpdateOperationsInput | string | null
     userRoom?: UserRoomUncheckedUpdateManyWithoutRoomNestedInput
     user?: UserUncheckedUpdateManyWithoutRoomsNestedInput
-    UserMessage?: UserMessageUncheckedUpdateManyWithoutRoomNestedInput
+  }
+
+  export type UserMessageUpsertWithWhereUniqueWithoutMessageInput = {
+    where: UserMessageWhereUniqueInput
+    update: XOR<UserMessageUpdateWithoutMessageInput, UserMessageUncheckedUpdateWithoutMessageInput>
+    create: XOR<UserMessageCreateWithoutMessageInput, UserMessageUncheckedCreateWithoutMessageInput>
+  }
+
+  export type UserMessageUpdateWithWhereUniqueWithoutMessageInput = {
+    where: UserMessageWhereUniqueInput
+    data: XOR<UserMessageUpdateWithoutMessageInput, UserMessageUncheckedUpdateWithoutMessageInput>
+  }
+
+  export type UserMessageUpdateManyWithWhereWithoutMessageInput = {
+    where: UserMessageScalarWhereInput
+    data: XOR<UserMessageUpdateManyMutationInput, UserMessageUncheckedUpdateManyWithoutUserMessageInput>
   }
 
   export type UserCreateWithoutUserMessageInput = {
@@ -9461,29 +9511,29 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutUserMessageInput, UserUncheckedCreateWithoutUserMessageInput>
   }
 
-  export type RoomCreateWithoutUserMessageInput = {
-    roomId?: string
-    roomType: RoomType
-    roomDisplayName?: string | null
-    roomAvatar?: string | null
-    message?: MessageCreateNestedManyWithoutRoomInput
-    userRoom?: UserRoomCreateNestedManyWithoutRoomInput
-    user?: UserCreateNestedManyWithoutRoomsInput
+  export type MessageCreateWithoutUserMessageInput = {
+    key?: string
+    content: string
+    createdAt?: Date | string
+    editedAt?: Date | string | null
+    contentType: MessageContentType
+    sender: UserCreateNestedOneWithoutMessageInput
+    room: RoomCreateNestedOneWithoutMessageInput
   }
 
-  export type RoomUncheckedCreateWithoutUserMessageInput = {
-    roomId?: string
-    roomType: RoomType
-    roomDisplayName?: string | null
-    roomAvatar?: string | null
-    message?: MessageUncheckedCreateNestedManyWithoutRoomInput
-    userRoom?: UserRoomUncheckedCreateNestedManyWithoutRoomInput
-    user?: UserUncheckedCreateNestedManyWithoutRoomsInput
+  export type MessageUncheckedCreateWithoutUserMessageInput = {
+    key?: string
+    senderUsername: string
+    roomId: string
+    content: string
+    createdAt?: Date | string
+    editedAt?: Date | string | null
+    contentType: MessageContentType
   }
 
-  export type RoomCreateOrConnectWithoutUserMessageInput = {
-    where: RoomWhereUniqueInput
-    create: XOR<RoomCreateWithoutUserMessageInput, RoomUncheckedCreateWithoutUserMessageInput>
+  export type MessageCreateOrConnectWithoutUserMessageInput = {
+    where: MessageWhereUniqueInput
+    create: XOR<MessageCreateWithoutUserMessageInput, MessageUncheckedCreateWithoutUserMessageInput>
   }
 
   export type UserUpsertWithoutUserMessageInput = {
@@ -9517,29 +9567,29 @@ export namespace Prisma {
     rooms?: RoomUncheckedUpdateManyWithoutUserNestedInput
   }
 
-  export type RoomUpsertWithoutUserMessageInput = {
-    update: XOR<RoomUpdateWithoutUserMessageInput, RoomUncheckedUpdateWithoutUserMessageInput>
-    create: XOR<RoomCreateWithoutUserMessageInput, RoomUncheckedCreateWithoutUserMessageInput>
+  export type MessageUpsertWithoutUserMessageInput = {
+    update: XOR<MessageUpdateWithoutUserMessageInput, MessageUncheckedUpdateWithoutUserMessageInput>
+    create: XOR<MessageCreateWithoutUserMessageInput, MessageUncheckedCreateWithoutUserMessageInput>
   }
 
-  export type RoomUpdateWithoutUserMessageInput = {
-    roomId?: StringFieldUpdateOperationsInput | string
-    roomType?: EnumRoomTypeFieldUpdateOperationsInput | RoomType
-    roomDisplayName?: NullableStringFieldUpdateOperationsInput | string | null
-    roomAvatar?: NullableStringFieldUpdateOperationsInput | string | null
-    message?: MessageUpdateManyWithoutRoomNestedInput
-    userRoom?: UserRoomUpdateManyWithoutRoomNestedInput
-    user?: UserUpdateManyWithoutRoomsNestedInput
+  export type MessageUpdateWithoutUserMessageInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contentType?: EnumMessageContentTypeFieldUpdateOperationsInput | MessageContentType
+    sender?: UserUpdateOneRequiredWithoutMessageNestedInput
+    room?: RoomUpdateOneRequiredWithoutMessageNestedInput
   }
 
-  export type RoomUncheckedUpdateWithoutUserMessageInput = {
+  export type MessageUncheckedUpdateWithoutUserMessageInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    senderUsername?: StringFieldUpdateOperationsInput | string
     roomId?: StringFieldUpdateOperationsInput | string
-    roomType?: EnumRoomTypeFieldUpdateOperationsInput | RoomType
-    roomDisplayName?: NullableStringFieldUpdateOperationsInput | string | null
-    roomAvatar?: NullableStringFieldUpdateOperationsInput | string | null
-    message?: MessageUncheckedUpdateManyWithoutRoomNestedInput
-    userRoom?: UserRoomUncheckedUpdateManyWithoutRoomNestedInput
-    user?: UserUncheckedUpdateManyWithoutRoomsNestedInput
+    content?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contentType?: EnumMessageContentTypeFieldUpdateOperationsInput | MessageContentType
   }
 
   export type MessageCreateManySenderInput = {
@@ -9564,7 +9614,7 @@ export namespace Prisma {
   }
 
   export type UserMessageCreateManyUserInput = {
-    roomId: string
+    messageKey: string
     isHidden?: boolean
     isNotificationMuted?: boolean
     isMarkedFavourite?: boolean
@@ -9578,6 +9628,7 @@ export namespace Prisma {
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contentType?: EnumMessageContentTypeFieldUpdateOperationsInput | MessageContentType
     room?: RoomUpdateOneRequiredWithoutMessageNestedInput
+    userMessage?: UserMessageUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateWithoutSenderInput = {
@@ -9587,6 +9638,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contentType?: EnumMessageContentTypeFieldUpdateOperationsInput | MessageContentType
+    userMessage?: UserMessageUncheckedUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateManyWithoutMessageInput = {
@@ -9641,7 +9693,6 @@ export namespace Prisma {
     roomAvatar?: NullableStringFieldUpdateOperationsInput | string | null
     message?: MessageUpdateManyWithoutRoomNestedInput
     userRoom?: UserRoomUpdateManyWithoutRoomNestedInput
-    UserMessage?: UserMessageUpdateManyWithoutRoomNestedInput
   }
 
   export type RoomUncheckedUpdateWithoutUserInput = {
@@ -9651,7 +9702,6 @@ export namespace Prisma {
     roomAvatar?: NullableStringFieldUpdateOperationsInput | string | null
     message?: MessageUncheckedUpdateManyWithoutRoomNestedInput
     userRoom?: UserRoomUncheckedUpdateManyWithoutRoomNestedInput
-    UserMessage?: UserMessageUncheckedUpdateManyWithoutRoomNestedInput
   }
 
   export type RoomUncheckedUpdateManyWithoutRoomsInput = {
@@ -9666,11 +9716,11 @@ export namespace Prisma {
     isNotificationMuted?: BoolFieldUpdateOperationsInput | boolean
     isMarkedFavourite?: BoolFieldUpdateOperationsInput | boolean
     isPinned?: BoolFieldUpdateOperationsInput | boolean
-    room?: RoomUpdateOneRequiredWithoutUserMessageNestedInput
+    message?: MessageUpdateOneRequiredWithoutUserMessageNestedInput
   }
 
   export type UserMessageUncheckedUpdateWithoutUserInput = {
-    roomId?: StringFieldUpdateOperationsInput | string
+    messageKey?: StringFieldUpdateOperationsInput | string
     isHidden?: BoolFieldUpdateOperationsInput | boolean
     isNotificationMuted?: BoolFieldUpdateOperationsInput | boolean
     isMarkedFavourite?: BoolFieldUpdateOperationsInput | boolean
@@ -9678,7 +9728,7 @@ export namespace Prisma {
   }
 
   export type UserMessageUncheckedUpdateManyWithoutUserMessageInput = {
-    roomId?: StringFieldUpdateOperationsInput | string
+    messageKey?: StringFieldUpdateOperationsInput | string
     isHidden?: BoolFieldUpdateOperationsInput | boolean
     isNotificationMuted?: BoolFieldUpdateOperationsInput | boolean
     isMarkedFavourite?: BoolFieldUpdateOperationsInput | boolean
@@ -9706,14 +9756,6 @@ export namespace Prisma {
     isPinned?: boolean
   }
 
-  export type UserMessageCreateManyRoomInput = {
-    username: string
-    isHidden?: boolean
-    isNotificationMuted?: boolean
-    isMarkedFavourite?: boolean
-    isPinned?: boolean
-  }
-
   export type MessageUpdateWithoutRoomInput = {
     key?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
@@ -9721,6 +9763,7 @@ export namespace Prisma {
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contentType?: EnumMessageContentTypeFieldUpdateOperationsInput | MessageContentType
     sender?: UserUpdateOneRequiredWithoutMessageNestedInput
+    userMessage?: UserMessageUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateWithoutRoomInput = {
@@ -9730,6 +9773,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contentType?: EnumMessageContentTypeFieldUpdateOperationsInput | MessageContentType
+    userMessage?: UserMessageUncheckedUpdateManyWithoutMessageNestedInput
   }
 
   export type UserRoomUpdateWithoutRoomInput = {
@@ -9792,7 +9836,15 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | UserStatus
   }
 
-  export type UserMessageUpdateWithoutRoomInput = {
+  export type UserMessageCreateManyMessageInput = {
+    username: string
+    isHidden?: boolean
+    isNotificationMuted?: boolean
+    isMarkedFavourite?: boolean
+    isPinned?: boolean
+  }
+
+  export type UserMessageUpdateWithoutMessageInput = {
     isHidden?: BoolFieldUpdateOperationsInput | boolean
     isNotificationMuted?: BoolFieldUpdateOperationsInput | boolean
     isMarkedFavourite?: BoolFieldUpdateOperationsInput | boolean
@@ -9800,7 +9852,7 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutUserMessageNestedInput
   }
 
-  export type UserMessageUncheckedUpdateWithoutRoomInput = {
+  export type UserMessageUncheckedUpdateWithoutMessageInput = {
     username?: StringFieldUpdateOperationsInput | string
     isHidden?: BoolFieldUpdateOperationsInput | boolean
     isNotificationMuted?: BoolFieldUpdateOperationsInput | boolean

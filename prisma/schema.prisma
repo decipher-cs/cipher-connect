@@ -51,10 +51,9 @@ model Room {
   roomDisplayName String? @db.VarChar(16)
   roomAvatar      String? @db.MediumText
 
-  message     Message[]
-  userRoom    UserRoom[]
-  user        User[]
-  UserMessage UserMessage[]
+  message  Message[]
+  userRoom UserRoom[]
+  user     User[]
 }
 
 model UserRoom {
@@ -96,21 +95,25 @@ model Message {
 
   sender User @relation(fields: [senderUsername], references: [username], onDelete: Cascade)
   room   Room @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
+
+  userMessage UserMessage[]
+
+  @@unique([senderUsername, key])
 }
 
 model UserMessage {
-  username String
-  roomId   String
+  messageKey String
+  username   String
 
   isHidden            Boolean @default(false)
   isNotificationMuted Boolean @default(false)
   isMarkedFavourite   Boolean @default(false)
   isPinned            Boolean @default(false)
 
-  user User @relation(fields: [username], references: [username], onDelete: Cascade)
-  room Room @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
+  user    User    @relation(fields: [username], references: [username], onDelete: Cascade)
+  message Message @relation(fields: [messageKey], references: [key])
 
-  @@id([username, roomId])
+  @@id([username, messageKey])
 }
 
 model Session {

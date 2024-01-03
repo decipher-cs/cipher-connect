@@ -123,8 +123,8 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 });
 
 exports.Prisma.UserMessageScalarFieldEnum = {
+  messageKey: 'messageKey',
   username: 'username',
-  roomId: 'roomId',
   isHidden: 'isHidden',
   isNotificationMuted: 'isNotificationMuted',
   isMarkedFavourite: 'isMarkedFavourite',
