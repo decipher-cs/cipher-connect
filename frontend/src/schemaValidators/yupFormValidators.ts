@@ -53,8 +53,10 @@ export const roomCreationFormValidation = z.union([
             .superRefine(async (usernames, ctx) => {
                 for (const i in usernames) {
                     try {
+                        const user = usernames[i]
+                        if (!user) throw new Error('username[i] not defined')
                         const response = await axiosServerInstance.get<boolean>(
-                            Routes.get.isUsernameValid + '/' + usernames[i].username
+                            Routes.get.isUsernameValid + '/' + user.username
                         )
                         if (response.data === false)
                             ctx.addIssue({
