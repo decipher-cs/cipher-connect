@@ -1,4 +1,4 @@
-import { Room, UserInDb, ServerMessage as Message } from './prisma.client'
+import { Room, UserInDb, ServerMessage as Message, Message as MessageWithOptions } from './prisma.client'
 
 // export * from '../../../@types/socket'
 type User = Omit<UserInDb, 'passwordHash' | 'userId'>

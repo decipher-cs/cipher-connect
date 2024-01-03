@@ -59,8 +59,8 @@ export type ServerMessage = {
  *
  */
 export type UserMessage = {
+    messageKey: string
     username: string
-    roomId: string
     isHidden: boolean
     isNotificationMuted: boolean
     isMarkedFavourite: boolean
@@ -103,7 +103,9 @@ export enum UserStatus {
 
 export type MessageDeliveryStatus = 'delivered' | 'delivering' | 'failed'
 
-export type Message = ServerMessage & { deliveryStatus: MessageDeliveryStatus }
+export type MessageWithOptions = ServerMessage & { messageOptions?: UserMessage }
+
+export type Message = MessageWithOptions & { deliveryStatus: MessageDeliveryStatus }
 
 export type UserWithoutID = Omit<UserInDb, 'userId'>
 
