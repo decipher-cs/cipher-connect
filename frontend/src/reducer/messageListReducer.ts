@@ -1,7 +1,7 @@
-import { Message } from '../types/prisma.client'
+import { produce } from 'immer'
+import { Message, Room } from '../types/prisma.client'
 
-type MessageArray = Message[]
-// type MessageArray = { [key: string]: Message[] }
+export type EveryRoomMessage = { readonly [roomId: string]: Message[] }
 
 export enum MessageListActionType {
     initializeMessages = 'initializeMessages',
@@ -10,6 +10,7 @@ export enum MessageListActionType {
     prepend = 'prepend',
     remove = 'remove',
     edit = 'edit',
+    editConfig = 'editOptions',
     clearMessageList = 'clearMessageList',
     changeDeliveryStatus = 'changeDeliveryStatus',
 }
@@ -17,76 +18,131 @@ export type MessageListAction =
     | {
           type: MessageListActionType.initializeMessages
           newMessages: Message[]
+          roomId: Room['roomId']
       }
     | {
           type: MessageListActionType.add
           newMessage: Message | Message[]
+          roomId: Room['roomId']
       }
     | {
           type: MessageListActionType.append
           newMessage: Message[]
+          roomId: Room['roomId']
       }
     | {
           type: MessageListActionType.prepend
           newMessage: Message[]
+          roomId: Room['roomId']
       }
     | {
           type: MessageListActionType.remove
           messageKey: Message['key']
+          roomId: Room['roomId']
       }
     | {
           type: MessageListActionType.edit
           updatedMessage: Pick<Message, 'editedAt' | 'content' | 'key' | 'deliveryStatus'>
+          roomId: Room['roomId']
+      }
+    | {
+          type: MessageListActionType.editConfig
+          updatedConfig: Omit<Message['messageOptions'], 'roomId' | 'username'>
+          messageKey: Message['key']
+          roomId: Room['roomId']
       }
     | {
           type: MessageListActionType.changeDeliveryStatus
           messageId: Message['key']
           changeStatusTo: Message['deliveryStatus']
+          roomId: Room['roomId']
       }
     | {
           type: MessageListActionType.clearMessageList
+          roomId: Room['roomId']
       }
 
-export const messageListReducer: React.Reducer<MessageArray, MessageListAction> = (state, action) => {
+export const messageListReducer: React.Reducer<EveryRoomMessage, MessageListAction> = (state, action) => {
     const { type } = action
 
-    const messageList = state
+    const messages = state
 
     switch (type) {
         case MessageListActionType.initializeMessages:
-            return [...action.newMessages]
+            return produce(messages, draft => {
+                draft[action.roomId] = action.newMessages
+            })
 
         case MessageListActionType.add:
-            if (Array.isArray(action.newMessage)) return [...messageList, ...action.newMessage]
-            else return [...messageList, action.newMessage]
+            return produce(messages, draft => {
+                draft[action.roomId] = draft[action.roomId]?.concat(action.newMessage) ?? []
+            })
 
         case MessageListActionType.append:
-            return [...messageList, ...action.newMessage]
+            return produce(messages, draft => {
+                draft[action.roomId]?.push(...action.newMessage)
+            })
 
         case MessageListActionType.prepend:
-            return [...action.newMessage, ...messageList]
+            return produce(messages, draft => {
+                draft[action.roomId]?.unshift(...action.newMessage)
+            })
 
         case MessageListActionType.remove:
-            return messageList.filter(({ key }) => key !== action.messageKey)
+            return produce(messages, draft => {
+                draft[action.roomId]?.forEach((message, i) => {
+                    if (message.key === action.messageKey) {
+                        if (message.messageOptions) message.messageOptions.isHidden = true
+                        else
+                            message.messageOptions = {
+                                messageKey: message.key,
+                                username: message.senderUsername,
+                                isHidden: true,
+                                isNotificationMuted: false,
+                                isMarkedFavourite: false,
+                                isPinned: false,
+                            }
+                    }
+                })
+            })
+
+        case MessageListActionType.editConfig:
+            return produce(messages, draft => {
+                draft[action.roomId]?.forEach(message => {
+                    if (message.key === action.messageKey)
+                        if (message.messageOptions)
+                            message.messageOptions = { ...message.messageOptions, ...action.updatedConfig }
+                        else
+                            message.messageOptions = {
+                                messageKey: message.key,
+                                username: message.senderUsername,
+                                isHidden: false,
+                                isNotificationMuted: false,
+                                isMarkedFavourite: false,
+                                isPinned: false,
+                                ...action.updatedConfig,
+                            }
+                })
+            })
 
         case MessageListActionType.edit:
-            const { updatedMessage } = action
-            return messageList.map((message, i) => {
-                if (message.key === action.updatedMessage.key) {
-                    const msg = { ...message, ...updatedMessage }
-                    return msg
-                } else return message
+            return produce(messages, draft => {
+                draft[action.roomId]?.forEach(message => {
+                    if (message.key === action.updatedMessage.key) message = { ...message, ...action.updatedMessage }
+                })
             })
 
         case MessageListActionType.changeDeliveryStatus:
-            return messageList.map((message, i) => {
-                if (message.key === action.messageId) {
-                    return { ...messageList[i], deliveryStatus: action.changeStatusTo }
-                } else return message
+            return produce(messages, draft => {
+                draft[action.roomId]?.forEach(message => {
+                    if (message.key === action.messageId) message.deliveryStatus = action.changeStatusTo
+                })
             })
 
         case MessageListActionType.clearMessageList:
-            return []
+            return produce(messages, draft => {
+                draft[action.roomId] = []
+            })
 
         default:
             throw new Error('Unknown Error')
