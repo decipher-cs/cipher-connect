@@ -47,7 +47,7 @@ interface RoomInfoProps {
 type UserRoomPersonalConfig = Partial<
     Pick<UserRoom, 'isNotificationMuted' | 'isHidden' | 'isPinned' | 'isMarkedFavourite'>
 >
-type UserRoomSharedConfig = Partial<Pick<UserRoom, 'isBlocked' | 'lastReadMessage' | 'isAdmin' | 'joinedAt'>>
+type UserRoomSharedConfig = Partial<Pick<UserRoom, 'isBlocked' | 'lastReadMessageId' | 'isAdmin' | 'joinedAt'>>
 
 type RoomSharedConfig = Partial<Pick<Room, 'roomAvatar' | 'roomDisplayName'>>
 

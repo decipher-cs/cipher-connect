@@ -83,7 +83,11 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
             deliveryStatus: 'delivering',
         }
 
-        props.messageListDispatcher({ type: MessageListActionType.add, newMessage: message })
+        props.messageListDispatcher({
+            type: MessageListActionType.append,
+            newMessage: [message],
+            roomId: props.currRoom.roomId,
+        })
 
         try {
             if (content instanceof File) {
@@ -99,6 +103,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
                     type: MessageListActionType.changeDeliveryStatus,
                     messageId: message.key,
                     changeStatusTo: res === 'ok' ? 'delivered' : 'failed',
+                    roomId: props.currRoom.roomId,
                 })
             })
         } catch (error) {
@@ -107,6 +112,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
                 type: MessageListActionType.changeDeliveryStatus,
                 messageId: message.key,
                 changeStatusTo: 'failed',
+                roomId: props.currRoom.roomId,
             })
         }
     }
@@ -122,7 +128,8 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
         for (let file of fileList) {
             const u8Array = new Uint8Array(await file.arrayBuffer())
 
-            const { extension, mime } = filetypeinfo(u8Array)[0]
+            const extension = filetypeinfo(u8Array)?.at(0)?.extension
+            const mime = filetypeinfo(u8Array)?.at(0)?.mime
 
             // TODO: throw error or notification
             if (extension === undefined || mime === undefined) return

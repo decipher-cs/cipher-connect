@@ -33,7 +33,8 @@ export const MessageTilePopover = ({
 
     const handleMessageDelete = async () => {
         const res = await axiosServerInstance.delete(Routes.delete.message + '/' + messageId)
-        if (res.status === 201) messageDispatcher({ type: MessageListActionType.remove, messageKey: messageId })
+        if (res.status === 201) messageDispatcher({ type: MessageListActionType.remove, messageKey: messageId, roomId })
+
         handleClose()
     }
 

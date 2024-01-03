@@ -54,14 +54,6 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     const [firstItemIndex, setFirstItemIndex] = useState(100000)
 
     useEffect(() => {
-        return () => {
-            messageDispatcher({
-                type: MessageListActionType.clearMessageList,
-            })
-        }
-    }, [])
-
-    useEffect(() => {
         if (messageCount && messageCountFetchStatus === 'success') setFirstItemIndex(messageCount)
     }, [messageCount])
 
@@ -70,7 +62,6 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     const {
         data: serverMessages,
         status,
-        fetchStatus: messageFetchStatus,
         fetchNextPage,
         isFetchingNextPage,
         hasNextPage,
@@ -101,6 +92,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
         messageDispatcher({
             type: MessageListActionType.prepend,
             newMessage: messages,
+            roomId: currRoom.roomId,
         })
     }, [serverMessages?.pages, serverMessages?.pageParams])
 
@@ -141,26 +133,12 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     }, [currRoom.roomId])
 
     useEffect(() => {
-        socket.on('message', messageFromServer => {
-            if (messageFromServer.roomId === currRoom.roomId) {
-                messageDispatcher({
-                    type: MessageListActionType.append,
-                    newMessage: [{ ...messageFromServer, deliveryStatus: 'delivered' }],
-                })
-            }
-        })
-
-        return () => {
-            socket.removeListener('message')
-        }
-    }, [currRoom.roomId])
-
-    useEffect(() => {
         socket.on('textMessageUpdated', (key, content, roomId, editedAt) => {
             if (roomId === currRoom.roomId) {
                 messageDispatcher({
                     type: MessageListActionType.edit,
                     updatedMessage: { content, key, editedAt, deliveryStatus: 'delivered' },
+                    roomId: currRoom.roomId,
                 })
             }
         })
@@ -193,7 +171,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                         firstItemIndex={firstItemIndex}
                         endReached={() => {
                             axiosServerInstance.put(Routes.put.lastReadMessage, {
-                                lastReadMessageId: messages[messages.length - 1].key,
+                                lastReadMessageId: messages[messages.length - 1]?.key ?? messages.length,
                                 roomId: currRoom.roomId,
                             })
                         }}

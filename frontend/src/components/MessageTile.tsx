@@ -194,7 +194,7 @@ type TextDisplayProps = {
 }
 const TextDisplay = (props: TextDisplayProps) => {
     const { message, textEditModeEnabled, setTextEditMode, messageDispatcher } = props
-    const { content, senderUsername, key } = message
+    const { content, senderUsername, key, roomId } = message
 
     const [editableInputValue, setEditableInputValue] = useState(content)
 
@@ -214,6 +214,7 @@ const TextDisplay = (props: TextDisplayProps) => {
                 editedAt: new Date(),
                 deliveryStatus: 'delivering',
             },
+            roomId,
         })
         axiosServerInstance
             .put(Routes.put.textMessage, {
@@ -225,6 +226,7 @@ const TextDisplay = (props: TextDisplayProps) => {
                     type: MessageListActionType.changeDeliveryStatus,
                     messageId: key,
                     changeStatusTo: 'delivered',
+                    roomId,
                 })
             })
             .catch(err => {
@@ -232,6 +234,7 @@ const TextDisplay = (props: TextDisplayProps) => {
                     type: MessageListActionType.changeDeliveryStatus,
                     messageId: key,
                     changeStatusTo: 'failed',
+                    roomId,
                 })
             })
             .finally(() => {})
