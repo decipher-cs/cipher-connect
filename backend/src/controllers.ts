@@ -177,15 +177,17 @@ export const returnUsers = async (req: Request, res: Response) => {
 export const fetchMessages = async (req: Request, res: Response) => {
     const { roomId } = req.params
     let { cursor, messageQuantity } = req.query
-    if (roomId === undefined) {
+    const username = req.session.username
+
+    if (roomId === undefined || !username) {
         res.sendStatus(400)
         return
     }
 
-    messageQuantity = Number(messageQuantity) ? messageQuantity : undefined
+    const messageTakeSize = isNaN(Number(messageQuantity)) ? undefined : Number(messageQuantity)
     cursor = cursor ? String(cursor) : undefined
 
-    const messages = await getMessagesFromRoom(roomId, cursor, Number(messageQuantity))
+    const messages = await getMessagesFromRoom(roomId, username, cursor, messageTakeSize)
 
     if (messages === undefined) {
         res.sendStatus(400)
