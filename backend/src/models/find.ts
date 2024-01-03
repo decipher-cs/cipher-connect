@@ -139,7 +139,7 @@ export const getMessagesFromRoom = async (
             where: { AND: [{ username }], OR: messages.map(msg => ({ messageKey: msg.key })) },
         })
 
-        return messages.map(message => {
+        const res = messages.map(message => {
             let messageOptions = userMessages.find(userMsg => {
                 userMsg.messageKey === message.key
             })
@@ -159,7 +159,10 @@ export const getMessagesFromRoom = async (
                 messageOptions,
             } satisfies MessageWithOptions
         }) satisfies MessageWithOptions[]
+
+        return res.reverse()
     } catch (error) {
+        console.log(error)
         return null
     }
 }
