@@ -1,4 +1,4 @@
-import { Avatar, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
+import { Avatar, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material'
 import MarkUnreadChatAltIcon from '@mui/icons-material/MarkUnreadChatAlt'
 import React, { memo, useContext, useEffect, useState } from 'react'
 import { MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
@@ -17,6 +17,7 @@ interface RoomListItemProps {
     thisRoomIndex: number
     usersInfo: RoomsState['usersInfo']
     mutateMessageReadStatus: UseMutateFunction<any, unknown, { roomId: string; messageStatus: boolean }, unknown>
+    mostRecentMessage: Message['content']
 }
 
 export const RoomListItem = memo((props: RoomListItemProps) => {
@@ -34,7 +35,11 @@ export const RoomListItem = memo((props: RoomListItemProps) => {
 
         const otherMember = room.participants.filter(name => name !== username)[0]
 
-        return usersInfo[otherMember]?.avatarPath ?? undefined
+        if (!otherMember) return otherMember
+
+        const otherUserInfo = usersInfo[otherMember]
+
+        return otherUserInfo?.avatarPath ?? undefined
     })()
 
     return (
@@ -70,6 +75,9 @@ export const RoomListItem = memo((props: RoomListItemProps) => {
                 <ListItemText primary={displayName} secondary={props.room.roomType} />
             </ListItem>
 
+            <Typography variant='caption' color={'grey'} textOverflow='clip' noWrap>
+                {props.mostRecentMessage}
+            </Typography>
             {/* {props.room.hasUnreadMessages === true && props.room.isNotificationMuted === false ? ( */}
             {/*     <MarkUnreadChatAltIcon /> */}
             {/* ) : null} */}
