@@ -77,11 +77,15 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                         }`
                 )
                 .then(res => {
-                    const result: Message[] = res.data.map(msg => ({ ...msg, deliveryStatus: 'delivered' }))
+                    const result = res.data.map(msg => ({ ...msg, deliveryStatus: 'delivered' })) satisfies Message[]
                     return result
                 }),
 
         getNextPageParam: (lastPage, _) => lastPage.at(0)?.key,
+        initialData: {
+            pages: [[]],
+            pageParams: [messages.at(0)?.key],
+        },
     })
 
     useEffect(() => {
@@ -123,7 +127,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
     useEffect(() => {
         socket.on('messageDeleted', (messageKey, roomId) => {
             if (currRoom.roomId === roomId) {
-                messageDispatcher({ type: MessageListActionType.remove, messageKey })
+                messageDispatcher({ type: MessageListActionType.remove, messageKey, roomId: currRoom.roomId })
             }
         })
 

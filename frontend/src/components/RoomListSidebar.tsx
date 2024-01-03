@@ -27,7 +27,7 @@ import { useDialog } from '../hooks/useDialog'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Routes } from '../types/routes'
 import { useSocket } from '../hooks/useSocket'
-import { RoomDetails, User } from '../types/prisma.client'
+import { Message, MessageWithOptions, RoomDetails, ServerMessage, User } from '../types/prisma.client'
 import { axiosServerInstance, queryClient } from '../App'
 import { useAuth } from '../hooks/useAuth'
 import { StyledTextField } from './StyledTextField'
@@ -35,6 +35,7 @@ import { ProfileSettings } from './ProfileSettings'
 import { AxiosError, isAxiosError } from 'axios'
 import Fuse from 'fuse.js'
 import { useFuzzySearch } from '../hooks/useFuzzySearch'
+import { EveryRoomMessage, MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
 
 const searchObjectKeys = ['roomDisplayName']
 
