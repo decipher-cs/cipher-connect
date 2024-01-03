@@ -185,7 +185,7 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
                             setFirstItemIndex(p => (p - messageFetchCount < 0 ? 0 : p - messageFetchCount))
                         }}
                         initialTopMostItemIndex={{ behavior: 'auto', index: messages.length - 1 }}
-                        itemContent={(i, message) => {
+                        itemContent={(_, message) => {
                             // TODO: figure out why this is happening. Could reveal some underlying bug
                             if (message.roomId !== currRoom.roomId)
                                 throw new Error('Message from one from leaked into other room.')

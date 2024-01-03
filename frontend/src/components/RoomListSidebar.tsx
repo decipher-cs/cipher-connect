@@ -27,7 +27,15 @@ import { useDialog } from '../hooks/useDialog'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Routes } from '../types/routes'
 import { useSocket } from '../hooks/useSocket'
-import { Message, MessageWithOptions, RoomDetails, ServerMessage, User } from '../types/prisma.client'
+import {
+    Message,
+    MessageContentType,
+    MessageWithOptions,
+    Room,
+    RoomDetails,
+    ServerMessage,
+    User,
+} from '../types/prisma.client'
 import { axiosServerInstance, queryClient } from '../App'
 import { useAuth } from '../hooks/useAuth'
 import { StyledTextField } from './StyledTextField'
@@ -210,6 +218,18 @@ export const RoomListSidebar = ({
     //     }
     // }, [rooms.selectedRoom])
 
+    const getMostRecentMessage = (roomId: Room['roomId']): string => {
+        const roomMessages = messages[roomId]
+
+        const mostRecentMessage = roomMessages?.at(-1)
+
+        if (!roomMessages || !mostRecentMessage) return ''
+
+        if (mostRecentMessage.contentType === MessageContentType.text) return mostRecentMessage.content
+
+        return mostRecentMessage.contentType
+    }
+
     if (roomFetchStatus === 'error') return <BrokenImageRounded sx={{ justifySelf: 'center', mt: '100%' }} />
 
     return (
@@ -270,9 +290,6 @@ export const RoomListSidebar = ({
                             </ListSubheader>
                             <List sx={{ overflowY: 'auto', mb: 3 }}>
                                 {rooms.joinedRooms.map((room, i) => {
-                                    const roomId = room.roomId
-                                    const roomMessages = messages[roomId] ?? []
-                                    const mostRecentMessage = roomMessages.at(-1)?.content ?? 'Example-Message'
                                     if (room.isPinned)
                                         return (
                                             <RoomListItem
@@ -283,7 +300,7 @@ export const RoomListSidebar = ({
                                                 room={room}
                                                 roomDispatcher={roomDispatcher}
                                                 mutateMessageReadStatus={mutateMessageReadStatus}
-                                                mostRecentMessage={mostRecentMessage}
+                                                mostRecentMessage={getMostRecentMessage(room.roomId)}
                                             />
                                         )
                                 })}
@@ -299,10 +316,6 @@ export const RoomListSidebar = ({
                             </ListSubheader>
                             <List sx={{ overflowY: 'auto' }}>
                                 {queryMetchedRooms.map((room, i) => {
-                                    const roomId = room.roomId
-                                    const roomMessages = messages[roomId] ?? []
-                                    const mostRecentMessage = roomMessages.at(-1)?.content ?? 'Example-Message'
-
                                     return (
                                         <RoomListItem
                                             key={room.roomId}
@@ -312,7 +325,7 @@ export const RoomListSidebar = ({
                                             usersInfo={rooms.usersInfo}
                                             roomDispatcher={roomDispatcher}
                                             mutateMessageReadStatus={mutateMessageReadStatus}
-                                            mostRecentMessage={mostRecentMessage}
+                                            mostRecentMessage={getMostRecentMessage(room.roomId)}
                                         />
                                     )
                                 })}
@@ -328,10 +341,6 @@ export const RoomListSidebar = ({
                             </ListSubheader>
                             <List sx={{ overflowY: 'auto' }}>
                                 {rooms.joinedRooms.map((room, i) => {
-                                    const roomId = room.roomId
-                                    const roomMessages = messages[roomId] ?? []
-                                    const mostRecentMessage = roomMessages.at(-1)?.content ?? 'Example-Message'
-
                                     if (room.isMarkedFavourite && !room.isPinned)
                                         return (
                                             <RoomListItem
@@ -342,7 +351,7 @@ export const RoomListSidebar = ({
                                                 roomDispatcher={roomDispatcher}
                                                 usersInfo={rooms.usersInfo}
                                                 mutateMessageReadStatus={mutateMessageReadStatus}
-                                                mostRecentMessage={mostRecentMessage}
+                                                mostRecentMessage={getMostRecentMessage(room.roomId)}
                                             />
                                         )
                                 })}
