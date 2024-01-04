@@ -10,7 +10,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material'
-import { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import {
     AddToPhotosRounded,
     BrokenImageRounded,
@@ -44,6 +44,7 @@ import { AxiosError, isAxiosError } from 'axios'
 import Fuse from 'fuse.js'
 import { useFuzzySearch } from '../hooks/useFuzzySearch'
 import { EveryRoomMessage, MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
+import { useToast } from '../hooks/useToast'
 
 const searchObjectKeys = ['roomDisplayName', 'participants']
 
@@ -55,13 +56,8 @@ interface RoomListSidebar {
     messages: EveryRoomMessage
 }
 
-export const RoomListSidebar = ({
-    messages,
-    messageDispatcher,
-    rooms,
-    roomDispatcher,
-    selectedTab,
-}: RoomListSidebar) => {
+export const RoomListSidebar = memo((props: RoomListSidebar) => {
+    const { messages, messageDispatcher, rooms, roomDispatcher, selectedTab } = props
     const { handleClose, handleOpen, dialogOpen } = useDialog()
 
     const {
@@ -178,7 +174,11 @@ export const RoomListSidebar = ({
             if (!room) {
                 refetch()
             } else if (changeType === 'membersJoined') {
-                roomDispatcher({ type: RoomActionType.addParticipantsToRoom, roomId, participants: updatedMemberIds })
+                roomDispatcher({
+                    type: RoomActionType.addParticipantsToRoom,
+                    roomId,
+                    participants: updatedMemberIds,
+                })
             } else if (changeType === 'membersLeft') {
                 roomDispatcher({
                     type: RoomActionType.removeParticipantsFromRoom,
@@ -364,4 +364,4 @@ export const RoomListSidebar = ({
             {selectedTab === 'settings' && <ProfileSettings />}
         </>
     )
-}
+})
