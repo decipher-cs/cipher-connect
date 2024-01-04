@@ -45,7 +45,34 @@ export const Pages = () => {
         }
     }, [user, status])
 
-    const { snackbarControllProps, alertControllProps, message } = useToast()
+    useEffect(() => {
+        const onOnline = () => notify('Connection found', 'success')
+        const onOffline = () => notify('Connection lost', 'warning')
+
+        window.addEventListener('offline', onOffline)
+        window.addEventListener('online', onOnline)
+
+        // ping server
+        const intervalTimeInSec = import.meta.env.DEV ? 60 : 120
+        const abortController = new AbortController()
+
+        const interval = setInterval(() => {
+            axiosServerInstance
+                .get(ApiRoutes.all.healthCheck, { retry: 1, signal: abortController.signal })
+                .catch(() => {
+                    notify('Server unreachable', 'warning')
+                })
+        }, 1000 * intervalTimeInSec)
+
+        return () => {
+            clearInterval(interval)
+            abortController.abort()
+            window.removeEventListener('offline', onOffline)
+            window.removeEventListener('online', onOnline)
+        }
+    }, [])
+
+    const { snackbarControllProps, alertControllProps, message, notify } = useToast()
 
     return (
         <>
