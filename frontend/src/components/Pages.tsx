@@ -9,9 +9,21 @@ import { axiosServerInstance } from '../App'
 import { Routes as ApiRoutes } from '../types/routes'
 import { useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
-import { Box, CircularProgress, Container, LinearProgress, Typography } from '@mui/material'
+import {
+    Alert,
+    Box,
+    Button,
+    CircularProgress,
+    Container,
+    IconButton,
+    LinearProgress,
+    Snackbar,
+    Typography,
+} from '@mui/material'
 import { Chat } from '../pages/Chat'
 import { User } from '../types/prisma.client'
+import { useToast } from '../hooks/useToast'
+import { CancelRounded } from '@mui/icons-material'
 
 export const Pages = () => {
     const { authoriseUser } = useAuth()
@@ -33,8 +45,16 @@ export const Pages = () => {
         }
     }, [user, status])
 
+    const { snackbarControllProps, alertControllProps, message } = useToast()
+
     return (
         <>
+            <Snackbar {...snackbarControllProps} autoHideDuration={10000}>
+                <Alert {...alertControllProps} sx={{ width: '100%' }}>
+                    {message}
+                </Alert>
+            </Snackbar>
+
             <BrowserRouter>
                 <Routes>
                     <Route

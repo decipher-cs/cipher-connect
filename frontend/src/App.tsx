@@ -20,6 +20,7 @@ import { useDarkModeToggle } from './hooks/useDarkModeToggle'
 import { useDialog } from './hooks/useDialog'
 import { useEffect } from 'react'
 import axios, { AxiosError, isAxiosError } from 'axios'
+import { ToastContextProvider } from './contexts/ToastContextProvider'
 
 export const queryClient = new QueryClient({
     defaultOptions: {
@@ -83,11 +84,13 @@ const App = () => {
             <CssBaseline>
                 <>
                     <WarningDialog />
-                    <QueryClientProvider client={queryClient}>
-                        <AuthenticationContextProvider>
-                            <Pages />
-                        </AuthenticationContextProvider>
-                    </QueryClientProvider>
+                    <ToastContextProvider>
+                        <QueryClientProvider client={queryClient}>
+                            <AuthenticationContextProvider>
+                                <Pages />
+                            </AuthenticationContextProvider>
+                        </QueryClientProvider>
+                    </ToastContextProvider>
                 </>
             </CssBaseline>
         </ThemeProvider>

@@ -11,6 +11,7 @@ import axios, { AxiosError } from 'axios'
 import { ButtonWithLoader } from '../components/ButtonWithLoader'
 import { useAuth } from '../hooks/useAuth'
 import { User } from '../types/prisma.client'
+import { useToast } from '../hooks/useToast'
 
 export const Login = () => {
     const {
@@ -25,6 +26,8 @@ export const Login = () => {
     const formType = isLogin ? 'login' : 'signup'
 
     const selectedTab = isLogin === true ? 0 : 1
+
+    const { notify } = useToast()
 
     const {
         register,
@@ -47,6 +50,7 @@ export const Login = () => {
             if (response.status === 201) {
                 const { data } = response
                 authoriseUser(data.username, data)
+                notify('Logged In (:', 'success')
                 navigate('/chat')
             }
         } catch (error) {
