@@ -1,5 +1,15 @@
 import { Box, Button, ButtonGroup, CircularProgress, Container, List, ListItem } from '@mui/material'
-import { createRef, forwardRef, useCallback, useContext, useEffect, useLayoutEffect, useReducer, useRef } from 'react'
+import {
+    createRef,
+    forwardRef,
+    memo,
+    useCallback,
+    useContext,
+    useEffect,
+    useLayoutEffect,
+    useReducer,
+    useRef,
+} from 'react'
 import React, { useState } from 'react'
 import { MessageContentType, RoomWithParticipants, ServerMessage, User } from '../types/prisma.client'
 import { MessageTile } from './MessageTile'
@@ -28,7 +38,7 @@ export interface ChatDisplaySectionProps {
     messageDispatcher: React.Dispatch<MessageListAction>
 }
 
-export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
+export const ChatDisplaySection = memo((props: ChatDisplaySectionProps) => {
     const { currRoom, users, toggleRoomInfoSidebar, messageDispatcher, messages } = props
 
     const {
@@ -228,4 +238,4 @@ export const ChatDisplaySection = (props: ChatDisplaySectionProps) => {
             </ButtonGroup>
         </>
     )
-}
+})

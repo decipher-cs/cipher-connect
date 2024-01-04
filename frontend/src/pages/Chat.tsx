@@ -1,5 +1,5 @@
-import { Box, Collapse, Typography } from '@mui/material'
-import { useEffect, useId, useReducer, useRef, useState } from 'react'
+import { Alert, Box, Button, Collapse, Snackbar, Typography } from '@mui/material'
+import { memo, useEffect, useId, useReducer, useRef, useState } from 'react'
 import { ChatDisplaySection } from '../components/ChatDisplaySection'
 import { RoomInfo } from '../components/RoomInfo'
 import { Sidebar } from '../components/Sidebar'
@@ -13,8 +13,9 @@ import { axiosServerInstance } from '../App'
 import { Routes } from '../types/routes'
 import { RoomDetails } from '../types/prisma.client'
 import { MessageListActionType, messageListReducer } from '../reducer/messageListReducer'
+import { useToast } from '../hooks/useToast'
 
-export const Chat = () => {
+export const Chat = memo(() => {
     const socket = useSocket()
 
     const {
@@ -177,4 +178,4 @@ export const Chat = () => {
             </Box>
         </>
     )
-}
+})

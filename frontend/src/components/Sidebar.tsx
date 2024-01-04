@@ -39,7 +39,7 @@ interface SidebarProps {
     handleTabChange: (newTab: 'messages' | 'favourates' | 'settings') => void
 }
 
-export const Sidebar = ({ selectedTab, handleTabChange }: SidebarProps) => {
+export const Sidebar = memo(({ selectedTab, handleTabChange }: SidebarProps) => {
     const navigate = useNavigate()
 
     const {
@@ -98,4 +98,4 @@ export const Sidebar = ({ selectedTab, handleTabChange }: SidebarProps) => {
             </Box>
         </Box>
     )
-}
+})

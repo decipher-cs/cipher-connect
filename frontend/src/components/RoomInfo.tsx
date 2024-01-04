@@ -15,7 +15,7 @@ import {
     ListItemText,
     Checkbox,
 } from '@mui/material'
-import { useEffect } from 'react'
+import { memo, useEffect } from 'react'
 import {
     BookmarkBorderRounded,
     BookmarkRounded,
@@ -51,7 +51,7 @@ type UserRoomSharedConfig = Partial<Pick<UserRoom, 'isBlocked' | 'lastReadMessag
 
 type RoomSharedConfig = Partial<Pick<Room, 'roomAvatar' | 'roomDisplayName'>>
 
-export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ...props }: RoomInfoProps) => {
+export const RoomInfo = memo(({ room, roomDispatcher, handleToggleRoomInfoSidebar, ...props }: RoomInfoProps) => {
     const {
         authStatus: { username },
     } = useAuth()
@@ -250,4 +250,4 @@ export const RoomInfo = ({ room, roomDispatcher, handleToggleRoomInfoSidebar, ..
             />
         </Box>
     )
-}
+})
