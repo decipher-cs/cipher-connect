@@ -493,7 +493,7 @@ export const handleUserLastReadMessage = async (req: Request, res: Response) => 
     const { lastReadMessageId, roomId } = req.body
     const username = req.session.username
 
-    if (!username || !roomId || !lastReadMessageId) {
+    if (!username || !roomId || !lastReadMessageId || typeof lastReadMessageId !== 'string') {
         res.sendStatus(400)
         return
     }
