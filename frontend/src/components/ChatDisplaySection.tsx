@@ -28,7 +28,9 @@ import { AudioPlayer } from './AudioPlayer'
 import Mark from 'mark.js'
 import { useAuth } from '../hooks/useAuth'
 import { Components, Virtuoso, VirtuosoHandle } from 'react-virtuoso'
-import { ArrowDownwardRounded, ArrowUpwardRounded } from '@mui/icons-material'
+import { ArrowDownwardRounded, ArrowUpwardRounded, Room } from '@mui/icons-material'
+import { TypeOf } from 'zod'
+import { useToast } from '../hooks/useToast'
 
 export interface ChatDisplaySectionProps {
     currRoom: RoomsState['joinedRooms'][0]
@@ -38,12 +40,16 @@ export interface ChatDisplaySectionProps {
     messageDispatcher: React.Dispatch<MessageListAction>
 }
 
+const MESSAGE_FETCH_SIZE = 10
+
 export const ChatDisplaySection = memo((props: ChatDisplaySectionProps) => {
     const { currRoom, users, toggleRoomInfoSidebar, messageDispatcher, messages } = props
 
     const {
         authStatus: { username },
     } = useAuth()
+
+    const { notify } = useToast()
 
     const socket = useSocket()
 
@@ -61,54 +67,36 @@ export const ChatDisplaySection = memo((props: ChatDisplaySectionProps) => {
             }),
     })
 
-    const [firstItemIndex, setFirstItemIndex] = useState(100000)
+    const [firstItemIndex, setFirstItemIndex] = useState(1000000) // A really big no. to create an offset between the ver first and very last message. This should technically be the length of the messages of room
 
     useEffect(() => {
         if (messageCount && messageCountFetchStatus === 'success') setFirstItemIndex(messageCount)
     }, [messageCount])
 
-    const messageFetchCount = 10
+    const [messagesFetchStatus, setMessagesFetchStatus] = useState<'fetching' | 'success' | 'error'>('fetching')
 
-    const {
-        data: serverMessages,
-        status,
-        fetchNextPage,
-        isFetchingNextPage,
-        hasNextPage,
-    } = useInfiniteQuery({
-        enabled: messageCount !== undefined,
-        queryKey: ['messages', currRoom.roomId],
-        queryFn: ({ pageParam }) =>
-            axiosServerInstance
-                .get<ServerMessage[]>(
-                    Routes.get.messages +
-                        `/${currRoom.roomId}?messageQuantity=${messageFetchCount}&${
-                            pageParam ? 'cursor=' + pageParam : ''
-                        }`
-                )
-                .then(res => {
-                    const result = res.data.map(msg => ({ ...msg, deliveryStatus: 'delivered' })) satisfies Message[]
-                    return result
-                }),
-
-        getNextPageParam: (lastPage, _) => lastPage.at(0)?.key,
-        initialData: {
-            pages: [[]],
-            pageParams: [messages.at(0)?.key],
-        },
-    })
-
-    useEffect(() => {
-        if (!serverMessages?.pages?.at(-1)) return
-
-        const messages = serverMessages.pages.slice().at(-1) ?? []
-
-        messageDispatcher({
-            type: MessageListActionType.prepend,
-            newMessage: messages,
-            roomId: currRoom.roomId,
-        })
-    }, [serverMessages?.pages, serverMessages?.pageParams])
+    const fetchPrevPage = (cursor: string) => {
+        setMessagesFetchStatus('fetching')
+        axiosServerInstance
+            .get<ServerMessage[]>(
+                Routes.get.messages + `/${currRoom.roomId}?messageQuantity=${MESSAGE_FETCH_SIZE}&${'cursor=' + cursor}`
+            )
+            .then(res => {
+                const result = res.data.map(msg => ({ ...msg, deliveryStatus: 'delivered' })) satisfies Message[]
+                if (result.length >= 1) setFirstItemIndex(p => p - result.length)
+                messageDispatcher({
+                    type: MessageListActionType.prepend,
+                    newMessage: [...result],
+                    roomId: currRoom.roomId,
+                })
+            })
+            .catch(err => {
+                notify('Error while getting messages from the server. Will try again.', 'error')
+            })
+            .finally(() => {
+                setMessagesFetchStatus('success')
+            })
+    }
 
     const [usersCurrentlyTyping, setUsersCurrentlyTyping] = useState<User['username'][] | null>(null)
 
@@ -171,7 +159,7 @@ export const ChatDisplaySection = memo((props: ChatDisplaySectionProps) => {
                 users={users}
             />
 
-            {status === 'loading' || (hasNextPage && isFetchingNextPage) ? (
+            {messageCountFetchStatus === 'loading' || messagesFetchStatus === 'fetching' ? (
                 <CircularProgress sx={{ justifySelf: 'center', position: 'absolute', zIndex: 99, top: '10%' }} />
             ) : null}
 
@@ -181,20 +169,23 @@ export const ChatDisplaySection = memo((props: ChatDisplaySectionProps) => {
                         ref={virtuosoRef}
                         data={messages?.filter(msg => msg.roomId === currRoom.roomId)}
                         followOutput={'smooth'}
-                        overscan={10}
+                        overscan={30}
                         firstItemIndex={firstItemIndex}
                         endReached={() => {
+                            const lastReadMessageId = messages.at(-1)?.key
+                            if (!lastReadMessageId) return
                             axiosServerInstance.put(Routes.put.lastReadMessage, {
-                                lastReadMessageId: messages[messages.length - 1]?.key ?? messages.length,
+                                lastReadMessageId: lastReadMessageId,
                                 roomId: currRoom.roomId,
+                            } satisfies {
+                                lastReadMessageId: string
+                                roomId: typeof currRoom.roomId
                             })
                         }}
                         startReached={() => {
-                            if (!hasNextPage) return
-                            fetchNextPage()
-                            setFirstItemIndex(p => (p - messageFetchCount < 0 ? 0 : p - messageFetchCount))
+                            if (messages[0]?.key) fetchPrevPage(messages[0].key)
                         }}
-                        initialTopMostItemIndex={{ behavior: 'auto', index: messages.length - 1 }}
+                        initialTopMostItemIndex={{ behavior: 'auto', index: messages.length - 1, align: 'center' }}
                         itemContent={(_, message) => {
                             return (
                                 <MessageTile
