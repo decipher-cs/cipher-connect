@@ -7,11 +7,18 @@ import {
     useContext,
     useEffect,
     useLayoutEffect,
+    useMemo,
     useReducer,
     useRef,
 } from 'react'
 import React, { useState } from 'react'
-import { MessageContentType, RoomWithParticipants, ServerMessage, User } from '../types/prisma.client'
+import {
+    MessageContentType,
+    MessageWithOptions,
+    RoomWithParticipants,
+    ServerMessage,
+    User,
+} from '../types/prisma.client'
 import { MessageTile } from './MessageTile'
 import { ChatInputBar } from './ChatInputBar'
 import { RoomBanner } from './RoomBanner'
@@ -43,7 +50,15 @@ export interface ChatDisplaySectionProps {
 const MESSAGE_FETCH_SIZE = 10
 
 export const ChatDisplaySection = memo((props: ChatDisplaySectionProps) => {
-    const { currRoom, users, toggleRoomInfoSidebar, messageDispatcher, messages } = props
+    const { currRoom, users, toggleRoomInfoSidebar, messageDispatcher, messages: unfilteredMessages } = props
+
+    const messages = useMemo(
+        () =>
+            unfilteredMessages.filter(msg => {
+                return msg.messageOptions === undefined || msg.messageOptions.isHidden === false
+            }),
+        [unfilteredMessages]
+    )
 
     const {
         authStatus: { username },
@@ -78,11 +93,12 @@ export const ChatDisplaySection = memo((props: ChatDisplaySectionProps) => {
     const fetchPrevPage = (cursor: string) => {
         setMessagesFetchStatus('fetching')
         axiosServerInstance
-            .get<ServerMessage[]>(
+            .get<MessageWithOptions[]>(
                 Routes.get.messages + `/${currRoom.roomId}?messageQuantity=${MESSAGE_FETCH_SIZE}&${'cursor=' + cursor}`
             )
             .then(res => {
                 const result = res.data.map(msg => ({ ...msg, deliveryStatus: 'delivered' })) satisfies Message[]
+
                 if (result.length >= 1) setFirstItemIndex(p => p - result.length)
                 messageDispatcher({
                     type: MessageListActionType.prepend,
@@ -184,6 +200,7 @@ export const ChatDisplaySection = memo((props: ChatDisplaySectionProps) => {
                         }}
                         startReached={() => {
                             if (messages[0]?.key) fetchPrevPage(messages[0].key)
+                            else throw new Error('message[0] is not defined')
                         }}
                         initialTopMostItemIndex={{ behavior: 'auto', index: messages.length - 1, align: 'center' }}
                         itemContent={(_, message) => {
