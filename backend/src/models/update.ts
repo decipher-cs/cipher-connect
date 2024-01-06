@@ -129,9 +129,9 @@ export const updateTextMessageContent = async (
 export const upsertUserMessage = async (
     username: User['username'],
     messageKey: Message['key'],
-    userMessage?: Partial<Omit<UserMessage, 'username' | 'messageKey'>>
+    userMessage?: Partial<NonNullable<Omit<UserMessage, 'username' | 'messageKey'>>>
 ) => {
-    return await prisma.userMessage.upsert({
+    const res = await prisma.userMessage.upsert({
         where: { username_messageKey: { username, messageKey } },
         update: { ...userMessage },
         create: {
@@ -140,4 +140,5 @@ export const upsertUserMessage = async (
             ...userMessage,
         },
     })
+    return res
 }

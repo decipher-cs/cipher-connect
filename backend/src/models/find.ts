@@ -122,11 +122,14 @@ export const getMessagesFromRoom = async (
 ): Promise<Message[] | null> => {
     try {
         const messages = await prisma.message.findMany({
-            where: { roomId },
+            where: {
+                roomId,
+                OR: [{ senderUsername: { not: username } }, { userMessage: { every: { isHidden: false } } }],
+            },
             orderBy: { createdAt: 'desc' },
             include: {
                 userMessage: {
-                    where: { AND: [{ username }] },
+                    where: { username },
                 },
             },
 
@@ -134,33 +137,8 @@ export const getMessagesFromRoom = async (
             take,
             skip: cursor ? 1 : 0,
         })
-
-        const userMessages = await prisma.userMessage.findMany({
-            where: { AND: [{ username }], OR: messages.map(msg => ({ messageKey: msg.key })) },
-        })
-
-        const res = messages.map(message => {
-            let messageOptions = userMessages.find(userMsg => {
-                userMsg.messageKey === message.key
-            })
-
-            if (!messageOptions)
-                messageOptions = {
-                    messageKey: message.key,
-                    username: message.senderUsername,
-                    isHidden: false,
-                    isNotificationMuted: false,
-                    isMarkedFavourite: false,
-                    isPinned: false,
-                }
-
-            return {
-                ...message,
-                messageOptions,
-            } satisfies MessageWithOptions
-        }) satisfies MessageWithOptions[]
-
-        return res.reverse()
+        messages.reverse()
+        return messages
     } catch (error) {
         console.log(error)
         return null
