@@ -1,5 +1,6 @@
 import { produce } from 'immer'
-import { Message, Room } from '../types/prisma.client'
+import { NonUndefined } from 'react-hook-form'
+import { Message, Room, UserRoom } from '../types/prisma.client'
 
 export type EveryRoomMessage = { readonly [roomId: string]: Message[] }
 
@@ -14,6 +15,7 @@ export enum MessageListActionType {
     clearMessageList = 'clearMessageList',
     changeDeliveryStatus = 'changeDeliveryStatus',
 }
+
 export type MessageListAction =
     | {
           type: MessageListActionType.initializeMessages
@@ -47,7 +49,7 @@ export type MessageListAction =
       }
     | {
           type: MessageListActionType.editConfig
-          updatedConfig: Omit<Message['messageOptions'], 'roomId' | 'username'>
+          updatedConfig: NonNullable<Partial<Message['messageOptions']>>
           messageKey: Message['key']
           roomId: Room['roomId']
       }
@@ -95,21 +97,20 @@ export const messageListReducer: React.Reducer<EveryRoomMessage, MessageListActi
 
         case MessageListActionType.editConfig:
             return produce(messages, draft => {
-                draft[action.roomId]?.forEach(message => {
-                    if (message.key === action.messageKey)
-                        if (message.messageOptions)
-                            message.messageOptions = { ...message.messageOptions, ...action.updatedConfig }
-                        else
-                            message.messageOptions = {
-                                messageKey: message.key,
-                                username: message.senderUsername,
-                                isHidden: false,
-                                isNotificationMuted: false,
-                                isMarkedFavourite: false,
-                                isPinned: false,
-                                ...action.updatedConfig,
-                            }
-                })
+                const message = draft[action.roomId]?.find(msg => msg.key === action.messageKey)
+                if (!message) return
+
+                const options = {
+                    messageKey: action.messageKey,
+                    username: message?.senderUsername,
+                    isHidden: false,
+                    isNotificationMuted: false,
+                    isMarkedFavourite: false,
+                    isPinned: false,
+                    ...message.messageOptions,
+                    ...action.updatedConfig,
+                } satisfies Message['messageOptions']
+                message.messageOptions = options
             })
 
         case MessageListActionType.edit:
