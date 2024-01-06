@@ -22,7 +22,7 @@ import {
     Typography,
 } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
-import { MouseEvent, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react'
+import { MouseEvent, PropsWithChildren, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useSocket } from '../hooks/useSocket'
 import {
@@ -36,11 +36,12 @@ import {
 } from '../types/prisma.client'
 import { RoomsState } from '../reducer/roomReducer'
 import { AudioPlayer } from './AudioPlayer'
-import { MessageTilePopover } from './MessageTilePopover'
+// import { MessageTilePopover } from './MessageTilePopover'
 import { StyledTextField } from './StyledTextField'
 import { axiosServerInstance } from '../App'
 import { Routes } from '../types/routes'
 import { MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
+import MessageTilePopover from './MessageTilePopover'
 
 export type MessageTileProps = {
     message: Message
@@ -77,9 +78,11 @@ export const MessageTile = (props: MessageTileProps) => {
 
     const isPopoverOpen = Boolean(popoverAnchor)
 
-    const closePopover = () => setPopoverAnchor(null)
+    const closePopover = useCallback(() => setPopoverAnchor(null), [setPopoverAnchor])
 
     const [textEditModeEnabled, setTextEditMode] = useState(false)
+
+    const enableEditMode = useCallback(() => setTextEditMode(true), [setTextEditMode])
 
     if (!content) return null
 
@@ -178,7 +181,7 @@ export const MessageTile = (props: MessageTileProps) => {
                 anchor={popoverAnchor}
                 messageId={messageKey}
                 roomId={roomId}
-                enableEditMode={() => setTextEditMode(true)}
+                enableEditMode={enableEditMode}
                 contentType={contentType}
                 senderUsername={senderUsername}
             />
