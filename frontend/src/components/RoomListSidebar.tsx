@@ -91,7 +91,7 @@ export const RoomListSidebar = memo((props: RoomListSidebar) => {
                         roomId: room.roomId,
                         newMessages: res.data.map(msg => {
                             return { ...msg, deliveryStatus: 'delivered' } satisfies Message
-                        }),
+                        }) satisfies MessageWithOptions[],
                     })
                     return res.data
                 })

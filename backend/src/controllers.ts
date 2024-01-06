@@ -21,9 +21,10 @@ import {
     updateUser,
     updateUserLastReadMessage,
     updateUserRoom,
+    upsertUserMessage,
 } from './models/update.js'
 import { error } from 'console'
-import { Room, User, UserRoom } from '@prisma/client'
+import { Room, User, UserMessage, UserRoom } from '@prisma/client'
 import { io } from './server.js'
 
 export const isServerOnline = async (req: Request, res: Response) => {
@@ -493,12 +494,40 @@ export const handleUserLastReadMessage = async (req: Request, res: Response) => 
     const { lastReadMessageId, roomId } = req.body
     const username = req.session.username
 
-    if (!username || !roomId || !lastReadMessageId || typeof lastReadMessageId !== 'string') {
+    if (
+        !username ||
+        !roomId ||
+        typeof roomId !== 'string' ||
+        !lastReadMessageId ||
+        typeof lastReadMessageId !== 'string'
+    ) {
         res.sendStatus(400)
         return
     }
 
     const updateSuccessful = await updateUserLastReadMessage(roomId, username, lastReadMessageId)
+
+    if (updateSuccessful) {
+        res.sendStatus(201)
+        // io.in().emit
+    } else res.sendStatus(500)
+}
+
+export const handleUserMessageUpdate = async (req: Request, res: Response) => {
+    type PartialUserRoomConfig = Partial<Omit<UserMessage, 'username' | 'messageKey'>>
+    const { messageKey, updatedConfig } = req.body as {
+        messageKey: string
+        updatedConfig: PartialUserRoomConfig
+    }
+
+    const username = req.session.username
+
+    if (!username || !messageKey || typeof messageKey !== 'string' || !updatedConfig) {
+        res.sendStatus(400)
+        return
+    }
+
+    const updateSuccessful = await upsertUserMessage(username, messageKey, updatedConfig)
 
     if (updateSuccessful) {
         res.sendStatus(201)

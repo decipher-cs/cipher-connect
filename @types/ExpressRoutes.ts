@@ -33,6 +33,7 @@ export const Routes = {
         room: '/room',
         textMessage: '/text-message',
         lastReadMessage: '/last-read-message',
+        userMessage: '/user-message'
     },
     delete: {
         userRoom: '/user-room',

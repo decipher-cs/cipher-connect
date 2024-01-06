@@ -29,6 +29,7 @@ import {
     handleTextMessageEdit,
     handleMessageDelete,
     handleUserLastReadMessage,
+    handleUserMessageUpdate,
 } from './controllers.js'
 import { media } from './server.js'
 import { isUserAuthenticated } from './middleware/auth.js'
@@ -83,6 +84,8 @@ export const initRoutes = (app: Router) => {
     app.put(routes.put.textMessage, isUserAuthenticated, handleTextMessageEdit)
 
     app.put(routes.put.lastReadMessage, isUserAuthenticated, handleUserLastReadMessage)
+
+    app.put(routes.put.userMessage, isUserAuthenticated, handleUserMessageUpdate)
 
     app.delete(routes.delete.userRoom + '/:username/:roomId', isUserAuthenticated, handleUserLeavesRoom)
 
