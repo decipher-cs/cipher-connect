@@ -1,12 +1,25 @@
 import { DeleteRounded, DownloadRounded, EditOffRounded, EditRounded, ForwardRounded } from '@mui/icons-material'
-import { ButtonGroup, Popover, IconButton } from '@mui/material'
+import {
+    ButtonGroup,
+    Popover,
+    IconButton,
+    Dialog,
+    DialogContent,
+    DialogActions,
+    Button,
+    DialogTitle,
+} from '@mui/material'
+import { memo, useMemo } from 'react'
 import { axiosServerInstance } from '../App'
 import { useAuth } from '../hooks/useAuth'
+import { useDialog } from '../hooks/useDialog'
 import { MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
-import { Room, Message, MessageContentType, User } from '../types/prisma.client'
+import { Room, Message, MessageContentType, User, UserMessage } from '../types/prisma.client'
 import { Routes } from '../types/routes'
 
-export const MessageTilePopover = ({
+type PartialUserRoomConfig = Partial<Omit<UserMessage, 'username' | 'messageKey'>>
+
+const MessageTilePopover = ({
     open,
     handleClose,
     anchor,
@@ -31,14 +44,72 @@ export const MessageTilePopover = ({
         authStatus: { username },
     } = useAuth()
 
-    const handleMessageDelete = async () => {
-        const res = await axiosServerInstance.delete(Routes.delete.message + '/' + messageId)
-        if (res.status === 201) messageDispatcher({ type: MessageListActionType.remove, messageKey: messageId, roomId })
-
-        handleClose()
-    }
-
     const handleMessageForward = () => {}
+
+    const { handleClose: handleDeleteDialogClose, handleOpen: handleDeleteDialogOpen, dialogOpen } = useDialog()
+    console.log(dialogOpen)
+
+    const DeleteMessageDialog = useMemo(() => {
+        return (
+            <Dialog
+                open={dialogOpen}
+                onClose={() => {
+                    handleDeleteDialogClose()
+                    handleClose()
+                }}
+                fullWidth
+            >
+                <DialogTitle> Delete Message </DialogTitle>
+                <DialogContent dividers>This will delete the selcted {contentType}</DialogContent>
+                <DialogActions>
+                    <ButtonGroup>
+                        <Button
+                            onClick={() => {
+                                axiosServerInstance
+                                    .delete(Routes.delete.message + '/' + messageId)
+                                    .then(res => {
+                                        if (res.status === 201)
+                                            messageDispatcher({
+                                                type: MessageListActionType.remove,
+                                                messageKey: messageId,
+                                                roomId,
+                                            })
+                                    })
+                                    .finally(handleDeleteDialogClose)
+                            }}
+                        >
+                            Delete For All
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                axiosServerInstance
+                                    .put(Routes.put.userMessage, {
+                                        messageKey: messageId,
+                                        updatedConfig: { isHidden: true },
+                                    } satisfies {
+                                        messageKey: string
+                                        updatedConfig: PartialUserRoomConfig
+                                    })
+                                    .then(res => {
+                                        if (res.status === 201) {
+                                            messageDispatcher({
+                                                type: MessageListActionType.editConfig,
+                                                messageKey: messageId,
+                                                updatedConfig: { isHidden: true },
+                                                roomId,
+                                            })
+                                        }
+                                    })
+                                    .finally(() => handleDeleteDialogClose())
+                            }}
+                        >
+                            Delete for me
+                        </Button>
+                    </ButtonGroup>
+                </DialogActions>
+            </Dialog>
+        )
+    }, [dialogOpen, messageId, roomId])
 
     return (
         <Popover
@@ -54,9 +125,14 @@ export const MessageTilePopover = ({
                 horizontal: 'center',
             }}
         >
+            {DeleteMessageDialog}
             <ButtonGroup>
                 {senderUsername === username ? (
-                    <IconButton onClick={handleMessageDelete}>
+                    <IconButton
+                        onClick={() => {
+                            handleDeleteDialogOpen()
+                        }}
+                    >
                         <DeleteRounded />
                     </IconButton>
                 ) : null}
@@ -84,3 +160,5 @@ export const MessageTilePopover = ({
         </Popover>
     )
 }
+
+export default memo(MessageTilePopover)
