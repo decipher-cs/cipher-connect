@@ -10,6 +10,7 @@ export const Routes = {
         userRoom: '/user-room',
         users: '/users',
         user: '/user',
+        room: '/room',
         isUsernameValid: '/is-username-valid',
         logout: '/logout',
         sessionStatus: '/session-status',

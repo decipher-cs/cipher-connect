@@ -203,6 +203,25 @@ export const getUserRoom = async (username: User['username'], roomId: Room['room
     }
 }
 
+export const getRooms = async (username: User['username']) => {
+    const room = await prisma.room.findMany({
+        where: { user: { some: { username } } },
+        include: { userRoom: true },
+    })
+    const roomWithParticipants = room.map(room => {
+        const { userRoom: userRoomArr, ...roomDetails } = room
+        const user = userRoomArr.find(u => u.username === username)
+        if (!user) throw new Error()
+        return {
+            ...roomDetails,
+            ...user,
+            participants: userRoomArr.map(usr => usr.username),
+            userRooms: userRoomArr,
+        }
+    })
+    return roomWithParticipants satisfies RoomDetails[]
+}
+
 export const getManyRoomDetails = async (
     id: { username: User['username'] } | { roomId: Room['roomId'] }
 ): Promise<RoomDetails[] | null> => {
