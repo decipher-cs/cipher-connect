@@ -21,7 +21,6 @@ import {
     handleMediaUpload,
     handleAvatarChange,
     doesValidUserSessionExist,
-    isServerOnline,
     handleUserRoomOptionsChange,
     updatePersonalUserRoomConfig,
     updateSharedUserRoomConfig,
@@ -42,6 +41,8 @@ export const initRoutes = (app: Router) => {
     app.get(routes.get.logout, logoutUser)
 
     app.get(routes.get.users, isUserAuthenticated, returnUsers)
+
+    app.get(routes.get.room+, isUserAuthenticated, handleGettingRoom)
 
     app.get(routes.get.userRooms + '/:username', isUserAuthenticated, handleGettingRoomDetails)
 

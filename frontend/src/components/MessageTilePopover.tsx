@@ -13,6 +13,7 @@ import { memo, useMemo } from 'react'
 import { axiosServerInstance } from '../App'
 import { useAuth } from '../hooks/useAuth'
 import { useDialog } from '../hooks/useDialog'
+import { useToast } from '../hooks/useToast'
 import { MessageListAction, MessageListActionType } from '../reducer/messageListReducer'
 import { Room, Message, MessageContentType, User, UserMessage } from '../types/prisma.client'
 import { Routes } from '../types/routes'
@@ -47,7 +48,8 @@ const MessageTilePopover = ({
     const handleMessageForward = () => {}
 
     const { handleClose: handleDeleteDialogClose, handleOpen: handleDeleteDialogOpen, dialogOpen } = useDialog()
-    console.log(dialogOpen)
+
+    const { notify } = useToast()
 
     const DeleteMessageDialog = useMemo(() => {
         return (
@@ -153,7 +155,7 @@ const MessageTilePopover = ({
                     </IconButton>
                 ) : null}
 
-                <IconButton>
+                <IconButton onClick={() => notify('This feature is not yet availabe', 'info')}>
                     <ForwardRounded />
                 </IconButton>
             </ButtonGroup>
