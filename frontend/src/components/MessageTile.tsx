@@ -93,7 +93,7 @@ export const MessageTile = (props: MessageTileProps) => {
                     px: 1.5,
                     ml: alignment === 'left' ? '0px' : 'auto',
                     position: 'relative',
-                    py: 3,
+                    pt: 10,
                     maxWidth: '90%',
                     width: 'fit-content',
                     display: 'grid',
