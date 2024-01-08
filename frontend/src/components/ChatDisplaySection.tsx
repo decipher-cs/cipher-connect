@@ -1,24 +1,7 @@
 import { Box, Button, ButtonGroup, CircularProgress, Container, List, ListItem } from '@mui/material'
-import {
-    createRef,
-    forwardRef,
-    memo,
-    useCallback,
-    useContext,
-    useEffect,
-    useLayoutEffect,
-    useMemo,
-    useReducer,
-    useRef,
-} from 'react'
+import { memo, useEffect, useMemo, useRef } from 'react'
 import React, { useState } from 'react'
-import {
-    MessageContentType,
-    MessageWithOptions,
-    RoomWithParticipants,
-    ServerMessage,
-    User,
-} from '../types/prisma.client'
+import { MessageWithOptions, User } from '../types/prisma.client'
 import { MessageTile } from './MessageTile'
 import { ChatInputBar } from './ChatInputBar'
 import { RoomBanner } from './RoomBanner'
@@ -26,17 +9,15 @@ import { Message } from '../types/prisma.client'
 import { MessageListAction, MessageListActionType, messageListReducer } from '../reducer/messageListReducer'
 import { Routes } from '../types/routes'
 import { TypingStatus } from '../types/socket'
-import { roomReducer, RoomsState } from '../reducer/roomReducer'
+import { RoomsState } from '../reducer/roomReducer'
 import { useSocket } from '../hooks/useSocket'
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { axiosServerInstance } from '../App'
 import { PulseLoader } from 'react-spinners'
-import { AudioPlayer } from './AudioPlayer'
 import Mark from 'mark.js'
 import { useAuth } from '../hooks/useAuth'
-import { Components, Virtuoso, VirtuosoHandle } from 'react-virtuoso'
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso'
 import { ArrowDownwardRounded, ArrowUpwardRounded, Room } from '@mui/icons-material'
-import { TypeOf } from 'zod'
 import { useToast } from '../hooks/useToast'
 
 export interface ChatDisplaySectionProps {
@@ -189,7 +170,8 @@ export const ChatDisplaySection = memo((props: ChatDisplaySectionProps) => {
                         firstItemIndex={firstItemIndex}
                         endReached={() => {
                             const lastReadMessageId = messages.at(-1)?.key
-                            if (!lastReadMessageId) return
+
+                            if (!lastReadMessageId || currRoom.lastReadMessageId === lastReadMessageId) return
                             axiosServerInstance.put(Routes.put.lastReadMessage, {
                                 lastReadMessageId: lastReadMessageId,
                                 roomId: currRoom.roomId,
