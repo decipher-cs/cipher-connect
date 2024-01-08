@@ -26,6 +26,7 @@ import {
 import { error } from 'console'
 import { Room, User, UserMessage, UserRoom } from '@prisma/client'
 import { io } from './server.js'
+import { getRoomsAndUserRooms } from './models/find.js'
 
 export const isServerOnline = async (req: Request, res: Response) => {
     res.sendStatus(200)
@@ -533,4 +534,18 @@ export const handleUserMessageUpdate = async (req: Request, res: Response) => {
         res.sendStatus(201)
         // io.in().emit
     } else res.sendStatus(500)
+}
+
+export const handleGettingUserRoomsWithParticipants = async (req: Request, res: Response) => {
+    const username = req.session.username
+    if (!username) {
+        res.sendStatus(400)
+        return
+    }
+
+    const roomArr = await getRoomsAndUserRooms(username)
+
+    if (!roomArr) res.sendStatus(500)
+    else res.send(roomArr)
+    return
 }

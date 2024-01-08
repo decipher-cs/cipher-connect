@@ -1,6 +1,6 @@
 import { Message, Room, UserMessage, UserRoom } from '@prisma/client'
 import { prisma } from '../server.js'
-import { MessageWithOptions, RoomDetails, User } from '../types.js'
+import { MessageWithOptions, RoomDetails, RoomWithParticipantsAndUserRoomArr, User } from '../types.js'
 
 export const getUser = async (username: string): Promise<User | null> => {
     try {
@@ -203,7 +203,7 @@ export const getUserRoom = async (username: User['username'], roomId: Room['room
     }
 }
 
-export const getRooms = async (username: User['username']) => {
+export const getRoomsAndUserRooms = async (username: User['username']) => {
     const room = await prisma.room.findMany({
         where: { user: { some: { username } } },
         include: { userRoom: true },
@@ -216,10 +216,10 @@ export const getRooms = async (username: User['username']) => {
             ...roomDetails,
             ...user,
             participants: userRoomArr.map(usr => usr.username),
-            userRooms: userRoomArr,
+            userRoomArr: userRoomArr,
         }
     })
-    return roomWithParticipants satisfies RoomDetails[]
+    return roomWithParticipants satisfies RoomWithParticipantsAndUserRoomArr[]
 }
 
 export const getManyRoomDetails = async (

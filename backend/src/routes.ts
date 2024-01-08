@@ -29,6 +29,7 @@ import {
     handleMessageDelete,
     handleUserLastReadMessage,
     handleUserMessageUpdate,
+    handleGettingUserRoomsWithParticipants,
 } from './controllers.js'
 import { media } from './server.js'
 import { isUserAuthenticated } from './middleware/auth.js'
@@ -42,7 +43,7 @@ export const initRoutes = (app: Router) => {
 
     app.get(routes.get.users, isUserAuthenticated, returnUsers)
 
-    app.get(routes.get.room+, isUserAuthenticated, handleGettingRoom)
+    app.get(routes.get.room, isUserAuthenticated, handleGettingUserRoomsWithParticipants)
 
     app.get(routes.get.userRooms + '/:username', isUserAuthenticated, handleGettingRoomDetails)
 
