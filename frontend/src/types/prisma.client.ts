@@ -105,7 +105,10 @@ export type MessageDeliveryStatus = 'delivered' | 'delivering' | 'failed'
 
 export type MessageWithOptions = ServerMessage & { messageOptions?: UserMessage }
 
-export type Message = MessageWithOptions & { deliveryStatus: MessageDeliveryStatus }
+export type Message = MessageWithOptions & {
+    deliveryStatus: MessageDeliveryStatus
+    readByUsername?: User['username'][]
+}
 
 export type UserWithoutID = Omit<UserInDb, 'userId'>
 
@@ -116,3 +119,5 @@ export type RoomWithParticipants = Room & { participants: User['username'][] }
 export type RoomOptions = UserRoom
 
 export type RoomDetails = RoomWithParticipants & UserRoom
+
+export type RoomWithParticipantsAndUserRoomArr = RoomWithParticipants & UserRoom & { userRoomArr: UserRoom[] }

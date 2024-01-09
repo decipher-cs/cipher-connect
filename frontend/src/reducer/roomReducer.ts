@@ -1,10 +1,10 @@
 import { produce } from 'immer'
-import { MessageContentType, Room, UserRoom } from '../types/prisma.client'
+import { MessageContentType, Room, RoomWithParticipantsAndUserRoomArr, UserRoom } from '../types/prisma.client'
 import { User, RoomDetails } from '../types/prisma.client'
 
 export type RoomsState = {
     selectedRoomIndex: null | number
-    joinedRooms: RoomDetails[]
+    joinedRooms: RoomWithParticipantsAndUserRoomArr[]
     usersInfo: { [username: User['username']]: User | undefined }
 }
 
