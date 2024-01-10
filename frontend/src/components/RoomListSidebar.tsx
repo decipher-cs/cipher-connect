@@ -33,6 +33,7 @@ import {
     MessageWithOptions,
     Room,
     RoomDetails,
+    RoomWithParticipantsAndUserRoomArr,
     ServerMessage,
     User,
 } from '../types/prisma.client'
@@ -71,11 +72,10 @@ export const RoomListSidebar = memo((props: RoomListSidebar) => {
         isFetching: fetchingRoomsInProgress,
         refetch,
         status: roomFetchStatus,
-        // refetch: syncRoomsWithServer,
     } = useQuery({
         queryKey: ['fetchedRooms', username],
         queryFn: async () => {
-            const response = await axiosServerInstance.get<RoomDetails[]>(Routes.get.userRooms + `/${username}`)
+            const response = await axiosServerInstance.get<RoomWithParticipantsAndUserRoomArr[]>(Routes.get.room)
             return response.data
         },
     })
@@ -84,16 +84,35 @@ export const RoomListSidebar = memo((props: RoomListSidebar) => {
         if (roomFetchStatus !== 'success') return
         for (const room of fetchedRooms) {
             axiosServerInstance
-                .get<MessageWithOptions[]>(Routes.get.messages + `/${room.roomId}?messageQuantity=${1}`)
+                .get<MessageWithOptions[]>(Routes.get.messages + `/${room.roomId}?messageQuantity=${5}`)
                 .then(res => {
                     messageDispatcher({
                         type: MessageListActionType.initializeMessages,
                         roomId: room.roomId,
                         newMessages: res.data.map(msg => {
-                            return { ...msg, deliveryStatus: 'delivered' } satisfies Message
+                            return {
+                                ...msg,
+                                deliveryStatus: 'delivered',
+                                readByUsernames: new Set(),
+                            } satisfies Message
                         }) satisfies MessageWithOptions[],
                     })
-                    return res.data
+                    const userRoomArr = fetchedRooms.find(({ roomId }) => roomId === room.roomId)?.userRoomArr
+                    if (userRoomArr?.length && userRoomArr?.length > 0) {
+                        userRoomArr.forEach(userRoom => {
+                            if (!userRoom.lastReadMessageId) return
+                            messageDispatcher({
+                                type: MessageListActionType.addUsernameToReadByList,
+                                roomId: room.roomId,
+                                updatedReadByDetails: {
+                                    newlyReadMessageId: userRoom.lastReadMessageId,
+                                    readByChangedForUsername: userRoom.username,
+                                },
+                            })
+                        })
+
+                        return res.data
+                    }
                 })
                 .catch(err => {
                     console.log('err', err)
