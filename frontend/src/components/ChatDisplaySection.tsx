@@ -73,7 +73,6 @@ export const ChatDisplaySection = memo((props: ChatDisplaySectionProps) => {
         [unfilteredMessages]
     )
 
-
     const { notify } = useToast()
 
     const socket = useSocket()
@@ -98,7 +97,7 @@ export const ChatDisplaySection = memo((props: ChatDisplaySectionProps) => {
         if (messageCount && messageCountFetchStatus === 'success') setFirstItemIndex(messageCount)
     }, [messageCount])
 
-    const [messagesFetchStatus, setMessagesFetchStatus] = useState<'fetching' | 'success' | 'error'>('fetching')
+    const [messagesFetchStatus, setMessagesFetchStatus] = useState<'fetching' | 'success' | 'error'>('success')
 
     const fetchPrevPage = (cursor: string) => {
         setMessagesFetchStatus('fetching')
@@ -107,13 +106,29 @@ export const ChatDisplaySection = memo((props: ChatDisplaySectionProps) => {
                 Routes.get.messages + `/${currRoom.roomId}?messageQuantity=${MESSAGE_FETCH_SIZE}&${'cursor=' + cursor}`
             )
             .then(res => {
-                const result = res.data.map(msg => ({ ...msg, deliveryStatus: 'delivered' })) satisfies Message[]
+                const result = res.data.map(msg => ({
+                    ...msg,
+                    deliveryStatus: 'delivered',
+                    readByUsernames: new Set(),
+                })) satisfies Message[]
 
                 if (result.length >= 1) setFirstItemIndex(p => p - result.length)
+
                 messageDispatcher({
                     type: MessageListActionType.prepend,
                     newMessage: [...result],
                     roomId: currRoom.roomId,
+                })
+                currRoom.userRoomArr.forEach(userRoom => {
+                    if (!userRoom.lastReadMessageId) return
+                    messageDispatcher({
+                        type: MessageListActionType.addUsernameToReadByList,
+                        roomId: currRoom.roomId,
+                        updatedReadByDetails: {
+                            newlyReadMessageId: userRoom.lastReadMessageId,
+                            readByChangedForUsername: userRoom.username,
+                        },
+                    })
                 })
             })
             .catch(err => {
@@ -249,6 +264,16 @@ export const ChatDisplaySection = memo((props: ChatDisplaySectionProps) => {
                 <Button
                     onClick={() => {
                         if (virtuosoRef.current) virtuosoRef.current.scrollToIndex(messages.length - 1)
+                        const lastReadMessageId = messages.at(-1)?.key
+
+                        if (!lastReadMessageId || currRoom.lastReadMessageId === lastReadMessageId) return
+                        axiosServerInstance.put(Routes.put.lastReadMessage, {
+                            lastReadMessageId: lastReadMessageId,
+                            roomId: currRoom.roomId,
+                        } satisfies {
+                            lastReadMessageId: string
+                            roomId: typeof currRoom.roomId
+                        })
                     }}
                     endIcon={<ArrowDownwardRounded />}
                 >
