@@ -21,6 +21,9 @@ import { useDialog } from './hooks/useDialog'
 import { useEffect } from 'react'
 import axios, { AxiosError, isAxiosError } from 'axios'
 import { ToastContextProvider } from './contexts/ToastContextProvider'
+import { enableMapSet } from 'immer'
+
+enableMapSet()
 
 export const queryClient = new QueryClient({
     defaultOptions: {
