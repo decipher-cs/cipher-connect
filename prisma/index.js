@@ -201,7 +201,8 @@ const config = {
     "db"
   ],
   "activeProvider": "mysql",
-  "dataProxy": false
+  "dataProxy": false,
+  "postinstall": false
 }
 
 const fs = require('fs')

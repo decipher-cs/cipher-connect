@@ -3,6 +3,7 @@ import {
     ContactMailRounded,
     GitHub,
     LogoutRounded,
+    QuestionAnswerRounded,
     SettingsSuggestRounded,
     TryRounded,
 } from '@mui/icons-material'
@@ -77,7 +78,7 @@ export const Sidebar = memo(({ selectedTab, handleTabChange }: SidebarProps) => 
                 }}
                 // sx={{ borderColor: 'divider' }}
             >
-                <Tab label='' value='messages' icon={<ChatBubbleRounded />} />
+                <Tab label='' value='messages' icon={<QuestionAnswerRounded />} />
                 <Tab label='' value='favourates' icon={<TryRounded />} />
                 {/* <Divider variant='middle' /> */}
                 <Tab label='' value='settings' icon={<SettingsSuggestRounded />} />
