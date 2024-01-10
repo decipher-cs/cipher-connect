@@ -1,6 +1,6 @@
 import { produce } from 'immer'
 import { NonUndefined } from 'react-hook-form'
-import { Message, Room, UserRoom } from '../types/prisma.client'
+import { Message, Room, User, UserRoom } from '../types/prisma.client'
 
 export type EveryRoomMessage = { readonly [roomId: string]: Message[] }
 
@@ -14,6 +14,7 @@ export enum MessageListActionType {
     editConfig = 'editOptions',
     clearMessageList = 'clearMessageList',
     changeDeliveryStatus = 'changeDeliveryStatus',
+    addUsernameToReadByList = 'addUsernameToReadByList',
 }
 
 export type MessageListAction =
@@ -61,6 +62,11 @@ export type MessageListAction =
       }
     | {
           type: MessageListActionType.clearMessageList
+          roomId: Room['roomId']
+      }
+    | {
+          type: MessageListActionType.addUsernameToReadByList
+          updatedReadByDetails: { readByChangedForUsername: User['username']; newlyReadMessageId: Message['key'] }
           roomId: Room['roomId']
       }
 
@@ -136,6 +142,23 @@ export const messageListReducer: React.Reducer<EveryRoomMessage, MessageListActi
         case MessageListActionType.clearMessageList:
             return produce(messages, draft => {
                 draft[action.roomId] = []
+            })
+
+        case MessageListActionType.addUsernameToReadByList:
+            return produce(messages, draft => {
+                const latestReadMessage = draft[action.roomId]?.find(
+                    msg => msg.key === action.updatedReadByDetails.newlyReadMessageId
+                )
+
+                if (latestReadMessage) {
+                    draft[action.roomId]?.forEach((msg, i) => {
+                        if (msg.createdAt <= latestReadMessage.createdAt) {
+                            draft?.[action.roomId]?.[i]?.readByUsernames.add(
+                                action.updatedReadByDetails.readByChangedForUsername
+                            )
+                        }
+                    })
+                }
             })
 
         default:

@@ -107,7 +107,7 @@ export type MessageWithOptions = ServerMessage & { messageOptions?: UserMessage 
 
 export type Message = MessageWithOptions & {
     deliveryStatus: MessageDeliveryStatus
-    readByUsername?: User['username'][]
+    readByUsernames: Set<User['username']>
 }
 
 export type UserWithoutID = Omit<UserInDb, 'userId'>
