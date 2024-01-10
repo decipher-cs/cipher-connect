@@ -418,13 +418,13 @@ const MessageDeleveryStatusIcon = (props: {
             </Tooltip>
         )
     if (deliveryStatus === 'delivered') {
-        if (messageReadByUsernames.size <= 0)
+        if (messageReadByUsernames.size <= 1)
             return (
                 <Tooltip title='Message Sent'>
                     <CheckRounded color='disabled' />
                 </Tooltip>
             )
-        if (messageReadByUsernames.size > 0)
+        if (messageReadByUsernames.size > 1)
             return (
                 <Tooltip title='Message Sent And Read'>
                     <DoneAllRounded color='disabled' />
