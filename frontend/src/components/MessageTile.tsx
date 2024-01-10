@@ -8,6 +8,8 @@ import {
     MoreHorizRounded,
     CheckRounded,
     DoneAllRounded,
+    CloseRounded,
+    QuestionMarkRounded,
 } from '@mui/icons-material'
 import {
     Avatar,
@@ -145,16 +147,10 @@ export const MessageTile = (props: MessageTileProps) => {
                                 placeItems: 'center',
                             }}
                         >
-                            {deliveryStatus === 'delivered' ? (
-                                <Tooltip title='Message Sent'>
-                                    {/* <CheckRounded color='disabled' /> */}
-                                    <DoneAllRounded color='disabled' />
-                                </Tooltip>
-                            ) : (
-                                <Tooltip title='Sending...'>
-                                    <CircularProgress size={20} />
-                                </Tooltip>
-                            )}
+                            <MessageDeleveryStatusIcon
+                                deliveryStatus={deliveryStatus}
+                                messageReadByUsernames={message.readByUsernames}
+                            />
                             <IconButton onClick={handleClickOnPopoverAnchor}>
                                 <MoreHorizRounded />
                             </IconButton>
@@ -402,4 +398,39 @@ const messageDeliveryTimeAndDate = (createdAt: Date) => {
     if (creationDate < midnight)
         return creationDate.toLocaleString('en', { dateStyle: 'medium', timeStyle: 'short', hour12: false })
     return creationDate.toLocaleString('en', { timeStyle: 'short', hour12: false })
+}
+
+const MessageDeleveryStatusIcon = (props: {
+    deliveryStatus: MessageDeliveryStatus
+    messageReadByUsernames: NonNullable<Message['readByUsernames']>
+}) => {
+    const { deliveryStatus, messageReadByUsernames } = props
+    if (deliveryStatus === 'delivering')
+        return (
+            <Tooltip title='Sending...'>
+                <CircularProgress size={20} />
+            </Tooltip>
+        )
+    if (deliveryStatus === 'failed')
+        return (
+            <Tooltip title='failed'>
+                <CloseRounded color='disabled' />
+            </Tooltip>
+        )
+    if (deliveryStatus === 'delivered') {
+        if (messageReadByUsernames.size <= 0)
+            return (
+                <Tooltip title='Message Sent'>
+                    <CheckRounded color='disabled' />
+                </Tooltip>
+            )
+        if (messageReadByUsernames.size > 0)
+            return (
+                <Tooltip title='Message Sent And Read'>
+                    <DoneAllRounded color='disabled' />
+                </Tooltip>
+            )
+    }
+
+    return <QuestionMarkRounded />
 }
