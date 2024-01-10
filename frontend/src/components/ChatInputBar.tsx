@@ -72,7 +72,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
     const handleMessageDelivery = async (args: HandleMessageDeliveryArgs) => {
         let { content, contentType } = args
 
-        const message: Message = {
+        const message = {
             key: crypto.randomUUID(),
             roomId: props.currRoom.roomId,
             editedAt: null,
@@ -81,7 +81,8 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
             contentType,
             content: typeof content === 'string' ? content : URL.createObjectURL(content),
             deliveryStatus: 'delivering',
-        }
+            readByUsernames: new Set(),
+        } satisfies Message
 
         props.messageListDispatcher({
             type: MessageListActionType.append,
@@ -96,7 +97,7 @@ export const ChatInputBar = (props: ChatInputBarProps) => {
                 content = await uploadMedia(formData)
             }
 
-            const { deliveryStatus, ...messageForServer } = { ...message, content }
+            const { deliveryStatus, readByUsernames, ...messageForServer } = { ...message, content }
 
             socket.emit('message', messageForServer, res => {
                 props.messageListDispatcher({

@@ -50,6 +50,7 @@ export const Chat = memo(() => {
                             isMarkedFavourite: false,
                             isPinned: false,
                         },
+                        readByUsernames: new Set(),
                     },
                 ],
             })
