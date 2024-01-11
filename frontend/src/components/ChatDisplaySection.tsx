@@ -37,33 +37,6 @@ export const ChatDisplaySection = memo((props: ChatDisplaySectionProps) => {
         authStatus: { username },
     } = useAuth()
 
-    /* const messagesWithLastRead = (() => {
-        // 1. Get every username's last read message id
-        // 2. Get timestamp for each message obtained in stap 1
-        // 3. Loop through message array and check message's timestamp against each user's last read message's timestamp
-        // 4.1. If message arrived before last read message, add username to message's read receipt array
-        // 4.2. If not, check continue
-
-        const userRoomArrWithoutSender = currRoom.userRoomArr.filter(userRoom => userRoom.username !== username)
-        const userArrWithUserLastReadMsgTimestamps = userRoomArrWithoutSender.map(userRoom => {
-            const message = unfilteredMessages.find(msg => msg.key === userRoom.lastReadMessageId)
-            return { lastReadMessageTimestamp: message?.createdAt, username: userRoom.username }
-        })
-
-        const messagesWithLastRead = unfilteredMessages.map(msg => {
-            const message: typeof msg = structuredClone(msg)
-            message.readByUsername = []
-            for (const usersLastReadMsgTimestamp of userArrWithUserLastReadMsgTimestamps) {
-                if (!usersLastReadMsgTimestamp?.lastReadMessageTimestamp) continue
-                if (message.createdAt <= usersLastReadMsgTimestamp?.lastReadMessageTimestamp) {
-                    message.readByUsername.push(usersLastReadMsgTimestamp.username)
-                }
-            }
-            return message
-        })
-        return messagesWithLastRead
-    })() */
-
     //TODO: Instead of this expensive calculation, just remove message from local state and add hidded: true to server state.
     const messages = useMemo(
         () =>
