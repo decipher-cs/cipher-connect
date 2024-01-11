@@ -28,7 +28,6 @@ import {
 } from '@mui/icons-material'
 import { Routes } from '../types/routes'
 import { RoomActions, RoomActionType, RoomsState } from '../reducer/roomReducer'
-import { ConfirmationDialog } from './ConfirmationDialog'
 import { AddGroupParticipantsDialog } from './AddGroupParticipantsDialog'
 import { useMutation } from '@tanstack/react-query'
 import { axiosServerInstance } from '../App'
@@ -37,6 +36,7 @@ import { ImageEditorDialog } from './ImageEditorDialog'
 import { useDialog } from '../hooks/useDialog'
 import { useAuth } from '../hooks/useAuth'
 import { Room, UserRoom } from '../types/prisma.client'
+import { ButtonWithConfirmationDialog } from './ButtonWithConfirmationDialog'
 
 interface RoomInfoProps {
     room: RoomsState['joinedRooms'][0]
@@ -57,10 +57,6 @@ export const RoomInfo = memo(({ room, roomDispatcher, handleToggleRoomInfoSideba
     } = useAuth()
 
     const { imageEditroDialogProps, sourceImage, setSourceImage, handleOpen, editedImageData } = useImageEditor()
-
-    const { handleToggle: toggleLeaveGroupDialog, dialogOpen: openLeaveGroupDialog } = useDialog()
-
-    const { handleToggle: toggleDeleteGroupDialog, dialogOpen: openDeleteGroupDialog } = useDialog()
 
     const { mutateAsync: updateUserRoom } = useMutation({
         mutationKey: ['UserRoomMutableOptions', room.roomId],
@@ -224,30 +220,34 @@ export const RoomInfo = memo(({ room, roomDispatcher, handleToggleRoomInfoSideba
                 ))}
             </List>
 
+            <Button
+                onClick={() => {
+                    updateSharedUserRoomConfig({ isBlocked: true })
+                }}
+            >
+                Block
+            </Button>
             {room.roomType === 'group' ? (
                 <ButtonGroup size='small' variant='text' fullWidth>
-                    <Button onClick={toggleDeleteGroupDialog} disabled={!room.isAdmin}>
+                    <ButtonWithConfirmationDialog
+                        onConfirm={() => {
+                            axiosServerInstance.delete(Routes.delete.room).then(res => res.data)
+                        }}
+                        disabled={!room.isAdmin}
+                    >
                         Delete Group
-                    </Button>
-                    <Button onClick={toggleLeaveGroupDialog}>Leave Group</Button>
+                    </ButtonWithConfirmationDialog>
+                    <ButtonWithConfirmationDialog
+                        onConfirm={() => {
+                            axiosServerInstance
+                                .delete(Routes.delete.userRoom + '/' + username + '/' + room.roomId)
+                                .then(res => res.data)
+                        }}
+                    >
+                        Leave Group
+                    </ButtonWithConfirmationDialog>
                 </ButtonGroup>
             ) : null}
-            <ConfirmationDialog
-                openDialog={openLeaveGroupDialog}
-                toggleConfirmationDialog={toggleLeaveGroupDialog}
-                onAccept={() => {
-                    axiosServerInstance
-                        .delete(Routes.delete.userRoom + '/' + username + '/' + room.roomId)
-                        .then(res => res.data)
-                }}
-            />
-            <ConfirmationDialog
-                openDialog={openDeleteGroupDialog}
-                toggleConfirmationDialog={toggleDeleteGroupDialog}
-                onAccept={() => {
-                    axiosServerInstance.delete(Routes.delete.room).then(res => res.data)
-                }}
-            />
         </Box>
     )
 })
